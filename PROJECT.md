@@ -55,8 +55,8 @@ The architecture enforces strict separation of concerns across pure domain mathe
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
 | M1 | Domain Engine | Pure TS logic: CPCB AQI, exposure model, assumptions, deterministic rules (Features 1-6) | none | DONE |
-| M2 | Data Layer & Modes | Open-Meteo APIs, dual-tier cache, manual fallback, demo snapshots, personas, profile (Features 7-14) | M1 | IN_PROGRESS |
-| M3 | Core UI & Accessibility | Welcome screen, 5-step tour, today dashboard, hourly SVG chart & table, WCAG tokens (Features 15-18) | M1, M2 | PLANNED |
+| M2 | Data Layer & Modes | Open-Meteo APIs, dual-tier cache, manual fallback, demo snapshots, personas, profile (Features 7-14) | M1 | DONE |
+| M3 | Core UI & Accessibility | Welcome screen, 5-step tour, today dashboard, hourly SVG chart & table, WCAG tokens (Features 15-18) | M1, M2 | DONE |
 | M4 | Serverless AI Proxy | 5 allow-listed tasks, grounding verification, provenance, safety triage, 10 prompt tests (Features 19-23) | M1 | PLANNED |
 | M5 | Feature Modules & Final E2E | Routine UI, indoor UI, what-if UI, chat UI, community kit UI, Hindi/print, full E2E pass (Features 24-30) | M1, M2, M3, M4 | PLANNED |
 

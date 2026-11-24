@@ -1,0 +1,75 @@
+/* Design tokens and theme custom properties for Saans. */
+
+:root {
+  --color-bg-base: #f8fafc;
+  --color-card-bg: #ffffff;
+  --color-card-border: #cbd5e1;
+  --color-control-border: #64748b;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted: #475569;
+  --color-brand: #0369a1;
+  --color-focus-ring: #0369a1;
+
+  /* CPCB AQI Band Tokens - Light Theme */
+  --aqi-good-bg: #ecfdf5;
+  --aqi-good-border: #059669;
+  --aqi-good-text: #065f46;
+
+  --aqi-satisfactory-bg: #f0fdfa;
+  --aqi-satisfactory-border: #0d9488;
+  --aqi-satisfactory-text: #115e59;
+
+  --aqi-moderate-bg: #fffbeb;
+  --aqi-moderate-border: #d97706;
+  --aqi-moderate-text: #78350f;
+
+  --aqi-poor-bg: #fff7ed;
+  --aqi-poor-border: #ea580c;
+  --aqi-poor-text: #7c2d12;
+
+  --aqi-very-poor-bg: #fff1f2;
+  --aqi-very-poor-border: #e11d48;
+  --aqi-very-poor-text: #881337;
+
+  --aqi-severe-bg: #faf5ff;
+  --aqi-severe-border: #9333ea;
+  --aqi-severe-text: #581c87;
+}
+
+.dark {
+  --color-bg-base: #0f172a;
+  --color-card-bg: #1e293b;
+  --color-card-border: #475569;
+  --color-control-border: #94a3b8;
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+  --color-brand: #38bdf8;
+  --color-focus-ring: #38bdf8;
+
+  /* CPCB AQI Band Tokens - Dark Theme */
+  --aqi-good-bg: #064e3b;
+  --aqi-good-border: #10b981;
+  --aqi-good-text: #ecfdf5;
+
+  --aqi-satisfactory-bg: #134e4a;
+  --aqi-satisfactory-border: #14b8a6;
+  --aqi-satisfactory-text: #f0fdfa;
+
+  --aqi-moderate-bg: #78350f;
+  --aqi-moderate-border: #f59e0b;
+  --aqi-moderate-text: #fef3c7;
+
+  --aqi-poor-bg: #7c2d12;
+  --aqi-poor-border: #f97316;
+  --aqi-poor-text: #ffedd5;
+
+  --aqi-very-poor-bg: #881337;
+  --aqi-very-poor-border: #fb7185;
+  --aqi-very-poor-text: #ffe4e6;
+
+  --aqi-severe-bg: #581c87;
+  --aqi-severe-border: #c084fc;
+  --aqi-severe-text: #f3e8ff;
+}

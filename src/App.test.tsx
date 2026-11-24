@@ -1,12 +1,15 @@
-// Unit and accessibility tests for App component.
+// Unit, integration, landmark, and accessibility tests for App component.
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { App } from './App.js';
+import { DEMO_BANNER_TEXT } from './state/mode.js';
 
 describe('App Component', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    document.documentElement.className = '';
   });
 
   it('renders title and displays Ready when service is configured', async () => {
@@ -16,7 +19,7 @@ describe('App Component', () => {
     } as Response);
 
     render(<App />);
-    expect(screen.getByText(/Saans \(सांस\)/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Saans (सांस)' })).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByTestId('ai-status')).toHaveTextContent('Ready');
@@ -41,6 +44,59 @@ describe('App Component', () => {
     await waitFor(() => {
       expect(screen.getByTestId('ai-status')).toHaveTextContent('Offline (Rules Active)');
     });
+  });
+
+  it('renders semantic landmarks, skip link, and persistent demo banner', () => {
+    render(<App />);
+    expect(screen.getByRole('link', { name: /Skip to main content/i })).toBeInTheDocument();
+    expect(screen.getByRole('banner')).toBeInTheDocument();
+    expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
+    expect(screen.getByRole('contentinfo')).toBeInTheDocument();
+    expect(screen.getByText(DEMO_BANNER_TEXT)).toBeInTheDocument();
+  });
+
+  it('toggles mode and updates demo banner presence', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(screen.getByText(DEMO_BANNER_TEXT)).toBeInTheDocument();
+    const modeBtn = screen.getByRole('button', { name: /Current mode is/i });
+    await user.click(modeBtn);
+
+    // After switching to live mode, demo banner disappears
+    expect(screen.queryByText(DEMO_BANNER_TEXT)).not.toBeInTheDocument();
+  });
+
+  it('toggles dark theme class on document element', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const themeBtn = screen.getByRole('button', { name: /Switch to dark theme/i });
+    await user.click(themeBtn);
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+
+    const lightBtn = screen.getByRole('button', { name: /Switch to light theme/i });
+    await user.click(lightBtn);
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+  });
+
+  it('opens and closes Guided Tour and Profile Wizard modals', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    // Open tour from header
+    const tourBtn = screen.getByRole('button', { name: 'Tour' });
+    await user.click(tourBtn);
+    expect(screen.getByRole('dialog', { name: /Dual Operating Modes/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Skip Tour' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    // Open profile wizard from header
+    const profileBtn = screen.getByRole('button', { name: 'Profile' });
+    await user.click(profileBtn);
+    expect(screen.getByRole('dialog', { name: /Family Smog Profile/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('passes automated accessibility audits', async () => {

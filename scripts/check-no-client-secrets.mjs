@@ -5,6 +5,7 @@ import path from 'node:path';
 /** Patterns indicating prohibited secrets or server-only env references. */
 export const FORBIDDEN_PATTERNS = [
   /AIza[0-9A-Za-z-_]{35}/,
+  /AQ\.[0-9A-Za-z-_]+/,
   /GEMINI_API_KEY/,
   /process\.env\.GEMINI/,
   /VITE_.*(?:KEY|SECRET|TOKEN|PASSWORD)/i,

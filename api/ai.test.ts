@@ -125,4 +125,52 @@ describe('AI Proxy API Endpoint', () => {
     const res = await POST(req);
     expect(res.status).toBe(429);
   });
+
+  it('differentiates cache entries when context.facts differ', async () => {
+    process.env.GEMINI_API_KEY = 'valid-key';
+    const fakeTips1 = { tips: ['Keep windows sealed'], urgency: 'high' };
+    const fakeTips2 = { tips: ['Open windows for ventilation'], urgency: 'low' };
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          candidates: [{ content: { parts: [{ text: JSON.stringify(fakeTips1) }] } }],
+        }),
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          candidates: [{ content: { parts: [{ text: JSON.stringify(fakeTips2) }] } }],
+        }),
+      } as Response);
+
+    const payload1 = {
+      task: 'indoor-tips',
+      context: { aqi: 240, city: 'Delhi', facts: ['Smog alert'] },
+    };
+    const payload2 = {
+      task: 'indoor-tips',
+      context: { aqi: 240, city: 'Delhi', facts: ['Rain cleared smog'] },
+    };
+
+    const res1 = await POST(
+      new Request('http://localhost/api/ai', {
+        method: 'POST',
+        body: JSON.stringify(payload1),
+      })
+    );
+    const json1 = (await res1.json()) as AiResponse;
+    expect(json1.provenance.cached).toBe(false);
+
+    const res2 = await POST(
+      new Request('http://localhost/api/ai', {
+        method: 'POST',
+        body: JSON.stringify(payload2),
+      })
+    );
+    const json2 = (await res2.json()) as AiResponse;
+    expect(json2.provenance.cached).toBe(false);
+  });
 });

@@ -53,45 +53,41 @@ describe('Tier 3: Pairwise & Cross-Feature Combinations', () => {
   // Test 3.1: Sliding-Window Rate Limiting Combined with LRU Caching
   // -------------------------------------------------------------------------
   it('Test 3.1: Sliding-Window Rate Limiting Combined with LRU Caching', async () => {
-    if (harness) {
-      const payload = JSON.stringify({
-        task: 'indoor-tips',
-        context: { aqi: 320, city: 'Delhi', facts: ['PM2.5: 250'] },
-        userText: 'tips'
+    assert.ok(harness, 'Serverless harness must be active');
+    const payload = JSON.stringify({
+      task: 'indoor-tips',
+      context: { aqi: 320, city: 'Delhi', facts: ['PM2.5: 250'] },
+      userText: 'tips'
+    });
+
+    // Send a burst of 35 requests (configured window threshold is 30)
+    const responses = [];
+    for (let i = 0; i < 35; i++) {
+      const res = await fetch(`${harness.origin}/api/ai`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-forwarded-for': '198.51.100.20'
+        },
+        body: payload
       });
-
-      // Send 15 requests in rapid succession
-      const responses = [];
-      for (let i = 0; i < 15; i++) {
-        const res = await fetch(`${harness.origin}/api/ai`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: payload
-        });
-        responses.push(res);
-      }
-
-      const statuses = responses.map((r) => r.status);
-
-      // Verify that rate limit takes precedence over cache if rate threshold is reached
-      const had429 = statuses.includes(429);
-      if (had429) {
-        const idx = statuses.indexOf(429);
-        const rateLimitedRes = responses[idx];
-        const body = await rateLimitedRes.json();
-        assert.ok(
-          body.error.toLowerCase().includes('rate') || body.error.toLowerCase().includes('limit'),
-          'HTTP 429 response must report rate limit exceeded'
-        );
-      } else {
-        // If rate limit threshold is higher or server is offline, verify cache and rate-limit modules exist
-        assert.ok(fileExists('server/cache.ts'), 'server/cache.ts must exist');
-        assert.ok(fileExists('server/rate-limit.ts'), 'server/rate-limit.ts must exist');
-      }
-    } else {
-      assert.ok(fileExists('server/cache.ts'), 'server/cache.ts must exist');
-      assert.ok(fileExists('server/rate-limit.ts'), 'server/rate-limit.ts must exist');
+      responses.push(res);
     }
+
+    const statuses = responses.map((r) => r.status);
+
+    // Verify that burst of 35 requests strictly triggers HTTP 429 Rate Limit Exceeded
+    assert.ok(
+      statuses.includes(429),
+      'Burst of 35 requests must trigger HTTP 429 Rate Limit Exceeded'
+    );
+    const idx = statuses.indexOf(429);
+    const rateLimitedRes = responses[idx];
+    const body = await rateLimitedRes.json();
+    assert.ok(
+      body.error?.toLowerCase().includes('rate') || body.error?.toLowerCase().includes('limit'),
+      'HTTP 429 response must report rate limit exceeded'
+    );
   });
 
   // -------------------------------------------------------------------------

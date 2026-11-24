@@ -62,7 +62,8 @@ export async function GET(): Promise<Response> {
  * @returns AI response payload.
  */
 async function processAiRequest(req: AiRequest, signal: AbortSignal): Promise<AiResponse> {
-  const cacheKey = `${req.task}:${req.context.city}:${req.context.aqi}:${req.userText ?? ''}`;
+  const factsKey = (req.context.facts ?? []).slice().sort().join('|');
+  const cacheKey = `${req.task}:${req.context.city}:${req.context.aqi}:${factsKey}:${req.userText ?? ''}`;
   const cached = defaultAiCache.get(cacheKey) as AiResponse | null;
   if (cached) {
     return { ...cached, provenance: { ...cached.provenance, cached: true } };

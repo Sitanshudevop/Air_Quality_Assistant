@@ -5,6 +5,7 @@
  */
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
+import http from 'node:http';
 import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -436,7 +437,7 @@ describe('Tier 2: Boundary & Corner Cases (F1-F7)', () => {
       }
     });
 
-    it('F4-T2-04: Upstream Timeout (8s) and Function Deadline (9s) Configuration', () => {
+    it('F4-T2-04: Upstream Timeout (8s) and Function Deadline (9s) Configuration & HTTP 504 Wire Verification', { timeout: 20000 }, async () => {
       // Check timeout definitions in server/gemini.ts or api/ai.ts
       const geminiSrc = readFileSafe('server/gemini.ts') || readFileSafe('api/ai.ts') || '';
       assert.ok(geminiSrc.length > 0, 'server/gemini.ts or api/ai.ts must exist');
@@ -448,39 +449,88 @@ describe('Tier 2: Boundary & Corner Cases (F1-F7)', () => {
         has8s || has9s || geminiSrc.includes('timeout') || geminiSrc.includes('AbortSignal'),
         'Upstream timeout and deadline must be configured via AbortSignal'
       );
+
+      // HTTP 504 Gateway Timeout over the wire with hanging upstream server
+      assert.ok(harness, 'Serverless harness must be running');
+      const hangingServer = http.createServer((_req, _res) => {
+        // Deliberately hold connection open without responding to trigger upstream timeout
+      });
+      await new Promise((resolve) => hangingServer.listen(0, '127.0.0.1', resolve));
+      const hangingPort = hangingServer.address().port;
+
+      const origBaseUrl = process.env.GEMINI_BASE_URL;
+      const origApiKey = process.env.GEMINI_API_KEY;
+      process.env.GEMINI_BASE_URL = `http://127.0.0.1:${hangingPort}`;
+      process.env.GEMINI_API_KEY = 'AIzaSyMockKeyForTimeoutVerification';
+
+      try {
+        const res = await fetch(`${harness.origin}/api/ai`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            task: 'indoor-tips',
+            context: { aqi: 220, city: 'TimeoutCity', facts: [] }
+          })
+        });
+
+        assert.strictEqual(
+          res.status,
+          504,
+          'Hanging upstream must trigger HTTP 504 Gateway Timeout'
+        );
+        const data = await res.json();
+        assert.strictEqual(
+          data.error,
+          'Upstream timeout',
+          'HTTP 504 response body must match error: "Upstream timeout"'
+        );
+      } finally {
+        if (origBaseUrl === undefined) delete process.env.GEMINI_BASE_URL;
+        else process.env.GEMINI_BASE_URL = origBaseUrl;
+
+        if (origApiKey === undefined) delete process.env.GEMINI_API_KEY;
+        else process.env.GEMINI_API_KEY = origApiKey;
+
+        hangingServer.closeAllConnections();
+        await new Promise((resolve) => hangingServer.close(resolve));
+      }
     });
 
     it('F4-T2-05: Per-Instance Sliding-Window Rate Limiting (429 Too Many Requests)', async () => {
-      if (harness) {
-        // Send a burst of requests to test rate limiting
-        const payload = JSON.stringify({
-          task: 'indoor-tips',
-          context: { aqi: 300, city: 'Delhi', facts: [] }
+      assert.ok(harness, 'Serverless harness must be active');
+      // Send a burst of 35 requests (configured threshold is 30)
+      const payload = JSON.stringify({
+        task: 'indoor-tips',
+        context: { aqi: 300, city: 'Delhi', facts: [] }
+      });
+
+      const burstCount = 35;
+      const statuses = [];
+      let rateLimitBody = null;
+      for (let i = 0; i < burstCount; i++) {
+        const res = await fetch(`${harness.origin}/api/ai`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-forwarded-for': '198.51.100.10'
+          },
+          body: payload
         });
-
-        const burstCount = 15;
-        const statuses = [];
-        for (let i = 0; i < burstCount; i++) {
-          const res = await fetch(`${harness.origin}/api/ai`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: payload
-          });
-          statuses.push(res.status);
+        statuses.push(res.status);
+        if (res.status === 429 && !rateLimitBody) {
+          rateLimitBody = await res.json();
         }
-
-        // If rate limit is configured to trigger within 15 requests, 429 will be observed
-        const hitRateLimit = statuses.includes(429);
-        // Either 429 was triggered or rate limiter is configured in server/rate-limit.ts
-        if (!hitRateLimit) {
-          assert.ok(
-            fileExists('server/rate-limit.ts'),
-            'server/rate-limit.ts must exist to provide sliding-window rate limiting'
-          );
-        }
-      } else {
-        assert.ok(fileExists('server/rate-limit.ts'), 'server/rate-limit.ts must exist');
       }
+
+      // Strictly assert HTTP 429 Rate Limit Exceeded was triggered
+      assert.ok(
+        statuses.includes(429),
+        'Burst of 35 requests must trigger HTTP 429 Rate Limit Exceeded'
+      );
+      assert.ok(
+        rateLimitBody && rateLimitBody.error,
+        'HTTP 429 response must contain an error message'
+      );
     });
 
   });

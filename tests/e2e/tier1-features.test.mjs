@@ -453,8 +453,10 @@ describe('Tier 1: Feature Coverage (F1-F7)', () => {
     });
 
     it('F4-T1-05: In-Memory Request Cache Hit (cached: true)', async () => {
-      // If server harness is active and key is present or mock returns 200
-      if (harness) {
+      assert.ok(harness, 'Serverless harness must be active');
+      const prevKey = process.env.GEMINI_API_KEY;
+      try {
+        process.env.GEMINI_API_KEY = 'AIzaSyMockKeyForCacheTest';
         const payload = {
           task: 'indoor-tips',
           context: { aqi: 280, city: 'Noida', facts: ['Smog episode'] },
@@ -467,24 +469,25 @@ describe('Tier 1: Feature Coverage (F1-F7)', () => {
           body: JSON.stringify(payload)
         });
 
-        if (res1.status === 200) {
-          const data1 = await res1.json();
-          assert.strictEqual(data1.provenance?.cached, false, 'First call should be a cache miss (cached: false)');
+        assert.strictEqual(res1.status, 200, 'First call with mock key must succeed via fallback');
+        const data1 = await res1.json();
+        assert.strictEqual(data1.provenance?.cached, false, 'First call should be a cache miss (cached: false)');
 
-          // Second identical call
-          const res2 = await fetch(`${harness.origin}/api/ai`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          assert.strictEqual(res2.status, 200);
-          const data2 = await res2.json();
-          assert.strictEqual(data2.provenance?.cached, true, 'Second identical call should return cached: true');
+        // Second identical call
+        const res2 = await fetch(`${harness.origin}/api/ai`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        assert.strictEqual(res2.status, 200, 'Second call must return 200');
+        const data2 = await res2.json();
+        assert.strictEqual(data2.provenance?.cached, true, 'Second identical call must return cached: true');
+      } finally {
+        if (prevKey === undefined) {
+          delete process.env.GEMINI_API_KEY;
         } else {
-          assert.strictEqual(res1.status, 503, 'Offline without key correctly returns 503');
+          process.env.GEMINI_API_KEY = prevKey;
         }
-      } else {
-        assert.ok(fileExists('server/cache.ts'), 'server/cache.ts must exist for LRU cache implementation');
       }
     });
 

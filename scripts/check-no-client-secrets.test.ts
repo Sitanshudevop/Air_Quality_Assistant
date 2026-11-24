@@ -34,6 +34,18 @@ describe('Secret Scanner', () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
+  it('flags AQ. secret pattern in bundles', () => {
+    fs.mkdirSync(tmpDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(tmpDir, 'aq-leaky.js'),
+      'const airQualityKey = "AQ.fakeAirQualityKey12345";'
+    );
+    const leaks = scanDirectory(tmpDir);
+    expect(leaks.length).toBeGreaterThan(0);
+    expect(leaks[0]).toContain('Detected pattern');
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
   it('handles non-existent target directory gracefully', () => {
     const leaks = scanDirectory(path.join(tmpDir, 'non-existent'));
     expect(leaks[0]).toContain('Target directory does not exist');
@@ -42,5 +54,7 @@ describe('Secret Scanner', () => {
   it('verifies forbidden regex patterns', () => {
     expect(FORBIDDEN_PATTERNS.some((p) => p.test('process.env.GEMINI_KEY'))).toBe(true);
     expect(FORBIDDEN_PATTERNS.some((p) => p.test('VITE_API_SECRET'))).toBe(true);
+    expect(FORBIDDEN_PATTERNS.some((p) => p.test('AQ.fakeAirQualityKey12345'))).toBe(true);
+    expect(FORBIDDEN_PATTERNS.some((p) => p.test('AIzaSyD-fakeKey1234567890123456789012345'))).toBe(true);
   });
 });

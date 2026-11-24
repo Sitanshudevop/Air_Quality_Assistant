@@ -65,16 +65,6 @@ export async function startServerlessHarness(options = {}) {
       for await (const chunk of req) chunks.push(chunk);
       const rawBody = ['GET', 'HEAD'].includes(req.method) ? undefined : Buffer.concat(chunks);
 
-      // Fast check for oversized payload (>64KB = 65,536 bytes)
-      if (rawBody && rawBody.length > 65536) {
-        res.statusCode = 413;
-        res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Cache-Control', 'no-store');
-        res.setHeader('X-Content-Type-Options', 'nosniff');
-        res.end(JSON.stringify({ error: 'Payload exceeds 64KB limit' }));
-        return;
-      }
-
       // Convert Node HTTP request to Web Standard Request
       const webReq = new Request(url.toString(), {
         method: req.method,

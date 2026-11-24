@@ -31,12 +31,12 @@ const testSuites = [
 ];
 
 console.log('='.repeat(72));
-console.log('  SAANS (Urban Air Quality Assistant) - Milestone M0 E2E Test Suite');
-console.log('  Opaque-Box Requirement Verification Track');
+console.log('  SAANS (Urban Air Quality Assistant) - Comprehensive E2E Test Suite');
+console.log('  Opaque-Box Requirement Verification Track (Milestones M0 to M5)');
 console.log('='.repeat(72));
 console.log(`Node Runtime : ${process.version}`);
 console.log(`Platform     : ${process.platform} (${process.arch})`);
-console.log(`Test Tiers   : Tier 1 (35), Tier 2 (35), Tier 3 (8), Tier 4 (5)`);
+console.log(`Test Tiers   : Tier 1 (185), Tier 2 (185), Tier 3 (16), Tier 4 (10)`);
 console.log('='.repeat(72));
 console.log();
 
@@ -52,16 +52,26 @@ const testStream = run({
   concurrency: 1
 });
 
-testStream.on('test:pass', () => {
-  totalPass++;
+testStream.on('test:pass', (event) => {
+  if (event?.details?.type === 'suite') return;
+  if (event?.data?.skip || event?.skip) {
+    totalSkip++;
+  } else {
+    totalPass++;
+  }
 });
 
-testStream.on('test:fail', () => {
+testStream.on('test:fail', (event) => {
+  if (event?.details?.type === 'suite') {
+    hasFailure = true;
+    return;
+  }
   totalFail++;
   hasFailure = true;
 });
 
-testStream.on('test:skip', () => {
+testStream.on('test:skip', (event) => {
+  if (event?.details?.type === 'suite') return;
   totalSkip++;
 });
 

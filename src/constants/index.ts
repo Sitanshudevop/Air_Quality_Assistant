@@ -1,4 +1,6 @@
-// Application constants for Saans.
+// Application constants and curated demo data for Saans.
+
+export * from './demo-data.js';
 
 /** Air quality category AQI bounds. */
 export const AQI_THRESHOLDS = {

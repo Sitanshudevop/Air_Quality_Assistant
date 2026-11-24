@@ -56,19 +56,25 @@ export type VulnerabilityGroup = 'healthy_adult' | 'child' | 'elderly' | 'respir
 /** Parameters for relative inhaled dose computation. */
 export interface ExposureParams {
   readonly pm25: number;
-  readonly activity: ActivityLevel;
+  readonly activity?: ActivityLevel;
+  readonly activityLevel?: ActivityLevel | string;
   readonly durationMinutes: number;
-  readonly microenvironment: MicroEnvironment;
+  readonly microenvironment?: MicroEnvironment;
+  readonly environment?: MicroEnvironment | string;
   readonly maskType: MaskType;
   readonly vulnerability?: VulnerabilityGroup;
+  readonly vulnerabilityGroup?: string;
 }
 
 /** Result of relative inhaled dose computation. */
 export interface ExposureResult {
   readonly relativeDoseUg: number;
+  readonly relativeDose: number;
   readonly baselineDoseUg: number;
+  readonly baselineDose: number;
   readonly percentageChange: number;
   readonly uncertaintyRangeUg: readonly [number, number];
+  readonly uncertaintyRange: readonly [number, number];
   readonly caveat: string;
 }
 

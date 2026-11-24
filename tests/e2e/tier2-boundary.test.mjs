@@ -37,7 +37,9 @@ import {
   startMockDeployServer
 } from './helpers/server-harness.mjs';
 
-describe('Tier 2: Boundary & Corner Cases (F1-F7)', () => {
+import { registerTier2ApplicationBoundaries } from './helpers/tier2-application-boundaries.mjs';
+
+describe('Tier 2: Boundary & Corner Cases (M0 Scaffolding F1-F7 & Application Features 1-30)', () => {
 
   // =========================================================================
   // F1: Scaffolding Boundary Tests
@@ -810,5 +812,10 @@ describe('Tier 2: Boundary & Corner Cases (F1-F7)', () => {
     });
 
   });
+
+  // =========================================================================
+  // Application Features 1 through 30 Boundaries (M1 to M5)
+  // =========================================================================
+  registerTier2ApplicationBoundaries();
 
 });

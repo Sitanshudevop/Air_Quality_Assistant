@@ -36,6 +36,8 @@ import {
   startServerlessHarness
 } from './helpers/server-harness.mjs';
 
+import { registerTier3ApplicationCombinations } from './helpers/tier3-application-combinations.mjs';
+
 describe('Tier 3: Pairwise & Cross-Feature Combinations', () => {
   let harness = null;
 
@@ -360,5 +362,10 @@ describe('Tier 3: Pairwise & Cross-Feature Combinations', () => {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
   });
+
+  // =========================================================================
+  // Application Pairwise Feature Combinations (Tests 3.9 to 3.16)
+  // =========================================================================
+  registerTier3ApplicationCombinations({ harness });
 
 });

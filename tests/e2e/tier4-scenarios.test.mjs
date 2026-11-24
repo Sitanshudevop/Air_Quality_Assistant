@@ -36,6 +36,8 @@ import {
   startMockDeployServer
 } from './helpers/server-harness.mjs';
 
+import { registerTier4DomainScenarios } from './helpers/tier4-domain-scenarios.mjs';
+
 describe('Tier 4: Real-World Application Scenarios', () => {
 
   // =========================================================================
@@ -331,5 +333,10 @@ describe('Tier 4: Real-World Application Scenarios', () => {
     // Stage 5: Security Audit Gate
     assert.match(ciYaml, /npm audit --audit-level=high/, 'npm audit --audit-level=high must be configured');
   });
+
+  // =========================================================================
+  // Real-World Application Domain Scenarios (Scenarios 1 to 5 from TEST_INFRA.md)
+  // =========================================================================
+  registerTier4DomainScenarios();
 
 });

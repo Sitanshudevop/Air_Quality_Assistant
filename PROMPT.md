@@ -1,6 +1,6 @@
 You are a senior full-stack engineer building a NEW, ORIGINAL project from scratch for Google PromptWars Virtual, Challenge 6: "Urban Air Quality Assistant". The challenge: "Create a GenAI-powered assistant that helps families and communities navigate severe winter smog and urban air pollution. The application should suggest low-emission daily routines, indoor air quality hacks, and sustainable alternatives tailored to their location and lifestyle, while clearly explaining the direct impact of their choices." Expectations: a smart dynamic assistant; logical decision making from user context; practical real-world usability; clean maintainable code; complete code in the repository; a README covering the chosen vertical, approach and logic, how the solution works, and assumptions. Judged on: Code Quality, Security, Efficiency, Testing, Accessibility, Problem Statement Alignment (each tagged High/Medium/Low impact). The program is India-only; deadline 29 Nov 2026 (11:59 PM IST).
 
-SESSION SCOPE: M0   (I will raise it, e.g. "M0-M1". Finish ONLY the listed milestones, stop at a clean commit, and print the milestone report.)
+SESSION SCOPE: M1-M5   (Finish ONLY the listed milestones, stop at a clean commit, and print the milestone report.)
 
 LESSONS FROM A PREVIOUS DISQUALIFICATION (these are hard requirements)
 My last project was disqualified because the live app's assistant asked for an API key and served the same canned "mock" answer to every prompt. Therefore:

@@ -13,6 +13,21 @@ interface ResolvedCoefficients {
   wNom: number; wLow: number; wHigh: number;
 }
 
+/** Maps environment name to registered assumption identifier. */
+function getEnvKey(env?: string): string {
+  if (env === 'indoor') return 'env_indoor_closed';
+  if (env === 'outdoor') return 'env_outdoors';
+  if (env === 'transit') return 'env_auto_rickshaw';
+  return `env_${env ?? 'outdoors'}`;
+}
+
+/** Maps vulnerability demographic to registered assumption identifier. */
+function getVulnKey(vuln?: string): string {
+  if (vuln === 'asthmatic') return 'vuln_respiratory';
+  if (vuln === 'general') return 'vuln_healthy_adult';
+  return `vuln_${vuln ?? 'healthy_adult'}`;
+}
+
 /**
  * Resolves nominal, low, and high coefficient bounds for exposure calculation.
  *
@@ -20,11 +35,14 @@ interface ResolvedCoefficients {
  * @returns Resolved coefficients bundle.
  */
 function resolveCoefficients(params: ExposureParams): ResolvedCoefficients {
-  const vRec = ASSUMPTIONS[`ventilation_${params.activity}`] ?? ASSUMPTIONS.ventilation_light;
-  const fRec = ASSUMPTIONS[`env_${params.microenvironment}`] ?? ASSUMPTIONS.env_outdoors;
+  const act = params.activity ?? params.activityLevel ?? 'light';
+  const envParam = params.microenvironment ?? params.environment;
+  const vulnParam = params.vulnerability ?? params.vulnerabilityGroup;
+
+  const vRec = ASSUMPTIONS[`ventilation_${act}`] ?? ASSUMPTIONS.ventilation_light;
+  const fRec = ASSUMPTIONS[getEnvKey(envParam)] ?? ASSUMPTIONS.env_outdoors;
   const etaRec = ASSUMPTIONS[`mask_${params.maskType}`] ?? ASSUMPTIONS.mask_none;
-  const vulnKey = params.vulnerability ? `vuln_${params.vulnerability}` : 'vuln_healthy_adult';
-  const wRec = ASSUMPTIONS[vulnKey] ?? ASSUMPTIONS.vuln_healthy_adult;
+  const wRec = ASSUMPTIONS[getVulnKey(vulnParam)] ?? ASSUMPTIONS.vuln_healthy_adult;
 
   return {
     vNom: vRec.value / 1000, vLow: vRec.low / 1000, vHigh: vRec.high / 1000,
@@ -56,11 +74,18 @@ export function calculateRelativeDose(params: ExposureParams): ExposureResult {
     percentageChange = Number((((dose - baselineDose) / baselineDose) * 100).toFixed(1));
   }
 
+  const roundedDose = Number(dose.toFixed(2));
+  const roundedBaseline = Number(baselineDose.toFixed(2));
+  const uRange: readonly [number, number] = [Number(doseLow.toFixed(2)), Number(doseHigh.toFixed(2))];
+
   return {
-    relativeDoseUg: Number(dose.toFixed(2)),
-    baselineDoseUg: Number(baselineDose.toFixed(2)),
+    relativeDoseUg: roundedDose,
+    relativeDose: roundedDose,
+    baselineDoseUg: roundedBaseline,
+    baselineDose: roundedBaseline,
     percentageChange,
-    uncertaintyRangeUg: [Number(doseLow.toFixed(2)), Number(doseHigh.toFixed(2))],
+    uncertaintyRangeUg: uRange,
+    uncertaintyRange: uRange,
     caveat: EXPOSURE_DISCLAIMER,
   };
 }

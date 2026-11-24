@@ -38,7 +38,9 @@ import {
   startMockDeployServer
 } from './helpers/server-harness.mjs';
 
-describe('Tier 1: Feature Coverage (F1-F7)', () => {
+import { registerTier1ApplicationFeatures } from './helpers/tier1-application-features.mjs';
+
+describe('Tier 1: Feature Coverage (M0 Scaffolding F1-F7 & Application Features 1-30)', () => {
 
   // =========================================================================
   // Feature 1: Project Scaffolding & Tooling (F1)
@@ -729,5 +731,10 @@ describe('Tier 1: Feature Coverage (F1-F7)', () => {
     });
 
   });
+
+  // =========================================================================
+  // Application Features 1 through 30 (M1 to M5)
+  // =========================================================================
+  registerTier1ApplicationFeatures();
 
 });

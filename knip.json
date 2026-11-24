@@ -1,0 +1,31 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/**/*.{ts,tsx}!",
+    "api/**/*.{ts,test.ts}!",
+    "server/**/*.{ts,test.ts}!",
+    "shared/**/*.{ts,test.ts}!",
+    "scripts/**/*.{mjs,test.ts}!"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}!",
+    "api/**/*.ts!",
+    "server/**/*.ts!",
+    "shared/**/*.ts!",
+    "scripts/**/*.{mjs,ts}!"
+  ],
+  "ignoreDependencies": [
+    "@testing-library/user-event",
+    "eslint-plugin-react-hooks",
+    "eslint-plugin-react-refresh",
+    "prettier",
+    "vite"
+  ],
+  "ignoreBinaries": [
+    "vite"
+  ],
+  "rules": {
+    "types": "off",
+    "exports": "off"
+  }
+}

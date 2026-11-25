@@ -47,7 +47,7 @@ export function extractJsonPayload(raw: string): unknown {
 
 /** Sends a structured generateContent request to Gemini REST v1beta. */
 async function callModel(model: string, req: AiRequest, signal: AbortSignal, stricter: boolean): Promise<Response> {
-  const apiKey = process.env.GEMINI_API_KEY ?? '';
+  const apiKey = (process.env.GEMINI_API_KEY ?? '').trim();
   const base = process.env.GEMINI_BASE_URL ?? 'https://generativelanguage.googleapis.com';
   const { systemInstruction, responseSchema } = getTaskPromptConfig(req.task);
   return fetch(`${base}/v1beta/models/${model}:generateContent?key=${apiKey}`, {
@@ -154,7 +154,8 @@ export async function generateWithGrounding(req: AiRequest, signal: AbortSignal)
  * @returns Validated task output, provenance, and cacheability hint.
  */
 export async function executeAiTask(request: AiRequest, parentSignal?: AbortSignal): Promise<GenerationOutcome> {
-  if (!process.env.GEMINI_API_KEY) throw new AppError('AI service not configured', 503);
+  const apiKey = process.env.GEMINI_API_KEY?.trim() ?? '';
+  if (!apiKey) throw new AppError('AI service not configured', 503);
   const timeoutSignal = AbortSignal.timeout(API_TIMEOUTS.UPSTREAM_TIMEOUT_MS);
   const signal = parentSignal ? AbortSignal.any([parentSignal, timeoutSignal]) : timeoutSignal;
   return generateWithGrounding(request, signal);

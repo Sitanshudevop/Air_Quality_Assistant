@@ -31,13 +31,18 @@ describe('Gemini Client', () => {
     expect(extractJsonPayload('```json\n{"b":2}\n```')).toEqual({ b: 2 });
   });
 
-  it('throws 503 when GEMINI_API_KEY is unset', async () => {
+  it('throws 503 when GEMINI_API_KEY is unset or whitespace-only', async () => {
     delete process.env.GEMINI_API_KEY;
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
     const req: AiRequest = {
       task: 'indoor-tips',
       context: { aqi: 100, city: 'Delhi', facts: [] },
     };
     await expect(executeAiTask(req)).rejects.toMatchObject({ statusCode: 503 });
+
+    process.env.GEMINI_API_KEY = '   \t ';
+    await expect(executeAiTask(req)).rejects.toMatchObject({ statusCode: 503 });
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it('sends server-held systemInstruction and structured responseSchema', async () => {

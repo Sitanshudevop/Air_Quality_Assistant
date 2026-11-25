@@ -28,21 +28,23 @@ function jsonResponse(data: unknown, status = 200, extraHeaders?: Record<string,
 
 /** Derives client identifier from request headers. */
 function getClientId(request: Request): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    request.headers.get('x-real-ip') ??
-    '127.0.0.1'
-  );
+  const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+  const realIp = request.headers.get('x-real-ip')?.trim();
+  return forwarded || realIp || '127.0.0.1';
 }
 
-/** Sorts object keys deterministically for canonical cache key hashing. */
+/** Recursively sorts object keys deterministically for canonical cache key hashing. */
+function sortValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(sortValue);
+  if (value === null || typeof value !== 'object') return value;
+  const obj = value as Record<string, unknown>;
+  return Object.fromEntries(Object.keys(obj).sort().map((k) => [k, sortValue(obj[k])]));
+}
+
+/** Sorts record keys recursively for canonical cache key hashing. */
 function sortRecord(record?: Record<string, unknown>): Record<string, unknown> {
   if (!record) return {};
-  return Object.fromEntries(
-    Object.keys(record)
-      .sort()
-      .map((key) => [key, record[key]])
-  );
+  return sortValue(record) as Record<string, unknown>;
 }
 
 /** Builds a normalized SHA-256 cache key covering task, context, pollutants, preferences, and userText. */

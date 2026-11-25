@@ -77,19 +77,21 @@ describe('AI Proxy API Endpoint', () => {
     expect(((await res2.json()) as ApiErrorResponse).error).toBe('Invalid request payload');
   });
 
-  it('returns 503 when GEMINI_API_KEY is not configured', async () => {
+  it('returns 503 when GEMINI_API_KEY is unset or whitespace-only', async () => {
     delete process.env.GEMINI_API_KEY;
-    const req = new Request('http://localhost/api/ai', {
-      method: 'POST',
-      body: JSON.stringify({
-        task: 'indoor-tips',
-        context: { aqi: 220, city: 'Delhi', facts: [] },
-      }),
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    const payload = JSON.stringify({
+      task: 'indoor-tips',
+      context: { aqi: 220, city: 'Delhi', facts: [] },
     });
-    const res = await POST(req);
-    expect(res.status).toBe(503);
-    const json = (await res.json()) as ApiErrorResponse;
-    expect(json.error).toBe('AI service not configured');
+    const res1 = await POST(new Request('http://localhost/api/ai', { method: 'POST', body: payload }));
+    expect(res1.status).toBe(503);
+    expect(((await res1.json()) as ApiErrorResponse).error).toBe('AI service not configured');
+
+    process.env.GEMINI_API_KEY = '   ';
+    const res2 = await POST(new Request('http://localhost/api/ai', { method: 'POST', body: payload }));
+    expect(res2.status).toBe(503);
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it('executes valid task and returns 200 with provenance and normalized cache hit', async () => {
@@ -154,6 +156,30 @@ describe('AI Proxy API Endpoint', () => {
     expect(((await res2.json()) as AiResponse).provenance.cached).toBe(false);
   });
 
+  it('canonicalizes nested userPreferences keys so equivalent objects hit cache', async () => {
+    process.env.GEMINI_API_KEY = 'valid-key';
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      mockGeminiJson({ tips: ['Seal gaps'], urgency: 'high' })
+    );
+    const req1 = new Request('http://localhost/api/ai', {
+      method: 'POST',
+      body: JSON.stringify({
+        task: 'indoor-tips',
+        context: { aqi: 240, city: 'Delhi', facts: [], userPreferences: { meta: { a: 1, b: 2 } } },
+      }),
+    });
+    const req2 = new Request('http://localhost/api/ai', {
+      method: 'POST',
+      body: JSON.stringify({
+        task: 'indoor-tips',
+        context: { aqi: 240, city: 'Delhi', facts: [], userPreferences: { meta: { b: 2, a: 1 } } },
+      }),
+    });
+    expect(((await (await POST(req1)).json()) as AiResponse).provenance.cached).toBe(false);
+    expect(((await (await POST(req2)).json()) as AiResponse).provenance.cached).toBe(true);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
   it('does not cache transient rules fallbacks from Gemini errors', async () => {
     process.env.GEMINI_API_KEY = 'valid-key';
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
@@ -204,15 +230,24 @@ describe('AI Proxy API Endpoint', () => {
     expect(((await res2.json()) as AiResponse).provenance.cached).toBe(true);
   });
 
-  it('enforces rate limiting returning 429', async () => {
+  it('enforces rate limiting returning 429 and falls back to x-real-ip when x-forwarded-for is empty', async () => {
     const payload = JSON.stringify({ task: 'indoor-tips', context: { aqi: 100, city: 'Delhi', facts: [] } });
     for (let i = 0; i < 30; i++) defaultRateLimiter.check('10.0.0.1');
     const res = await POST(new Request('http://localhost/api/ai', {
       method: 'POST',
-      headers: { 'x-real-ip': '10.0.0.1' },
+      headers: { 'x-forwarded-for': '', 'x-real-ip': '10.0.0.1' },
       body: payload,
     }));
     expect(res.status).toBe(429);
+
+    process.env.GEMINI_API_KEY = 'valid-key';
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(mockGeminiJson({ tips: ['Stay indoors'], urgency: 'low' }));
+    const distinctRes = await POST(new Request('http://localhost/api/ai', {
+      method: 'POST',
+      headers: { 'x-forwarded-for': '', 'x-real-ip': '10.0.0.2' },
+      body: payload,
+    }));
+    expect(distinctRes.status).toBe(200);
   });
 
   it('returns generic 500 error on unexpected internal failure without secret leakage', async () => {

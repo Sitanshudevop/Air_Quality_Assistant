@@ -20,26 +20,29 @@ const INJECTION_PATTERNS: readonly RegExp[] = [
   /disregard\s+(?:all\s+|previous\s+|prior\s+)*instructions/i,
   /(?:system|developer)\s+prompt/i,
   /gemini_api_key|process\.env|api[_-]?key|secret[_-]?key/i,
-  /\bjailbreak\b|\bdan\s+mode\b|bypass\s+(?:safety|guardrails|rules)/i,
+  /\bjailbreak\b|\bdan\s+mode\b|\bact\s+as\s+dan\b|\bdeveloper\s+mode\b|bypass\s+(?:safety|guardrails|rules)/i,
   /(?:print|reveal|dump|output|repeat)\s+(?:your\s+|the\s+)?(?:system|initial|hidden|secret)\s+(?:prompt|instructions|rules)/i,
+  /\b(?:exact|original|system)\s+(?:instructions|rules)\b/i,
+  /\b(?:TRUSTED_CONTEXT_JSON|UNTRUSTED_USER_TEXT)\b/i,
   /\bsay\s+pwned\b|override\s+(?:system|safety)/i,
 ];
 
 const EMERGENCY_PATTERNS: readonly RegExp[] = [
-  /chest\s+(?:pain|tightness|pressure)/i,
+  /chest\s+(?:pain|tightness|pressure)|\bheart\s+attack\b/i,
   /(?:difficulty|trouble|hard|struggling)\s+breathing/i,
-  /(?:severe\s+)?breathlessness|shortness\s+of\s+breath|can(?:'t|not)\s+breathe/i,
+  /(?:severe\s+)?breathless(?:ness)?|shortness\s+of\s+breath|can(?:'t|not)\s+breathe/i,
   /fainting|unconscious|passed\s+out|blue\s+lips|lips\s+turning\s+blue/i,
   /(?:severe|toddler|infant|child|baby).*wheez|wheezing.*(?:toddler|infant|child|baby|severe)/i,
+  /\b(?:infant|baby|toddler|child)\b.*\b(?:breathless|gasping|blue|unresponsive)\b/i,
   /infant\s+distress/i,
-  /सीने\s+में.*दर्द|सांस\s+लेने\s+में|सांस\s+फूल|बेहोश|नीले\s+होंठ/,
-  /saans\s+lene\s+mein\s+(?:dikkat|takleef|mushkil|pareshani)/i,
+  /(?:सीने|छाती)\s+में.*दर्द|दिल\s+का\s+दौरा|सांस\s+लेने\s+में|सांस\s+फूल|बेहोश|नीले\s+होंठ/,
+  /(?:saans\s+lene\s+mein\s+(?:dikkat|takleef|mushkil|pareshani)|dil\s+ka\s+daura|(?:mere\s+)?(?:seene|chhaati)\s+mein\s+dard)/i,
 ];
 
 const MEDICAL_PATTERNS: readonly RegExp[] = [
   /(?:do\s+i|could\s+i|might\s+i|am\s+i)\s+(?:have\s+)?(?:acute\s+)?asthma/i,
   /\bdiagnos(?:e|is)\b|what\s+disease|is\s+this\s+bronchitis/i,
-  /\b(?:prescri(?:be|ption)|dosage|dose|milligrams?|mg\b|prednisone|steroid|inhaler|nebulizer|antibiotic|medication|medicine|tablet|syrup)\b/i,
+  /\b(?:prescri(?:be|ption)|dosage|dose|milligrams?|mg\b|prednisone|steroid|inhaler|nebulizer|antibiotic|medication|medicine|tablet|syrup|pills?|capsules?|puffs?|drugs?)\b/i,
 ];
 
 const OFF_TOPIC_PATTERNS: readonly RegExp[] = [
@@ -66,24 +69,32 @@ const SAFE_RESPONSES: Record<Exclude<SafetyReasonCode, 'ok' | 'empty'>, ChatResu
   },
 };
 
-/** Normalizes leetspeak and decodes inline base64 payloads for injection detection. */
-function normalizeSecurityText(raw: string): string {
-  const leet = raw
+/** Applies common leetspeak character substitutions for injection detection. */
+function applyLeetspeak(text: string): string {
+  return text
     .toLowerCase()
     .replace(/0/g, 'o')
     .replace(/1/g, 'i')
+    .replace(/!/g, 'i')
     .replace(/3/g, 'e')
     .replace(/4/g, 'a')
     .replace(/5/g, 's')
+    .replace(/\$/g, 's')
     .replace(/7/g, 't')
     .replace(/@/g, 'a');
+}
 
-  const decodedParts: string[] = [raw, leet];
-  const b64Tokens = raw.match(/[A-Za-z0-9+/]{16,}={0,2}/g) ?? [];
+/** Normalizes leetspeak and decodes inline base64 payloads for injection detection. */
+function normalizeSecurityText(raw: string): string {
+  const clean = raw.replace(/[\u200B-\u200D\uFEFF]/g, '');
+  const decodedParts: string[] = [clean, applyLeetspeak(clean)];
+  const b64Tokens = clean.match(/[A-Za-z0-9+/]{8,}={0,2}/g) ?? [];
   for (const token of b64Tokens) {
     try {
       const decoded = Buffer.from(token, 'base64').toString('utf8');
-      if (/^[\x20-\x7E\s]+$/.test(decoded)) decodedParts.push(decoded);
+      if (/^[\x20-\x7E\s]+$/.test(decoded)) {
+        decodedParts.push(decoded, applyLeetspeak(decoded));
+      }
     } catch {
       // Ignore invalid base64 fragments
     }
@@ -91,12 +102,12 @@ function normalizeSecurityText(raw: string): string {
   return decodedParts.join(' ');
 }
 
-/** Detects non-Devanagari gibberish or number-only noise. */
+/** Detects Latin gibberish (including in mixed-script inputs) or number-only noise. */
 function isGibberishInput(trimmed: string): boolean {
-  if (/[\u0900-\u097F]/.test(trimmed)) return false;
+  const hasDevanagari = /[\u0900-\u097F]/.test(trimmed);
   const letters = trimmed.replace(/[^a-zA-Z]/g, '');
-  if (letters.length === 0) return true;
-  if (/(.)\1{4,}/i.test(trimmed)) return true;
+  if (letters.length === 0) return !hasDevanagari;
+  if (/([a-zA-Z])\1{4,}/i.test(trimmed)) return true;
   if (/[bcdfghjklmnpqrstvwxz]{6,}/i.test(letters)) return true;
   const vowels = letters.match(/[aeiouy]/gi)?.length ?? 0;
   return letters.length >= 8 && vowels / letters.length < 0.18;

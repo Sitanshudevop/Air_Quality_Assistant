@@ -54,6 +54,48 @@ describe('Numeric Grounding Verification', () => {
       extraAllowedNumbers: [312, '185'],
       expected: true,
     },
+    {
+      name: 'rejects ungrounded Devanagari numerals in Hindi replies',
+      text: 'दिल्ली में AQI ४५० है और ९९.९% लोग प्रभावित हैं।',
+      facts: ['AQI is 120'],
+      expected: false,
+    },
+    {
+      name: 'matches Devanagari numerals against grounded facts',
+      text: 'दिल्ली में AQI ४५० है और ९९.९% लोग प्रभावित हैं।',
+      facts: ['AQI is 450', 'Affected: 99.9%'],
+      expected: true,
+    },
+    {
+      name: 'rejects quoted or tilde-prefixed negative number sign flips',
+      text: 'Exposure change is "-99%" and ~-99%.',
+      facts: ['Baseline AQI: 99'],
+      expected: false,
+    },
+    {
+      name: 'matches quoted negative percentages when grounded',
+      text: "Exposure change is '-99%' and `-99%`.",
+      facts: ['Exposure delta: -99%'],
+      expected: true,
+    },
+    {
+      name: 'normalizes comma-grouped numbers rather than splitting tokens',
+      text: 'Over 1,500 people hospitalized.',
+      facts: ['Zone 1 AQI: 500'],
+      expected: false,
+    },
+    {
+      name: 'matches comma-grouped numbers across text and facts',
+      text: 'Total 1,500 residents in 1,50,000 zone.',
+      facts: ['Residents: 1500', 'Zone: 1,50,000'],
+      expected: true,
+    },
+    {
+      name: 'strips directly attached units like m3/hr, ug/m3, and µg/m3',
+      text: 'Purifier CADR needed is 200m3/hr with 180ug/m3 and 180µg/m3.',
+      facts: ['Recommended CADR: 200 m3/hr', 'PM2.5: 180'],
+      expected: true,
+    },
   ])('$name', ({ text, facts, extraAllowedNumbers, expected }) => {
     expect(verifyNumericGrounding({ text, facts, extraAllowedNumbers })).toBe(expected);
   });

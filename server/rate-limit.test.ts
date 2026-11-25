@@ -1,4 +1,5 @@
-// Unit tests for sliding-window rate limiter.
+// Unit tests for bounded per-instance sliding-window rate limiter.
+// @vitest-environment node
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SlidingWindowRateLimiter } from './rate-limit.js';
 
@@ -40,10 +41,25 @@ describe('SlidingWindowRateLimiter', () => {
     expect(limiter.check('ip-c').allowed).toBe(true);
   });
 
+  it('bounds client map capacity by sweeping expired entries and evicting oldest active client', () => {
+    vi.useFakeTimers();
+    const limiter = new SlidingWindowRateLimiter(2, 1000, 2);
+    expect(limiter.check('ip-1').allowed).toBe(true);
+    vi.advanceTimersByTime(1100);
+    expect(limiter.check('ip-2').allowed).toBe(true);
+    expect(limiter.check('ip-3').allowed).toBe(true);
+    expect(limiter.clientCount()).toBe(2);
+
+    // Active overflow evicts oldest active key ('ip-2')
+    expect(limiter.check('ip-4').allowed).toBe(true);
+    expect(limiter.clientCount()).toBe(2);
+  });
+
   it('clears all recorded client timestamps on clear()', () => {
     const limiter = new SlidingWindowRateLimiter(1, 5000);
     limiter.check('ip-d');
     limiter.clear();
+    expect(limiter.clientCount()).toBe(0);
     expect(limiter.check('ip-d').allowed).toBe(true);
   });
 });

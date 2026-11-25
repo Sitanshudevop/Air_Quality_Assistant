@@ -35,6 +35,12 @@
   --aqi-severe-bg: #faf5ff;
   --aqi-severe-border: #9333ea;
   --aqi-severe-text: #581c87;
+
+  /* Provenance Badge Tokens - Light Theme */
+  --badge-gemini-bg: #f0f9ff;
+  --badge-gemini-text: #0c4a6e;
+  --badge-rules-bg: #fffbeb;
+  --badge-rules-text: #451a03;
 }
 
 .dark {
@@ -72,4 +78,10 @@
   --aqi-severe-bg: #581c87;
   --aqi-severe-border: #c084fc;
   --aqi-severe-text: #f3e8ff;
+
+  /* Provenance Badge Tokens - Dark Theme */
+  --badge-gemini-bg: #082f49;
+  --badge-gemini-text: #e0f2fe;
+  --badge-rules-bg: #451a03;
+  --badge-rules-text: #fef3c7;
 }

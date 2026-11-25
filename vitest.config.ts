@@ -12,6 +12,7 @@ export default defineConfig({
       'server/**/*.{test,spec}.ts',
       'shared/**/*.{test,spec}.ts',
       'scripts/**/*.{test,spec}.ts',
+      'tests/*.test.ts',
     ],
     exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**'],
     coverage: {

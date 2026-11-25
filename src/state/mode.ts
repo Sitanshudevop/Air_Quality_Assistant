@@ -1,4 +1,6 @@
 // Operating mode state manager governing Live and Demo modes and transitions.
+import { getSnapshot } from '../constants/demo/snapshots.js';
+import type { DemoSnapshot } from '../constants/demo/types.js';
 import { roundCoordinates } from '../services/geolocation.js';
 
 export { roundCoordinates };
@@ -112,4 +114,20 @@ export function onModeChange(handler: (mode: OperatingMode) => void): () => void
   return (): void => {
     modeChangeListeners.delete(handler);
   };
+}
+
+/**
+ * Resolves air quality snapshot synchronously in demo mode without network calls.
+ *
+ * @param params - Mode and optional demo city identifier.
+ * @returns DemoSnapshot in demo mode, or null in live mode.
+ */
+export function getAirQuality(params: {
+  readonly mode: OperatingMode;
+  readonly cityId?: string;
+}): DemoSnapshot | null {
+  if (params.mode === 'demo') {
+    return getSnapshot(params.cityId ?? 'delhi');
+  }
+  return null;
 }

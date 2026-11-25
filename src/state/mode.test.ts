@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   DEFAULT_MODE,
   DEMO_BANNER_TEXT,
+  getAirQuality,
   getDataProvider,
   loadModePreference,
   onModeChange,
@@ -81,5 +82,11 @@ describe('Operating Mode State Manager', () => {
     unsubscribe();
     toggleMode('live');
     expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns demo snapshot in demo mode via getAirQuality without network calls', () => {
+    const snap = getAirQuality({ mode: 'demo', cityId: 'lucknow' });
+    expect(snap?.cityId).toBe('lucknow');
+    expect(getAirQuality({ mode: 'live', cityId: 'delhi' })).toBeNull();
   });
 });

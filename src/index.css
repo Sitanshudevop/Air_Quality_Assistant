@@ -7,3 +7,67 @@
 :root {
   color-scheme: light dark;
 }
+
+.break-words {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@page {
+  margin: 1.5cm;
+}
+
+@media print {
+  html,
+  body,
+  .dark,
+  .dark body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  nav,
+  button,
+  .no-print,
+  [role='tablist'],
+  [role='dialog'] {
+    display: none !important;
+  }
+
+  section,
+  article,
+  .print-card {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-color: #333333 !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-emergency {
+    display: block !important;
+    border: 1px solid #000000 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.8em;
+    word-break: break-all;
+  }
+}

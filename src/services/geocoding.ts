@@ -2,6 +2,7 @@
 import { roundCoordinates } from './geolocation.js';
 import { geocodingResponseSchema, geocodingSchema } from './openMeteo.schemas.js';
 import { createCache } from './cache.js';
+import { fetchJsonWithTimeout } from './http.js';
 import type {
   GeocodingLocation,
   RawGeocodingResponse,
@@ -110,20 +111,14 @@ export async function searchLocations(
   const cached = geocodingCache.get(cacheKey);
   if (cached) return cached;
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), CLIENT_TIMEOUT_MS);
-  const onCallerAbort = (): void => controller.abort();
-  if (signal) signal.addEventListener('abort', onCallerAbort);
-
-  try {
-    const url = buildGeocodingUrl(clean);
-    const res = await fetch(url, { signal: controller.signal });
-    if (!res.ok) throw new Error(`Open-Meteo Geocoding error: HTTP ${res.status}`);
-    const results = parseGeocodingResults((await res.json()) as RawGeocodingResponse);
-    geocodingCache.set(cacheKey, results);
-    return results;
-  } finally {
-    clearTimeout(timeoutId);
-    if (signal) signal.removeEventListener('abort', onCallerAbort);
-  }
+  const url = buildGeocodingUrl(clean);
+  const raw = await fetchJsonWithTimeout<RawGeocodingResponse>(
+    url,
+    CLIENT_TIMEOUT_MS,
+    'Open-Meteo Geocoding error',
+    signal
+  );
+  const results = parseGeocodingResults(raw);
+  geocodingCache.set(cacheKey, results);
+  return results;
 }

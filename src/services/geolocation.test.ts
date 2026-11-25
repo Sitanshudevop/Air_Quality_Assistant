@@ -2,6 +2,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   getCurrentPosition,
+  handleGeolocationDenied,
   roundCoordinates,
   validateCoordinates,
 } from './geolocation.js';
@@ -69,5 +70,15 @@ describe('Geolocation Service', () => {
   it('rejects when navigator.geolocation is unavailable', async () => {
     vi.stubGlobal('navigator', {});
     await expect(getCurrentPosition()).rejects.toThrow('not supported');
+  });
+
+  it('returns city_search fallback on geolocation permission denial', () => {
+    const denied = handleGeolocationDenied({ error: 'PERMISSION_DENIED' });
+    expect(denied.fallbackMode).toBe('city_search');
+    expect(denied.reason).toContain('denied');
+
+    const generic = handleGeolocationDenied({ message: 'Timeout' });
+    expect(generic.fallbackMode).toBe('city_search');
+    expect(generic.reason).toBe('Timeout');
   });
 });

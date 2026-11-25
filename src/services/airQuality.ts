@@ -3,6 +3,7 @@ import { calculateAqi } from '../domain/aqi.js';
 import { roundCoordinates, validateCoordinates } from './geolocation.js';
 import { airQualityResponseSchema, airQualitySchema } from './openMeteo.schemas.js';
 import { createCache, generateCacheKey } from './cache.js';
+import { fetchJsonWithTimeout } from './http.js';
 import type {
   AirQualityData,
   HourlyAirQualityPoint,
@@ -152,20 +153,14 @@ export async function fetchAirQuality(
   const cached = aqCache.get(cacheKey);
   if (cached) return cached;
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), CLIENT_TIMEOUT_MS);
-  const onCallerAbort = (): void => controller.abort();
-  if (signal) signal.addEventListener('abort', onCallerAbort);
-
-  try {
-    const url = buildAirQualityUrl(rounded.lat, rounded.lon);
-    const res = await fetch(url, { signal: controller.signal });
-    if (!res.ok) throw new Error(`Open-Meteo Air Quality error: HTTP ${res.status}`);
-    const data = parseAirQualityResponse(await res.json());
-    aqCache.set(cacheKey, data);
-    return data;
-  } finally {
-    clearTimeout(timeoutId);
-    if (signal) signal.removeEventListener('abort', onCallerAbort);
-  }
+  const url = buildAirQualityUrl(rounded.lat, rounded.lon);
+  const raw = await fetchJsonWithTimeout<unknown>(
+    url,
+    CLIENT_TIMEOUT_MS,
+    'Open-Meteo Air Quality error',
+    signal
+  );
+  const data = parseAirQualityResponse(raw);
+  aqCache.set(cacheKey, data);
+  return data;
 }

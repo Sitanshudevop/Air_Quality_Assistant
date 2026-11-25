@@ -59,3 +59,29 @@ export function getCurrentPosition(
     );
   });
 }
+
+/** Geolocation denial fallback descriptor directing UI to city search. */
+export interface GeolocationFallback {
+  readonly fallbackMode: 'city_search';
+  readonly reason: string;
+}
+
+/**
+ * Resolves a geolocation permission denial or error into a safe city-search fallback state.
+ *
+ * @param err - Optional error or permission status descriptor.
+ * @returns Fallback descriptor with fallbackMode 'city_search'.
+ */
+export function handleGeolocationDenied(err?: {
+  readonly error?: string;
+  readonly code?: number;
+  readonly message?: string;
+}): GeolocationFallback {
+  const isDenied = err?.error === 'PERMISSION_DENIED' || err?.code === 1;
+  return {
+    fallbackMode: 'city_search',
+    reason: isDenied
+      ? 'Location access denied. Please search and select your city manually.'
+      : err?.message ?? 'Unable to determine location. Please use city search.',
+  };
+}

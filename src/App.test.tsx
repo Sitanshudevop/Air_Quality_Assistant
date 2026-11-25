@@ -9,6 +9,7 @@ import { DEMO_BANNER_TEXT } from './state/mode.js';
 describe('App Component', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    window.localStorage.clear();
     document.documentElement.className = '';
   });
 
@@ -108,6 +109,32 @@ describe('App Component', () => {
     const { container } = render(<App />);
     await waitFor(() => screen.getByTestId('ai-status'));
     const results = await axe(container);
-    expect(results.violations).toHaveLength(0);
+    expect(results.violations).toEqual([]);
+  });
+
+  it('switches across M5 feature tabs, demo cities, and Hindi language toggle', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.selectOptions(screen.getByLabelText(/Demo City/i), 'bengaluru');
+    expect(screen.getByRole('heading', { name: 'Bengaluru' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: /Daily Routine/i }));
+    await waitFor(() => expect(screen.getByRole('heading', { name: /Time-Blocked Daily Routine/i })).toBeInTheDocument());
+
+    await user.click(screen.getByRole('tab', { name: /Indoor Hacks/i }));
+    await waitFor(() => expect(screen.getByRole('heading', { name: /Indoor Air Quality Hacks/i })).toBeInTheDocument());
+
+    await user.click(screen.getByRole('tab', { name: /Impact Explainer/i }));
+    await waitFor(() => expect(screen.getByRole('heading', { name: /What If I Choose/i })).toBeInTheDocument());
+
+    await user.click(screen.getByRole('tab', { name: /Assistant/i }));
+    await waitFor(() => expect(screen.getByRole('heading', { name: /Grounded Air Quality Assistant/i })).toBeInTheDocument());
+
+    await user.click(screen.getByRole('tab', { name: /Community Kit/i }));
+    await waitFor(() => expect(screen.getByRole('heading', { name: /Community Smog Action Kit/i })).toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: /Switch language to Hindi/i }));
+    expect(screen.getByRole('heading', { name: /सामुदायिक स्मॉग एक्शन किट/i })).toBeInTheDocument();
   });
 });

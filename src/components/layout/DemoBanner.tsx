@@ -17,12 +17,12 @@ export function DemoBanner({ isDemo }: DemoBannerProps): ReactElement | null {
   if (!isDemo) return null;
 
   return (
-    <aside
+    <div
       role="status"
       aria-label="Demo mode indicator"
       className="w-full bg-amber-400 dark:bg-amber-500 text-neutral-950 font-semibold text-xs py-2 px-4 text-center shadow-sm"
     >
       {DEMO_BANNER_TEXT}
-    </aside>
+    </div>
   );
 }

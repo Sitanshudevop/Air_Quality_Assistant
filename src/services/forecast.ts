@@ -2,6 +2,7 @@
 import { roundCoordinates } from './geolocation.js';
 import { weatherResponseSchema, weatherSchema } from './openMeteo.schemas.js';
 import { createCache, generateCacheKey } from './cache.js';
+import { fetchJsonWithTimeout } from './http.js';
 import type {
   ForecastData,
   HourlyWeatherPoint,
@@ -175,21 +176,14 @@ export async function fetchForecast(
   const cached = forecastCache.get(cacheKey);
   if (cached) return cached;
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), CLIENT_TIMEOUT_MS);
-  const onCallerAbort = (): void => controller.abort();
-  if (signal) signal.addEventListener('abort', onCallerAbort);
-
-  try {
-    const url = buildWeatherUrl(rounded.lat, rounded.lon);
-    const res = await fetch(url, { signal: controller.signal });
-    if (!res.ok) throw new Error(`Open-Meteo Forecast error: HTTP ${res.status}`);
-    const json = (await res.json()) as RawWeatherResponse;
-    const data = buildForecastData(json, rounded.lat, rounded.lon);
-    forecastCache.set(cacheKey, data);
-    return data;
-  } finally {
-    clearTimeout(timeoutId);
-    if (signal) signal.removeEventListener('abort', onCallerAbort);
-  }
+  const url = buildWeatherUrl(rounded.lat, rounded.lon);
+  const json = await fetchJsonWithTimeout<RawWeatherResponse>(
+    url,
+    CLIENT_TIMEOUT_MS,
+    'Open-Meteo Forecast error',
+    signal
+  );
+  const data = buildForecastData(json, rounded.lat, rounded.lon);
+  forecastCache.set(cacheKey, data);
+  return data;
 }

@@ -1,6 +1,9 @@
-// Application header landmark with title, navigation, mode, and theme toggles.
+// Application header landmark with title, navigation, mode, language, print, and theme toggles.
 import type { ReactElement } from 'react';
 import type { OperatingMode } from '../../state/mode.js';
+import { useLanguage } from '../../state/language.js';
+import { LanguageToggle } from '../LanguageToggle.js';
+import { PrintButton } from '../PrintButton.js';
 import { Button } from '../ui/Button.js';
 
 /** Props for AppHeader component. */
@@ -27,6 +30,8 @@ export function AppHeader({
   onOpenTour,
   onOpenProfile,
 }: AppHeaderProps): ReactElement {
+  const { t, language } = useLanguage();
+
   return (
     <header
       role="banner"
@@ -36,8 +41,8 @@ export function AppHeader({
         <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">
           Saans (सांस)
         </h1>
-        <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
-          Urban Air Quality Assistant for North Indian Winter Smog
+        <p lang={language === 'hi' ? 'hi' : undefined} className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
+          {t('app.subtitle')}
         </p>
       </div>
 
@@ -59,6 +64,9 @@ export function AppHeader({
         >
           {isDark ? '☀️ Light' : '🌙 Dark'}
         </Button>
+
+        <LanguageToggle />
+        <PrintButton />
 
         <Button variant="ghost" size="sm" onClick={onOpenTour}>
           Tour

@@ -85,3 +85,27 @@
   --badge-rules-bg: #451a03;
   --badge-rules-text: #fef3c7;
 }
+
+/* Responsive typography and 320px viewport reflow safeguards */
+html {
+  font-size: 16px;
+}
+
+body {
+  font-size: clamp(0.875rem, 0.5vw + 0.75rem, 1rem);
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+h1 {
+  font-size: clamp(1.25rem, 1.5vw + 0.9rem, 1.75rem);
+}
+
+@media (max-width: 640px) {
+  main,
+  section,
+  article {
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+}

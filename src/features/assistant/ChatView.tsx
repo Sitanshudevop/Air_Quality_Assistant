@@ -1,0 +1,124 @@
+// Grounded accessible AI assistant chat view with provenance, suggestions, safety cards, and retry.
+import { useEffect, useRef, useState, type FormEvent, type ReactElement } from 'react';
+import { getAiResponse } from '../../services/ai.js';
+import type { AqiCategory } from '../../domain/types.js';
+import type { ChatResult } from '../../../shared/types.js';
+import { useLanguage } from '../../state/language.js';
+import { Button } from '../../components/ui/Button.js';
+import { ChatMessageBubble } from './ChatMessageBubble.js';
+import {
+  clearChatHistory,
+  detectSafetyResponse,
+  loadChatHistory,
+  PROMPT_SUGGESTIONS,
+  saveChatHistory,
+  type ChatMessage,
+} from './chatUtils.js';
+
+/** Props for ChatView component. */
+export interface ChatViewProps {
+  readonly aqi: number;
+  readonly category: AqiCategory;
+  readonly cityName: string;
+}
+
+async function fetchChatReply(
+  aqi: number,
+  category: AqiCategory,
+  cityName: string,
+  userText: string
+): Promise<ChatMessage> {
+  const res = await getAiResponse({
+    task: 'chat',
+    context: { aqi: Math.round(aqi), city: cityName, facts: [`Current AQI in ${cityName} is ${Math.round(aqi)} (${category}).`] },
+    userText,
+  });
+  const result = res.result as ChatResult;
+  const replyText = result?.reply ?? `Current AQI in ${cityName} is ${Math.round(aqi)} (${category}).`;
+  return {
+    id: `a-${Date.now()}`,
+    role: 'assistant',
+    text: replyText,
+    promptText: userText,
+    provenance: res.provenance,
+    suggestedActions: result?.suggestedActions,
+    isSafetyCard: detectSafetyResponse(userText, replyText),
+  };
+}
+
+/**
+ * Accessible grounded assistant chat interface with debounce guard, safety triage styling, and retry.
+ *
+ * @param props - Active air quality context for grounded responses.
+ * @returns Accessible chat section element.
+ */
+export function ChatView({ aqi, category, cityName }: ChatViewProps): ReactElement {
+  const { t, language } = useLanguage();
+  const [messages, setMessages] = useState<ChatMessage[]>(() => loadChatHistory());
+  const [input, setInput] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [failedPrompt, setFailedPrompt] = useState<string | null>(null);
+  const inFlightRef = useRef<boolean>(false);
+  const endRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (messages.length === 0) clearChatHistory();
+    else saveChatHistory(messages);
+    endRef.current?.scrollIntoView?.({ behavior: 'smooth' });
+  }, [messages]);
+
+  const sendMessage = async (rawText: string): Promise<void> => {
+    const trimmed = rawText.trim();
+    if (!trimmed || inFlightRef.current) return;
+    inFlightRef.current = true;
+    setIsLoading(true);
+    setErrorMsg(null);
+    setFailedPrompt(null);
+    setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: 'user', text: trimmed }]);
+    setInput('');
+    try {
+      const botMsg = await fetchChatReply(aqi, category, cityName, trimmed);
+      setMessages((prev) => [...prev, botMsg]);
+    } catch {
+      setErrorMsg('Unable to send message. Please check your connection and retry.');
+      setFailedPrompt(trimmed);
+    } finally {
+      inFlightRef.current = false;
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <section aria-labelledby="chat-heading" className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 id="chat-heading" lang={language === 'hi' ? 'hi' : undefined} className="text-lg font-bold">{t('assistant.title')}</h2>
+          <p className="text-xs text-neutral-600 dark:text-neutral-400">{t('disclaimer.medical')}</p>
+        </div>
+        <Button size="sm" variant="outline" onClick={() => { setMessages([]); setErrorMsg(null); clearChatHistory(); }}>
+          Clear Chat
+        </Button>
+      </div>
+      <div className="flex flex-wrap gap-2" aria-label="Prompt suggestions">
+        {PROMPT_SUGGESTIONS.map((chip) => <Button key={chip} size="sm" variant="secondary" disabled={isLoading} onClick={() => void sendMessage(chip)}>{chip}</Button>)}
+      </div>
+      <div role="log" aria-live="polite" aria-relevant="additions" aria-busy={isLoading} className="p-4 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 min-h-[220px] max-h-[420px] overflow-y-auto space-y-3">
+        {messages.length === 0 ? <p className="text-xs text-neutral-500 dark:text-neutral-400">Ask a question about today&apos;s air quality in {cityName} or choose a suggestion above.</p> : messages.map((m) => <ChatMessageBubble key={m.id} msg={m} isLoading={isLoading} onRetry={(p) => void sendMessage(p)} onSuggestion={(s) => void sendMessage(s)} />)}
+        {isLoading && <p className="text-xs font-medium text-sky-700 dark:text-sky-300">Thinking...</p>}
+        <div ref={endRef} />
+      </div>
+      {errorMsg && (
+        <div role="alert" className="p-3 rounded-lg border border-rose-400 bg-rose-50 dark:bg-rose-950/50 text-xs text-rose-900 dark:text-rose-100 flex items-center justify-between gap-2">
+          <span>{errorMsg}</span>
+          {failedPrompt && <Button size="sm" variant="outline" onClick={() => void sendMessage(failedPrompt)}>Retry</Button>}
+        </div>
+      )}
+      <form onSubmit={(e: FormEvent<HTMLFormElement>) => { e.preventDefault(); void sendMessage(input); }} className="flex flex-col sm:flex-row gap-2">
+        <label htmlFor="chat-input" className="sr-only">Ask the Saans air quality assistant</label>
+        <input id="chat-input" type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about ventilation, masks, or outdoor safety..." className="flex-1 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+        <Button type="submit" variant="primary" disabled={isLoading || !input.trim()}>{isLoading ? 'Sending...' : 'Send'}</Button>
+      </form>
+    </section>
+  );
+}

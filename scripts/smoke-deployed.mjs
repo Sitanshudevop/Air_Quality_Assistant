@@ -1,12 +1,67 @@
 // Deployment smoke test script validating deployed URL against acceptance criteria.
-const baseUrlArg = process.argv[2];
+const args = process.argv.slice(2);
+const runPrompts = args.includes('--prompts');
+const baseUrlArg = args.find((arg) => !arg.startsWith('-'));
 
 if (!baseUrlArg) {
-  console.error('Usage: node scripts/smoke-deployed.mjs <deployed-url>');
+  console.error('Usage: node scripts/smoke-deployed.mjs <deployed-url> [--prompts]');
   process.exit(1);
 }
 
 const baseUrl = baseUrlArg.replace(/\/+$/, '');
+
+const DIVERSE_PROMPTS = [
+  {
+    label: 'Prompt 1 (narrate-plan Delhi)',
+    payload: {
+      task: 'narrate-plan',
+      context: { aqi: 425, city: 'Delhi', facts: ['AQI: 425', 'PM2.5: 380'] },
+      userText: 'Create a safe daily smog routine for Delhi severe morning.',
+    },
+  },
+  {
+    label: 'Prompt 2 (indoor-tips Lucknow)',
+    payload: {
+      task: 'indoor-tips',
+      context: { aqi: 350, city: 'Lucknow', facts: ['AQI: 350', 'Room: 180 sq ft'] },
+      userText: 'Indoor tips for an asthmatic toddler.',
+    },
+  },
+  {
+    label: 'Prompt 3 (explain-impact Patna)',
+    payload: {
+      task: 'explain-impact',
+      context: { aqi: 280, city: 'Patna', facts: ['AQI: 280', 'Exposure change: -65%'] },
+      userText: 'Compare metro vs two-wheeler commute exposure.',
+    },
+  },
+  {
+    label: 'Prompt 4 (community-message Kanpur)',
+    payload: {
+      task: 'community-message',
+      context: { aqi: 430, city: 'Kanpur', facts: ['AQI: 430', 'Outdoor sports suspended'] },
+      userText: 'Draft a short RWA and school notice for severe smog.',
+    },
+  },
+  {
+    label: 'Prompt 5 (chat Hindi)',
+    payload: {
+      task: 'chat',
+      context: { aqi: 390, city: 'Delhi', facts: ['AQI: 390'] },
+      userText: 'आज दिल्ली में AQI 390 है, घर के अंदर हवा साफ रखने के लिए क्या करें?',
+    },
+  },
+];
+
+/** Extracts flattened non-empty text from a structured AI task result. */
+function extractReplyText(value) {
+  if (typeof value === 'string') return value.trim();
+  if (Array.isArray(value)) return value.map(extractReplyText).filter(Boolean).join(' ');
+  if (value && typeof value === 'object') {
+    return Object.values(value).map(extractReplyText).filter(Boolean).join(' ');
+  }
+  return '';
+}
 
 /**
  * Executes HTTP request with timeout.
@@ -18,6 +73,35 @@ const baseUrl = baseUrlArg.replace(/\/+$/, '');
 async function fetchWithTimeout(url, options = {}) {
   const signal = AbortSignal.timeout(15000);
   return fetch(url, { ...options, signal });
+}
+
+/** Runs 5 diverse live prompt checks asserting non-rule, non-empty, distinct responses. */
+async function runDiversePromptChecks(checks) {
+  const replies = [];
+  for (const item of DIVERSE_PROMPTS) {
+    try {
+      const res = await fetchWithTimeout(`${baseUrl}/api/ai`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item.payload),
+      });
+      const json = await res.json();
+      const text = extractReplyText(json.result);
+      const isGemini = json.provenance?.source === 'gemini';
+      const pass = res.status === 200 && isGemini && text.length > 0;
+      if (pass) replies.push(text.toLowerCase());
+      checks.push({
+        name: `${item.label}: status=${res.status}, source=${json.provenance?.source ?? 'none'}`,
+        pass,
+      });
+    } catch (err) {
+      checks.push({ name: item.label, pass: false, error: err.message });
+    }
+  }
+  checks.push({
+    name: 'All 5 prompt replies are distinct and non-empty',
+    pass: replies.length === DIVERSE_PROMPTS.length && new Set(replies).size === DIVERSE_PROMPTS.length,
+  });
 }
 
 /** Runs deployed smoke tests suite. */
@@ -101,6 +185,10 @@ async function runSmokeTests() {
     });
   } catch (err) {
     checks.push({ name: 'Security headers on root', pass: false, error: err.message });
+  }
+
+  if (runPrompts) {
+    await runDiversePromptChecks(checks);
   }
 
   // Summary

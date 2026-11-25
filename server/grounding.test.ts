@@ -96,6 +96,42 @@ describe('Numeric Grounding Verification', () => {
       facts: ['Recommended CADR: 200 m3/hr', 'PM2.5: 180'],
       expected: true,
     },
+    {
+      name: 'rejects Unicode minus and en-dash negative sign flips against positive facts',
+      text: 'Exposure change is −99% and –99%.',
+      facts: ['Baseline AQI: 99'],
+      expected: false,
+    },
+    {
+      name: 'matches Unicode minus and en-dash negative numbers against negative facts',
+      text: 'Exposure change is −99% and –99%.',
+      facts: ['Exposure delta: -99%'],
+      expected: true,
+    },
+    {
+      name: 'rejects equals and brace prefixed negative sign flips',
+      text: 'Exposure value=-99% and Delta {-99%}.',
+      facts: ['Baseline AQI: 99'],
+      expected: false,
+    },
+    {
+      name: 'matches equals and brace prefixed negative numbers when grounded',
+      text: 'Exposure value=-99% and Delta {-99%}.',
+      facts: ['Exposure delta: -99%'],
+      expected: true,
+    },
+    {
+      name: 'preserves positive numbers in hyphen and en-dash ranges and letter-hyphenated labels',
+      text: 'AQI range 100-200, Wind 10–20 km/h, alert AQI-150.',
+      facts: ['Min: 100', 'Max: 200', 'Wind: 10 to 20', 'Alert: 150'],
+      expected: true,
+    },
+    {
+      name: 'rejects range when only negative endpoint exists in facts',
+      text: 'AQI range 100-200.',
+      facts: ['Min: 100', 'Max: -200'],
+      expected: false,
+    },
   ])('$name', ({ text, facts, extraAllowedNumbers, expected }) => {
     expect(verifyNumericGrounding({ text, facts, extraAllowedNumbers })).toBe(expected);
   });

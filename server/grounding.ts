@@ -9,16 +9,18 @@ export interface GroundingInput {
 
 const IDENTIFIER_PATTERN =
   /(?:\b(?:PM2\.5|PM10|PM1|NO2|SO2|O3|CO2e?|N95|N99|FFP2|FFP3)\b|(?<=\d|\b)m3(?:\/hr)?\b|(?:ug|µg|mg)\/m3\b)/gi;
-const NUMBER_PATTERN = /(?:^|[\s(:,[\]"'`~])(-\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)/g;
+const NUMBER_PATTERN = /(?<![\dA-Za-z])(-\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)/g;
 
-/** Normalizes Devanagari digits [०-९] to ASCII [0-9]. */
-function normalizeDevanagariDigits(text: string): string {
-  return text.replace(/[०-९]/g, (ch) => String(ch.charCodeAt(0) - 0x0966));
+/** Normalizes Devanagari digits [०-९] to ASCII [0-9] and Unicode minus/en-dash signs to '-'. */
+function normalizeNumericText(text: string): string {
+  return text
+    .replace(/[०-९]/g, (ch) => String(ch.charCodeAt(0) - 0x0966))
+    .replace(/\u2212|\u2013(?=\d)/g, '-');
 }
 
 /** Extracts normalized numeric values from text after stripping standard chemical/filter tokens. */
 function extractNumbers(raw: string): number[] {
-  const ascii = normalizeDevanagariDigits(raw).replace(/(\d),(?=(?:\d{2,3},)*\d{3}\b)/g, '$1');
+  const ascii = normalizeNumericText(raw).replace(/(\d),(?=(?:\d{2,3},)*\d{3}\b)/g, '$1');
   const sanitized = ascii.replace(IDENTIFIER_PATTERN, ' ');
   const numbers: number[] = [];
 
@@ -81,7 +83,7 @@ export function verifyNumericGrounding(input: GroundingInput): boolean {
     }
   }
   for (const extra of input.extraAllowedNumbers ?? []) {
-    const parsed = Number(normalizeDevanagariDigits(String(extra)));
+    const parsed = Number(normalizeNumericText(String(extra)));
     if (Number.isFinite(parsed)) {
       allowed.add(parsed);
     }

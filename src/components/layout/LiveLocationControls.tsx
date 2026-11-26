@@ -21,7 +21,7 @@ function ManualAqiForm(props: {
   return (
     <form onSubmit={props.onSubmit} className="flex flex-wrap items-center gap-2 pt-2 border-t border-neutral-200/80 dark:border-neutral-800">
       <label htmlFor="manual-aqi-input" className="font-semibold text-xs text-neutral-700 dark:text-neutral-300">
-        Purifier / App AQI:
+        Purifier/App AQI:
       </label>
       <input
         id="manual-aqi-input"

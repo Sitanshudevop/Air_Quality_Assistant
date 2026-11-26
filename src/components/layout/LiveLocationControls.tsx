@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactElement } from 'react';
 import { debounce, type DebouncedFunction } from '../../services/debounce.js';
 import { getCurrentPosition, handleGeolocationDenied } from '../../services/geolocation.js';
+import { reverseGeocode } from '../../services/geocoding.js';
 import { createManualReading, saveManualReading, type ManualAirQualityData } from '../../services/manualReading.js';
 import type { AirQualityData, ForecastData, GeocodingLocation } from '../../services/openMeteo.types.js';
 import { Button } from '../ui/Button.js';
@@ -123,8 +124,13 @@ export function LiveLocationControls({ onLiveData, onManualReading }: LiveLocati
   };
 
   const handleGeo = async (): Promise<void> => {
-    try { const c = await getCurrentPosition(); await loadCoords(c.lat, c.lon, `${c.lat}, ${c.lon}`); }
-    catch (err) { setStatusMsg(handleGeolocationDenied(err as { error?: string; message?: string }).reason); }
+    try {
+      const c = await getCurrentPosition();
+      const cityLabel = await reverseGeocode(c.lat, c.lon);
+      await loadCoords(c.lat, c.lon, cityLabel);
+    } catch (err) {
+      setStatusMsg(handleGeolocationDenied(err as { error?: string; message?: string }).reason);
+    }
   };
 
   return (

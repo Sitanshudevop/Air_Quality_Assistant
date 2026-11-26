@@ -1,7 +1,8 @@
 // Domain-backed deterministic rule fallbacks for air quality AI tasks.
 import { getAqiCategory } from '../src/domain/aqi.js';
 import { generateRoutine } from '../src/domain/routine.js';
-import { getIndoorRecommendations, getVentilationRecommendation } from '../src/domain/indoor.js';
+import { getIndoorRecommendations } from '../src/domain/indoor.js';
+import { buildSmartChatFallback } from '../src/domain/chatFallback.js';
 import type {
   AllowedTask,
   IndoorTipsResult,
@@ -59,13 +60,8 @@ export function getFallbackIndoorTips(aqi: number): IndoorTipsResult {
  * @param aqi - Optional AQI reading for tailored guidance.
  * @returns Structured chat result.
  */
-export function getFallbackChat(city: string, aqi = 150): ChatResult {
-  const category = getAqiCategory(aqi);
-  const vent = getVentilationRecommendation(aqi);
-  return {
-    reply: `Air quality in ${city} is ${category} (estimated AQI ${aqi}). ${vent.advice}`,
-    suggestedActions: ['Check hourly forecast', 'View indoor air tips', 'Review N95 mask advice'],
-  };
+export function getFallbackChat(city: string, aqi = 150, userText?: string, facts?: readonly string[]): ChatResult {
+  return buildSmartChatFallback({ city, aqi, userText, facts });
 }
 
 /**
@@ -75,17 +71,27 @@ export function getFallbackChat(city: string, aqi = 150): ChatResult {
  * @param aqi - Air Quality Index value.
  * @param city - Target city name.
  * @param context - Optional full task context.
+ * @param userText - Optional user prompt for intent-aware chat fallback.
  * @returns Structured task fallback output.
  */
 export function resolveTaskFallback(
   task: AllowedTask,
   aqi: number,
   city: string,
+  context?: TaskContext & { userText?: string }
+): TaskFallbackResult {
+  if (task === 'indoor-tips') return getFallbackIndoorTips(aqi);
+  if (task === 'chat') return getFallbackChat(city, aqi, context?.userText, context?.facts);
+  return resolveStructuredTaskFallback(task, aqi, city, context);
+}
+
+function resolveStructuredTaskFallback(
+  task: AllowedTask,
+  aqi: number,
+  city: string,
   context?: TaskContext
 ): TaskFallbackResult {
   const category = getAqiCategory(aqi);
-  if (task === 'indoor-tips') return getFallbackIndoorTips(aqi);
-  if (task === 'chat') return getFallbackChat(city, aqi);
 
   if (task === 'narrate-plan') {
     const routine = generateRoutine(category);

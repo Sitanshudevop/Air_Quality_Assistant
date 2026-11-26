@@ -1,5 +1,6 @@
 // Designed empty state card for Live mode when no location has been selected.
 import type { ReactElement } from 'react';
+import { Wind, LocateFixed, Search } from 'lucide-react';
 import { Button } from './Button.js';
 
 /** Props for DataEmptyState component. */
@@ -27,30 +28,32 @@ export function DataEmptyState({
   return (
     <article
       aria-label="No Air Quality Data Selected"
-      className={`p-6 sm:p-8 rounded-2xl border-2 border-dashed border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-center space-y-4 ${className}`.trim()}
+      className={`p-8 rounded-3xl bg-bento-canvas/60 dark:bg-neutral-800/40 text-center space-y-4 ${className}`.trim()}
     >
-      <div className="w-12 h-12 mx-auto rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-2xl" aria-hidden="true">
-        🍃
+      <div className="w-12 h-12 mx-auto rounded-full bg-bento-lavender text-bento-ink flex items-center justify-center" aria-hidden="true">
+        <Wind size={22} />
       </div>
 
       <div className="space-y-1.5 max-w-md mx-auto">
-        <h2 className="text-lg font-bold tracking-tight text-neutral-900 dark:text-neutral-50">
+        <h2 className="text-lg font-bold tracking-tight text-bento-ink dark:text-neutral-50">
           Live Air Quality
         </h2>
-        <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400">
+        <p className="text-xs sm:text-sm text-bento-muted dark:text-neutral-400">
           Choose a city, use your location, or enter a reading to see live air quality
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-        {onFocusSearch && (
-          <Button size="sm" variant="primary" onClick={onFocusSearch}>
-            Search City
+      <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+        {onUseLocation && (
+          <Button size="sm" variant="primary" onClick={onUseLocation}>
+            <LocateFixed size={14} className="mr-1.5 inline" aria-hidden="true" />
+            Use My Location
           </Button>
         )}
-        {onUseLocation && (
-          <Button size="sm" variant="secondary" onClick={onUseLocation}>
-            Use Location
+        {onFocusSearch && (
+          <Button size="sm" variant="secondary" onClick={onFocusSearch}>
+            <Search size={14} className="mr-1.5 inline" aria-hidden="true" />
+            Search City
           </Button>
         )}
         {onManualReading && (
@@ -61,11 +64,11 @@ export function DataEmptyState({
       </div>
 
       {onLaunchDemo && (
-        <div className="pt-2">
+        <div className="pt-1">
           <button
             type="button"
             onClick={onLaunchDemo}
-            className="text-xs font-semibold text-sky-700 dark:text-sky-400 hover:underline focus:outline-none focus:ring-2 focus:ring-sky-500 rounded px-2 py-1"
+            className="text-xs font-semibold text-bento-ink dark:text-sky-400 hover:underline focus:outline-none focus:ring-2 focus:ring-bento-ink/30 rounded px-2 py-1"
           >
             Try the demo
           </button>

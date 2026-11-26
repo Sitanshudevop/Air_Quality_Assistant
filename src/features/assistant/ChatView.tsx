@@ -1,56 +1,24 @@
 // Grounded accessible AI assistant chat view with provenance, suggestions, safety cards, and retry.
 import { useEffect, useRef, useState, type FormEvent, type ReactElement } from 'react';
-import { getAiResponse } from '../../services/ai.js';
-import type { AqiCategory } from '../../domain/types.js';
-import type { ChatResult } from '../../../shared/types.js';
+import type { AqiCategory, VulnerabilityGroup } from '../../domain/types.js';
+import type { HourlyAirQualityPoint } from '../../services/openMeteo.types.js';
+import type { PollutantValues } from '../dashboard/PollutantCard.js';
 import { useLanguage } from '../../state/language.js';
 import { getErrorMessage } from '../../utils/error.js';
 import { logError } from '../../utils/logger.js';
 import { Button } from '../../components/ui/Button.js';
 import { ChatMessageBubble } from './ChatMessageBubble.js';
-import {
-  clearChatHistory,
-  detectSafetyResponse,
-  loadChatHistory,
-  PROMPT_SUGGESTIONS,
-  saveChatHistory,
-  type ChatMessage,
-} from './chatUtils.js';
+import { fetchChatReply } from './chatContext.js';
+import { clearChatHistory, loadChatHistory, PROMPT_SUGGESTIONS, saveChatHistory, type ChatMessage } from './chatUtils.js';
 
 /** Props for ChatView component. */
 export interface ChatViewProps {
   readonly aqi: number;
   readonly category: AqiCategory;
   readonly cityName: string;
-}
-
-interface FetchChatReplyOptions {
-  readonly aqi: number;
-  readonly category: AqiCategory;
-  readonly cityName: string;
-  readonly userText: string;
-  readonly signal: AbortSignal;
-}
-
-async function fetchChatReply(opts: FetchChatReplyOptions): Promise<ChatMessage> {
-  const { aqi, category, cityName, userText, signal } = opts;
-  const res = await getAiResponse({
-    task: 'chat',
-    context: { aqi: Math.round(aqi), city: cityName, facts: [`Current AQI in ${cityName} is ${Math.round(aqi)} (${category}).`] },
-    userText,
-    signal,
-  });
-  const result = res.result as ChatResult;
-  const replyText = result?.reply ?? `Current AQI in ${cityName} is ${Math.round(aqi)} (${category}).`;
-  return {
-    id: `a-${Date.now()}`,
-    role: 'assistant',
-    text: replyText,
-    promptText: userText,
-    provenance: res.provenance,
-    suggestedActions: result?.suggestedActions,
-    isSafetyCard: detectSafetyResponse(userText, replyText),
-  };
+  readonly pollutants?: PollutantValues;
+  readonly hourlyPoints?: readonly HourlyAirQualityPoint[];
+  readonly vulnerability?: VulnerabilityGroup;
 }
 
 function ChatHeader(props: { title: string; disclaimer: string; isHindi: boolean; onClear: () => void }): ReactElement {
@@ -71,7 +39,7 @@ function ChatHeader(props: { title: string; disclaimer: string; isHindi: boolean
  * @param props - Active air quality context for grounded responses.
  * @returns Accessible chat section element.
  */
-export function ChatView({ aqi, category, cityName }: ChatViewProps): ReactElement {
+export function ChatView({ aqi, category, cityName, pollutants, hourlyPoints, vulnerability }: ChatViewProps): ReactElement {
   const { t, language } = useLanguage();
   const [messages, setMessages] = useState<ChatMessage[]>(() => loadChatHistory());
   const [input, setInput] = useState<string>('');
@@ -83,7 +51,6 @@ export function ChatView({ aqi, category, cityName }: ChatViewProps): ReactEleme
   const endRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => () => { abortRef.current?.abort(); }, []);
-
   useEffect(() => {
     if (messages.length === 0) clearChatHistory();
     else saveChatHistory(messages);
@@ -103,7 +70,7 @@ export function ChatView({ aqi, category, cityName }: ChatViewProps): ReactEleme
     setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: 'user', text: trimmed }]);
     setInput('');
     try {
-      const botMsg = await fetchChatReply({ aqi, category, cityName, userText: trimmed, signal: controller.signal });
+      const botMsg = await fetchChatReply({ aqi, category, cityName, userText: trimmed, signal: controller.signal, pollutants, hourlyPoints, vulnerability, history: messages });
       if (!controller.signal.aborted) setMessages((prev) => [...prev, botMsg]);
     } catch (err) {
       if (controller.signal.aborted) return;
@@ -111,10 +78,7 @@ export function ChatView({ aqi, category, cityName }: ChatViewProps): ReactEleme
       setErrorMsg('Unable to send message. Please check your connection and retry.');
       setFailedPrompt(trimmed);
     } finally {
-      if (abortRef.current === controller) {
-        inFlightRef.current = false;
-        setIsLoading(false);
-      }
+      if (abortRef.current === controller) { inFlightRef.current = false; setIsLoading(false); }
     }
   };
 

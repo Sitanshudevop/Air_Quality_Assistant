@@ -35,6 +35,7 @@ export const provenanceSchema = z.object({
   model: z.string().min(1),
   cached: z.boolean(),
   latencyMs: z.number().nonnegative().optional(),
+  reason: z.string().optional(),
 });
 
 /** Output schema for indoor-tips task. */

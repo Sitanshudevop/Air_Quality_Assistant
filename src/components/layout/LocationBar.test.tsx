@@ -89,6 +89,7 @@ describe('LocationBar & LiveLocationControls', () => {
     vi.spyOn(airQuality, 'fetchAirQuality').mockResolvedValue(mockAq);
     vi.spyOn(forecast, 'fetchForecast').mockRejectedValue(new Error('No forecast'));
     vi.spyOn(geolocation, 'getCurrentPosition').mockResolvedValueOnce({ lat: 28.61, lon: 77.21 });
+    vi.spyOn(geocoding, 'reverseGeocode').mockResolvedValueOnce('New Delhi, Delhi');
 
     const onLiveData = vi.fn();
     const user = userEvent.setup();
@@ -116,7 +117,7 @@ describe('LocationBar & LiveLocationControls', () => {
     expect(screen.queryByLabelText(/Purifier\/App AQI/i)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Use My Location/i }));
-    await waitFor(() => expect(onLiveData).toHaveBeenCalledWith(mockAq, null, '28.61, 77.21'));
+    await waitFor(() => expect(onLiveData).toHaveBeenCalledWith(mockAq, null, 'New Delhi, Delhi'));
 
     await user.clear(searchInput);
     await user.type(searchInput, 'Delhi');

@@ -91,11 +91,24 @@ async function parseAndGround(res: Response, req: AiRequest): Promise<unknown> {
   return validated;
 }
 
+function describeFailureReason(err: unknown): string {
+  if (err instanceof UpstreamStatusError) {
+    if (err.status === 401 || err.status === 403) return 'Invalid or restricted GEMINI_API_KEY';
+    if (err.status === 429) return 'Gemini API quota/rate limit reached';
+    if (err.status === 404) return 'Gemini model not found';
+    return `Gemini API HTTP ${err.status}`;
+  }
+  if (err instanceof AppError) return err.message;
+  if (err instanceof GroundingError) return 'Numeric grounding check failed';
+  return 'Gemini network/timeout error';
+}
+
 /** Builds a rules-based fallback response with provenance. */
-function buildRulesResponse(req: AiRequest, start: number, cacheable = false): GenerationOutcome {
+function buildRulesResponse(req: AiRequest, start: number, cacheable = false, reason?: string): GenerationOutcome {
+  const ctx = req.userText ? { ...req.context, userText: req.userText } : req.context;
   return {
-    result: resolveTaskFallback(req.task, req.context.aqi, req.context.city, req.context),
-    provenance: { source: 'rules', model: 'rules-v1', cached: false, latencyMs: Date.now() - start },
+    result: resolveTaskFallback(req.task, req.context.aqi, req.context.city, ctx),
+    provenance: { source: 'rules', model: 'rules-v1', cached: false, latencyMs: Date.now() - start, reason },
     cacheable,
   };
 }
@@ -139,8 +152,14 @@ export async function generateWithGrounding(req: AiRequest, signal: AbortSignal)
         logServerWarn('gemini_retry_triggered', { task: req.task, errorName: (err as Error).name });
         continue;
       }
-      logServerError('gemini_call_failed', { task: req.task, errorName: (err as Error).name });
-      return buildRulesResponse(req, start, cacheableFallback);
+      const reason = describeFailureReason(err);
+      logServerError('gemini_call_failed', {
+        task: req.task,
+        errorName: (err as Error).name,
+        status: err instanceof UpstreamStatusError ? err.status : undefined,
+        reason,
+      });
+      return buildRulesResponse(req, start, cacheableFallback, reason);
     }
   }
   return buildRulesResponse(req, start, false);

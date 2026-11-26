@@ -73,7 +73,7 @@ describe('Phase B Feature Parity Suite', () => {
     // Switch to Live Mode to verify City Search, Location, and Manual Reading
     await user.click(screen.getByRole('button', { name: /Current mode is/i }));
     expect(screen.getByPlaceholderText(/Search city/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Use My Location' })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Use My Location' }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole('button', { name: 'Manual AQI' })).toBeInTheDocument();
   }, 15000);
 });

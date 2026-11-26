@@ -34,7 +34,7 @@ export const RATE_LIMIT_CONFIG = {
 /** Gemini model identifiers. */
 export const GEMINI_MODELS = {
   PRIMARY: 'gemini-2.5-flash',
-  FALLBACK: 'gemini-1.5-flash',
+  FALLBACK: 'gemini-2.0-flash',
 } as const;
 
 /** Maximum allowed payload size in bytes (64 KB). */

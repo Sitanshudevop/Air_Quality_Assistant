@@ -85,7 +85,7 @@ function AppShell(): ReactElement {
         onToggleLang={toggleLanguage} onOpenTour={() => setIsTourOpen(true)} onOpenProfile={() => setIsProfileOpen(true)}
         headerProps={{
           mode, onToggleMode: toggleMode, cityName: conditions.cityName, category: conditions.category,
-          searchQuery: liveState.query, onSearchChange: liveState.onQueryChange,
+          searchQuery: liveState.query, isLocating: liveState.isLocating, onSearchChange: liveState.onQueryChange,
           onSearchSubmit: liveState.onSearchSubmit, onUseLocation: liveState.onGeo, onToggleManual: liveState.onToggleManual,
         }}
       >
@@ -100,7 +100,9 @@ function AppShell(): ReactElement {
           <AppTabPanels
             key={`panel-${profileVer}`} activeTab={activeTab} conditions={conditions} profile={profile}
             domainProfile={domainProfile} routineItems={routineItems}
-            onLaunchDemo={() => setMode('demo')} onFocusSearch={focusSearch} onProfileUpdated={() => setProfileVer((v) => v + 1)}
+            onLaunchDemo={() => setMode('demo')} onFocusSearch={focusSearch}
+            onUseLocation={liveState.onGeo} onManualReading={liveState.onToggleManual}
+            onProfileUpdated={() => setProfileVer((v) => v + 1)}
           />
         </main>
       </BentoShell>

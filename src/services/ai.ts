@@ -1,6 +1,7 @@
 // Client-side AI proxy service with 12s timeout and offline rule-based fallback.
 import { API_TIMEOUTS } from '../constants/index.js';
 import { getAqiCategory } from '../domain/aqi.js';
+import { buildSmartChatFallback } from '../domain/chatFallback.js';
 import { getIndoorRecommendations, getVentilationRecommendation } from '../domain/indoor.js';
 import { generateRoutine } from '../domain/routine.js';
 import { aiResponseSchema } from '../../shared/schemas.js';
@@ -19,7 +20,7 @@ export interface GetAiResponseInput {
 const DEFAULT_CONTEXT: TaskContext = { aqi: 150, city: 'Delhi', facts: [] };
 
 /** Resolves deterministic task result object using pure domain modules. */
-function buildClientFallbackResult(task: AllowedTask, context: TaskContext): unknown {
+function buildClientFallbackResult(task: AllowedTask, context: TaskContext, userText?: string): unknown {
   const category = getAqiCategory(context.aqi);
   const vent = getVentilationRecommendation(context.aqi);
 
@@ -46,18 +47,22 @@ function buildClientFallbackResult(task: AllowedTask, context: TaskContext): unk
       urgency: context.aqi > 200 ? 'high' : 'medium',
     };
   }
-  return {
-    reply: `Air quality in ${context.city} is ${category} (estimated AQI ${context.aqi}). ${vent.advice}`,
-    suggestedActions: ['Check hourly forecast', 'View indoor air tips', 'Review N95 mask guidance'],
-  };
+  return buildSmartChatFallback({ city: context.city, aqi: context.aqi, userText, facts: context.facts });
 }
 
 /** Generates deterministic client-side rule fallback envelope. */
-function buildClientFallback(task: AllowedTask, context: TaskContext, startMs: number): AiResponse {
+function buildClientFallback(opts: {
+  task: AllowedTask;
+  context: TaskContext;
+  startMs: number;
+  userText?: string;
+  reason?: string;
+}): AiResponse {
+  if (opts.reason) console.warn('[Saans AI] Falling back to rule-based mode:', opts.reason);
   return {
-    task,
-    result: buildClientFallbackResult(task, context),
-    provenance: { source: 'rules', model: 'rules-v1', cached: false, latencyMs: Date.now() - startMs },
+    task: opts.task,
+    result: buildClientFallbackResult(opts.task, opts.context, opts.userText),
+    provenance: { source: 'rules', model: 'rules-v1', cached: false, latencyMs: Date.now() - opts.startMs, reason: opts.reason },
   };
 }
 
@@ -108,6 +113,37 @@ export async function checkAiStatus(signal?: AbortSignal): Promise<AiStatusRespo
   }
 }
 
+async function requestProxyAi(input: GetAiResponseInput, context: TaskContext, start: number): Promise<AiResponse> {
+  const { controller, cleanup } = createTimeoutController(input.signal);
+  try {
+    const res = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task: input.task, context, userText: input.userText }),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      setAiCallStatus('rules');
+      return buildClientFallback({ task: input.task, context, startMs: start, userText: input.userText, reason: `API proxy HTTP ${res.status}` });
+    }
+    const parsed = aiResponseSchema.safeParse(await res.json());
+    if (!parsed.success) {
+      setAiCallStatus('rules');
+      return buildClientFallback({ task: input.task, context, startMs: start, userText: input.userText, reason: 'Invalid AI response' });
+    }
+    const isGemini = parsed.data.provenance.source === 'gemini';
+    setAiCallStatus(isGemini ? 'live' : 'rules');
+    if (!isGemini && parsed.data.provenance.reason) console.warn('[Saans AI] Server fallback:', parsed.data.provenance.reason);
+    return parsed.data;
+  } catch (err) {
+    setAiCallStatus('rules');
+    const reason = err instanceof Error ? err.message : 'Network error';
+    return buildClientFallback({ task: input.task, context, startMs: start, userText: input.userText, reason });
+  } finally {
+    cleanup();
+  }
+}
+
 /**
  * Requests an AI-assisted response from the serverless proxy with a 12s timeout and rule fallback.
  *
@@ -120,29 +156,7 @@ export async function getAiResponse(input: GetAiResponseInput): Promise<AiRespon
   const offline = input.isOffline === true || (typeof navigator !== 'undefined' && navigator.onLine === false);
   if (offline) {
     setAiCallStatus('rules');
-    return buildClientFallback(input.task, context, start);
+    return buildClientFallback({ task: input.task, context, startMs: start, userText: input.userText, reason: 'Browser is offline' });
   }
-
-  const { controller, cleanup } = createTimeoutController(input.signal);
-  try {
-    const res = await fetch('/api/ai', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ task: input.task, context, userText: input.userText }),
-      signal: controller.signal,
-    });
-    if (!res.ok) {
-      setAiCallStatus('rules');
-      return buildClientFallback(input.task, context, start);
-    }
-    const parsed = aiResponseSchema.safeParse(await res.json());
-    const isGemini = parsed.success && parsed.data.provenance.source === 'gemini';
-    setAiCallStatus(isGemini ? 'live' : 'rules');
-    return parsed.success ? parsed.data : buildClientFallback(input.task, context, start);
-  } catch {
-    setAiCallStatus('rules');
-    return buildClientFallback(input.task, context, start);
-  } finally {
-    cleanup();
-  }
+  return requestProxyAi(input, context, start);
 }

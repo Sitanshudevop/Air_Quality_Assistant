@@ -48,7 +48,7 @@ describe('TodayDashboard Component', () => {
       screen.getByText('Choose a city, use your location, or enter a reading to see live air quality')
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Search City' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Use Location' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Use My Location' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Enter a Reading' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Try the demo' })).toBeInTheDocument();
 

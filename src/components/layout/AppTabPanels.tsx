@@ -25,6 +25,8 @@ export interface AppTabPanelsProps {
   readonly routineItems: readonly RoutineItem[];
   readonly onLaunchDemo: () => void;
   readonly onFocusSearch: () => void;
+  readonly onUseLocation?: () => void;
+  readonly onManualReading?: () => void;
   readonly onProfileUpdated?: (profile: StoredProfile) => void;
 }
 
@@ -49,6 +51,8 @@ function TodayPanel(p: AppTabPanelsProps): ReactElement {
         vulnerability={p.domainProfile.vulnerability}
         hourlyPoints={conditions.hourlyPoints}
         onFocusSearch={onFocusSearch}
+        onUseLocation={p.onUseLocation}
+        onManualReading={p.onManualReading}
         onLaunchDemo={onLaunchDemo}
         onProfileUpdated={onProfileUpdated}
       />
@@ -101,7 +105,14 @@ function ChatPanel(p: AppTabPanelsProps): ReactElement {
   return (
     <div className="space-y-4">
       <TabHeader breadcrumbCurrent="Assistant" title="AI Air Quality Assistant" subtitle="Ask questions on air pollution, health protection, and emergency precautions" />
-      <ChatView aqi={p.conditions.aqi ?? 0} category={p.conditions.category ?? 'Moderate'} cityName={p.conditions.cityName ?? 'your city'} />
+      <ChatView
+        aqi={p.conditions.aqi ?? 0}
+        category={p.conditions.category ?? 'Moderate'}
+        cityName={p.conditions.cityName ?? 'your city'}
+        pollutants={p.conditions.pollutants}
+        hourlyPoints={p.conditions.hourlyPoints}
+        vulnerability={p.domainProfile.vulnerability}
+      />
     </div>
   );
 }

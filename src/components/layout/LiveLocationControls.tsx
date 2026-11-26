@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactElement } from 'react';
 import { debounce, type DebouncedFunction } from '../../services/debounce.js';
 import { getCurrentPosition, handleGeolocationDenied } from '../../services/geolocation.js';
-import { reverseGeocode } from '../../services/geocoding.js';
 import { createManualReading, saveManualReading, type ManualAirQualityData } from '../../services/manualReading.js';
 import type { AirQualityData, ForecastData, GeocodingLocation } from '../../services/openMeteo.types.js';
 import { Button } from '../ui/Button.js';
@@ -103,13 +102,13 @@ export function LiveLocationControls({ onLiveData, onManualReading }: LiveLocati
     return () => { debounced.cancel(); searchAbortRef.current?.abort(); dataAbortRef.current?.abort(); };
   }, [runSearch]);
 
-  const loadCoords = async (lat: number, lon: number, label: string): Promise<void> => {
+  const loadCoords = async (lat: number, lon: number, label: string, resolveCity = false): Promise<void> => {
     dataAbortRef.current?.abort();
     const controller = new AbortController();
     dataAbortRef.current = controller;
     setStatusMsg('Fetching live air quality...');
     await executeCoordsFetch({
-      lat, lon, label, signal: controller.signal, onLiveData,
+      lat, lon, label, signal: controller.signal, resolveCityFromCoords: resolveCity, onLiveData,
       onSuccess: (msg) => { setStatusMsg(msg); setShowManual(false); },
       onErrorFallback: (msg) => { setStatusMsg(msg); setShowManual(true); },
     });
@@ -126,8 +125,7 @@ export function LiveLocationControls({ onLiveData, onManualReading }: LiveLocati
   const handleGeo = async (): Promise<void> => {
     try {
       const c = await getCurrentPosition();
-      const cityLabel = await reverseGeocode(c.lat, c.lon);
-      await loadCoords(c.lat, c.lon, cityLabel);
+      await loadCoords(c.lat, c.lon, `${c.lat}, ${c.lon}`, true);
     } catch (err) {
       setStatusMsg(handleGeolocationDenied(err as { error?: string; message?: string }).reason);
     }

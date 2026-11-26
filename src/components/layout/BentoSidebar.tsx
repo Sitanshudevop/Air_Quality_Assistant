@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import type { FeatureTabId } from './FeatureTabs.js';
 import { FEATURE_TABS } from './FeatureTabs.js';
+import { SaansLogo } from '../ui/SaansLogo.js';
 
 /** Props for BentoSidebar component. */
 export interface BentoSidebarProps {
@@ -72,9 +73,7 @@ export function BentoSidebar({
       className="hidden lg:flex sticky top-4 h-[calc(100vh-2rem)] self-start flex-col justify-between w-16 bg-white dark:bg-neutral-900 rounded-3xl py-5 shadow-sm shrink-0"
     >
       <div className="flex flex-col items-center gap-1.5">
-        <div className="w-10 h-10 rounded-full bg-bento-ink dark:bg-white text-white dark:text-bento-ink flex items-center justify-center font-bold text-xs mb-3" aria-hidden="true">
-          सां
-        </div>
+        <SaansLogo className="mb-3" />
         {FEATURE_TABS.map((tab) => (
           <NavIcon
             key={tab.id}

@@ -13,8 +13,8 @@ export const AQI_CATEGORIES_HI: Readonly<Record<AqiCategory, string>> = {
 
 /** Primary English UI strings keyed by semantic translation ID. */
 export const ENGLISH_TRANSLATIONS: Readonly<Record<string, string>> = {
-  'app.title': 'Saans (सांस)',
-  'app.subtitle': 'Urban Air Quality Assistant for North Indian Winter Smog',
+  'app.title': 'Saans',
+  'app.subtitle': 'Urban Air Quality Assistant',
   'nav.today': 'Today',
   'nav.routine': 'Daily Routine',
   'nav.indoor': 'Indoor Hacks',

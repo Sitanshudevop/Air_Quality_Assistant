@@ -1,7 +1,7 @@
 // Async search, air quality fetch, and AbortController helpers for live location controls.
 import { fetchAirQuality } from '../../services/airQuality.js';
 import { fetchForecast } from '../../services/forecast.js';
-import { searchLocations } from '../../services/geocoding.js';
+import { reverseGeocode, searchLocations } from '../../services/geocoding.js';
 import type { AirQualityData, ForecastData, GeocodingLocation } from '../../services/openMeteo.types.js';
 import { getErrorMessage } from '../../utils/error.js';
 import { logError } from '../../utils/logger.js';
@@ -45,18 +45,21 @@ export async function executeCoordsFetch(opts: {
   lon: number;
   label: string;
   signal: AbortSignal;
+  resolveCityFromCoords?: boolean;
   onLiveData: (aq: AirQualityData, fc: ForecastData | null, label: string) => void;
   onSuccess: (msg: string) => void;
   onErrorFallback: (msg: string) => void;
 }): Promise<void> {
   try {
-    const [aq, fc] = await Promise.all([
+    const [aq, fc, resolvedLabel] = await Promise.all([
       fetchAirQuality(opts.lat, opts.lon, opts.signal),
       fetchForecast(opts.lat, opts.lon, opts.signal).catch(() => null),
+      opts.resolveCityFromCoords ? reverseGeocode(opts.lat, opts.lon, opts.signal) : Promise.resolve(opts.label),
     ]);
     if (opts.signal.aborted) return;
-    opts.onLiveData(aq, fc, opts.label);
-    opts.onSuccess(`Live data loaded for ${opts.label}`);
+    const cityLabel = resolvedLabel || opts.label;
+    opts.onLiveData(aq, fc, cityLabel);
+    opts.onSuccess(`Live data loaded for ${cityLabel}`);
   } catch (err) {
     if (isAbortError(err, opts.signal)) return;
     logError('Live Open-Meteo fetch failed', { action: 'loadCoords', error: getErrorMessage(err) });

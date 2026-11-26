@@ -132,19 +132,44 @@ export async function searchLocations(
  * @param signal - Optional AbortSignal.
  * @returns Resolved city name or rounded coordinate fallback.
  */
+async function tryBigDataCloud(lat: number, lon: number, signal?: AbortSignal): Promise<string> {
+  try {
+    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
+    const data = await fetchJsonWithTimeout<{ city?: string; locality?: string; principalSubdivision?: string }>(
+      url, API_TIMEOUTS.OPEN_METEO_TIMEOUT_MS, 'BigDataCloud reverse geocoding error', signal,
+    );
+    return (data.city || data.locality || data.principalSubdivision || '').trim();
+  } catch {
+    return '';
+  }
+}
+
+async function tryNominatim(lat: number, lon: number, signal?: AbortSignal): Promise<string> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`;
+    const data = await fetchJsonWithTimeout<{ address?: Record<string, string | undefined> }>(
+      url, API_TIMEOUTS.OPEN_METEO_TIMEOUT_MS, 'Nominatim reverse geocoding error', signal,
+    );
+    const a = data.address ?? {};
+    return (a.city || a.town || a.county || a.state_district || a.state || '').trim();
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Reverse-geocodes rounded coordinates to a human-readable city/locality name.
+ * Tries BigDataCloud first, then OpenStreetMap Nominatim, falling back to coordinates if offline.
+ *
+ * @param lat - Latitude in decimal degrees.
+ * @param lon - Longitude in decimal degrees.
+ * @param signal - Optional AbortSignal.
+ * @returns Resolved city/district name or rounded coordinate fallback.
+ */
 export async function reverseGeocode(lat: number, lon: number, signal?: AbortSignal): Promise<string> {
   const r = roundCoordinates(lat, lon);
-  const fallback = `${r.lat}, ${r.lon}`;
-  try {
-    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${r.lat}&longitude=${r.lon}&localityLanguage=en`;
-    const data = await fetchJsonWithTimeout<{ city?: string; locality?: string; principalSubdivision?: string }>(
-      url, API_TIMEOUTS.OPEN_METEO_TIMEOUT_MS, 'Reverse geocoding error', signal,
-    );
-    const primary = (data.city || data.locality || data.principalSubdivision || '').trim();
-    if (!primary) return fallback;
-    const sub = (data.principalSubdivision || '').trim();
-    return sub && sub.toLowerCase() !== primary.toLowerCase() ? `${primary}, ${sub}` : primary;
-  } catch {
-    return fallback;
-  }
+  const primary = await tryBigDataCloud(r.lat, r.lon, signal);
+  if (primary) return primary;
+  const secondary = await tryNominatim(r.lat, r.lon, signal);
+  return secondary || `${r.lat}, ${r.lon}`;
 }

@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { debounce, type DebouncedFunction } from '../../services/debounce.js';
 import { getCurrentPosition, handleGeolocationDenied } from '../../services/geolocation.js';
-import { reverseGeocode } from '../../services/geocoding.js';
 import { createManualReading, saveManualReading, type ManualAirQualityData } from '../../services/manualReading.js';
 import type { AirQualityData, ForecastData, GeocodingLocation } from '../../services/openMeteo.types.js';
 import { executeCoordsFetch, executeLocationSearch } from './liveLocationHelpers.js';
@@ -59,17 +58,17 @@ function useCoordsLoader(opts: {
   setStatusMsg: (m: string) => void;
   setResults: (r: GeocodingLocation[]) => void;
   setShowManual: (v: boolean) => void;
-}): (lat: number, lon: number, label: string) => Promise<void> {
+}): (lat: number, lon: number, label: string, resolveCity?: boolean) => Promise<void> {
   const dataAbortRef = useRef<AbortController | null>(null);
   useEffect(() => () => { dataAbortRef.current?.abort(); }, []);
-  return async (lat: number, lon: number, label: string): Promise<void> => {
+  return async (lat: number, lon: number, label: string, resolveCity = false): Promise<void> => {
     dataAbortRef.current?.abort();
     const c = new AbortController();
     dataAbortRef.current = c;
     opts.onSwitchToLive?.();
-    opts.setStatusMsg(`Fetching live air quality for ${label}...`);
+    opts.setStatusMsg(resolveCity ? 'Fetching live air quality for your location...' : `Fetching live air quality for ${label}...`);
     await executeCoordsFetch({
-      lat, lon, label, signal: c.signal, onLiveData: opts.onLiveData,
+      lat, lon, label, signal: c.signal, resolveCityFromCoords: resolveCity, onLiveData: opts.onLiveData,
       onSuccess: (msg) => { opts.setStatusMsg(msg); opts.setResults([]); opts.setShowManual(false); },
       onErrorFallback: (msg) => { opts.setStatusMsg(msg); opts.setShowManual(true); },
     });
@@ -101,7 +100,7 @@ export function useLiveLocation(opts: {
     setIsLocating(true);
     try {
       const c = await getCurrentPosition();
-      await loadCoords(c.lat, c.lon, await reverseGeocode(c.lat, c.lon));
+      await loadCoords(c.lat, c.lon, `${c.lat}, ${c.lon}`, true);
     } catch (e) {
       setStatusMsg(handleGeolocationDenied(e as { error?: string; message?: string }).reason);
     } finally {

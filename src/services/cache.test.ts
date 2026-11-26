@@ -68,6 +68,24 @@ describe('Dual-Tier Cache Manager', () => {
     window.sessionStorage.setItem(prefix + 'badJson', '{not valid json');
     const cache = createCache<string>({ ttlMs: 10000, prefix });
     expect(cache.get('badJson')).toBeNull();
+    expect(window.sessionStorage.getItem(prefix + 'badJson')).toBeNull();
+  });
+
+  it('deletes schema-invalid envelopes from sessionStorage and returns null', () => {
+    const prefix = 'aq_invalid_env_';
+    window.sessionStorage.setItem(
+      prefix + 'nullVal',
+      JSON.stringify({ value: null, expiresAt: Date.now() + 5000, cachedAt: Date.now() })
+    );
+    window.sessionStorage.setItem(
+      prefix + 'badExp',
+      JSON.stringify({ value: 'ok', expiresAt: 'bad', cachedAt: 1 })
+    );
+    const cache = createCache<string>({ ttlMs: 10000, prefix });
+    expect(cache.get('nullVal')).toBeNull();
+    expect(window.sessionStorage.getItem(prefix + 'nullVal')).toBeNull();
+    expect(cache.get('badExp')).toBeNull();
+    expect(window.sessionStorage.getItem(prefix + 'badExp')).toBeNull();
   });
 
   it('deletes entries from both memory and sessionStorage', () => {

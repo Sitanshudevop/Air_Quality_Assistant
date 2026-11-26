@@ -26,7 +26,10 @@ describe('CommunityKitView & Notice Sanitization', () => {
     expect(screen.getAllByText(/Issue immediate emergency circular/i).length).toBeGreaterThanOrEqual(1);
 
     const user = userEvent.setup();
+    const societyInput = screen.getByLabelText(/Society \/ School Name/i);
+    expect(societyInput).toHaveAttribute('maxLength', '100');
     const phoneInput = screen.getByLabelText(/Emergency Contact Phone/i);
+    expect(phoneInput).toHaveAttribute('maxLength', '20');
     await user.clear(phoneInput);
     await user.type(phoneInput, 'invalid!!');
     expect(screen.getByRole('alert')).toHaveTextContent(/valid 6–20 digit/i);

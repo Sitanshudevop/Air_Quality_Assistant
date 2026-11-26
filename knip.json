@@ -15,7 +15,6 @@
     "scripts/**/*.{mjs,ts}!"
   ],
   "ignoreDependencies": [
-    "@testing-library/user-event",
     "eslint-plugin-react-hooks",
     "eslint-plugin-react-refresh",
     "prettier",

@@ -1,6 +1,7 @@
 // Open-Meteo Weather Forecast API client with atmospheric mixing factors analysis.
+import { API_TIMEOUTS, CACHE_CONFIG } from '../constants/index.js';
 import { roundCoordinates } from './geolocation.js';
-import { weatherResponseSchema, weatherSchema } from './openMeteo.schemas.js';
+import { weatherResponseSchema } from './openMeteo.schemas.js';
 import { createCache, generateCacheKey } from './cache.js';
 import { fetchJsonWithTimeout } from './http.js';
 import type {
@@ -10,11 +11,10 @@ import type {
   WeatherFactors,
 } from './openMeteo.types.js';
 
-export { weatherSchema };
+export { weatherResponseSchema as weatherSchema };
 
 const WEATHER_BASE_URL = 'https://api.open-meteo.com/v1/forecast';
-const CLIENT_TIMEOUT_MS = 6000;
-const forecastCache = createCache<ForecastData>({ ttlMs: 10 * 60 * 1000, prefix: 'fc_' });
+const forecastCache = createCache<ForecastData>({ ttlMs: CACHE_CONFIG.TTL_MS, prefix: 'fc_' });
 
 /** Builds Open-Meteo Weather Forecast URL with mixing parameters. */
 export function buildWeatherUrl(lat: number, lon: number): string {
@@ -179,7 +179,7 @@ export async function fetchForecast(
   const url = buildWeatherUrl(rounded.lat, rounded.lon);
   const json = await fetchJsonWithTimeout<RawWeatherResponse>(
     url,
-    CLIENT_TIMEOUT_MS,
+    API_TIMEOUTS.OPEN_METEO_TIMEOUT_MS,
     'Open-Meteo Forecast error',
     signal
   );

@@ -19,7 +19,8 @@
     "test:e2e": "node tests/e2e/runner.mjs",
     "knip": "knip",
     "jscpd": "jscpd src api server shared",
-    "madge": "madge --circular src api server shared",
+    "madge": "madge --circular --extensions ts,tsx src api server shared",
+    "check:bundle-budget": "node scripts/check-bundle-budget.mjs",
     "check:no-client-secrets": "node scripts/check-no-client-secrets.mjs",
     "smoke:deployed": "node scripts/smoke-deployed.mjs"
   },

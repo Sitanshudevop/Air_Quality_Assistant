@@ -19,10 +19,12 @@ describe('Application Constants', () => {
     expect(API_TIMEOUTS.UPSTREAM_TIMEOUT_MS).toBe(8000);
     expect(API_TIMEOUTS.OVERALL_DEADLINE_MS).toBe(9000);
     expect(API_TIMEOUTS.CLIENT_TIMEOUT_MS).toBe(12000);
+    expect(API_TIMEOUTS.OPEN_METEO_TIMEOUT_MS).toBe(6000);
   });
 
   it('defines cache and rate limit parameters', () => {
     expect(CACHE_CONFIG.TTL_MS).toBe(600000);
+    expect(CACHE_CONFIG.GEOCODING_TTL_MS).toBe(1800000);
     expect(RATE_LIMIT_CONFIG.MAX_REQUESTS_PER_WINDOW).toBe(30);
   });
 

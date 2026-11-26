@@ -79,4 +79,26 @@ describe('User Profile Storage and Versioning', () => {
     expect(window.localStorage.getItem(PROFILE_STORAGE_KEY)).toBeNull();
     expect(window.sessionStorage.getItem('temp_data')).toBeNull();
   });
+
+  it('rejects profileSchema .max() violations on bounded fields', () => {
+    expect(profileSchema.safeParse({ cityName: 'a'.repeat(101) }).success).toBe(false);
+    expect(profileSchema.safeParse({ version: 101 }).success).toBe(false);
+    expect(profileSchema.safeParse({ commuteDistanceKm: 101 }).success).toBe(false);
+    expect(profileSchema.safeParse({ householdMembers: 21 }).success).toBe(false);
+    expect(
+      profileSchema.safeParse({
+        vulnerabilities: Array.from({ length: 11 }, (_, i) => `v${i}`),
+      }).success
+    ).toBe(false);
+  });
+
+  it('clears tampered or schema-invalid localStorage entries and returns DEFAULT_PROFILE', () => {
+    const tamperedPayloads = ['{bad', '{"cityName":123}', '{"vulnerabilities":"bad"}'];
+    for (const payload of tamperedPayloads) {
+      clearProfile();
+      window.localStorage.setItem(PROFILE_STORAGE_KEY, payload);
+      expect(getProfile()).toEqual(DEFAULT_PROFILE);
+      expect(window.localStorage.getItem(PROFILE_STORAGE_KEY)).toBeNull();
+    }
+  });
 });

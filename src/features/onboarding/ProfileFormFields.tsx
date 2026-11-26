@@ -67,6 +67,7 @@ export function ProfileFormFields({ formData, onChange }: ProfileFormFieldsProps
         <input
           id="field-city"
           type="text"
+          maxLength={100}
           value={formData.cityName}
           onChange={(e) => onChange('cityName', e.target.value)}
           className={inputClass}

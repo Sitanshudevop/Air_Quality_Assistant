@@ -59,7 +59,9 @@ describe('LocationBar & LiveLocationControls', () => {
       />
     );
 
-    await user.type(screen.getByLabelText(/Search city/i), 'Kanpur');
+    const searchInput = screen.getByLabelText(/Search city/i);
+    expect(searchInput).toHaveAttribute('maxLength', '100');
+    await user.type(searchInput, 'Kanpur');
     await user.click(screen.getByRole('button', { name: 'Search' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'Kanpur, UP, India' })).toBeInTheDocument());
 

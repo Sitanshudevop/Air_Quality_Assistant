@@ -70,9 +70,11 @@ describe('Layout Components', () => {
   });
 
   describe('AppFooter', () => {
-    it('renders citations and health disclaimer', () => {
+    it('renders citations, privacy notice, and health disclaimer', () => {
       render(<AppFooter />);
       expect(screen.getByRole('contentinfo')).toBeInTheDocument();
+      expect(screen.getByText(/Privacy:/i)).toBeInTheDocument();
+      expect(screen.getByText(/rounded to 2 decimals/i)).toBeInTheDocument();
       expect(screen.getByText(/Disclaimer:/i)).toBeInTheDocument();
     });
 

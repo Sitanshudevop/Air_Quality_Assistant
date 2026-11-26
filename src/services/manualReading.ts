@@ -1,6 +1,23 @@
 // Manual reading ingestion and inverse CPCB pollutant estimation fallback.
+import { z } from 'zod';
 import { calculateAqi } from '../domain/aqi.js';
 import type { AqiCategory } from '../domain/types.js';
+import { getErrorMessage } from '../utils/error.js';
+import { logError } from '../utils/logger.js';
+
+const MANUAL_READING_KEY = 'saans_manual_reading';
+
+/** Zod schema validating persisted manual AQI reading in sessionStorage. */
+export const manualReadingSchema = z.object({
+  aqi: z.number().finite().min(0).max(500),
+  pm25: z.number().finite().min(0),
+  category: z.enum(['Good', 'Satisfactory', 'Moderate', 'Poor', 'Very Poor', 'Severe']),
+  source: z.literal('user-entered reading'),
+  sourceLabel: z.literal('user-entered reading'),
+  isEstimate: z.literal(true),
+  enteredAt: z.string().min(1).max(40),
+  cityName: z.string().trim().min(1).max(100),
+});
 
 export interface ManualReadingInput {
   readonly aqi?: number | string;
@@ -60,6 +77,11 @@ function parseSafeAqi(raw: unknown): number {
   return Math.min(500, Math.round(num));
 }
 
+function formatCityName(cityName?: string): string {
+  const trimmed = typeof cityName === 'string' ? cityName.trim().slice(0, 100) : '';
+  return trimmed || 'Custom Location';
+}
+
 /**
  * Creates a verified manual air quality reading from purifier or app AQI.
  *
@@ -69,7 +91,7 @@ function parseSafeAqi(raw: unknown): number {
 export function createManualReading(input: ManualReadingInput): ManualAirQualityData {
   if (input.pm25 !== undefined && input.aqi === undefined) {
     const rawPm25 = typeof input.pm25 === 'number' ? input.pm25 : Number(input.pm25);
-    return createManualReadingFromPm25(Number.isNaN(rawPm25) ? 0 : rawPm25, input.cityName);
+    return createManualReadingFromPm25(Number.isFinite(rawPm25) ? rawPm25 : 0, input.cityName);
   }
 
   const safeAqi = parseSafeAqi(input.aqi);
@@ -83,7 +105,7 @@ export function createManualReading(input: ManualReadingInput): ManualAirQuality
     sourceLabel: 'user-entered reading',
     isEstimate: true,
     enteredAt: new Date().toISOString(),
-    cityName: input.cityName ?? 'Custom Location',
+    cityName: formatCityName(input.cityName),
   };
 }
 
@@ -98,7 +120,7 @@ export function createManualReadingFromPm25(
   pm25: number,
   cityName?: string
 ): ManualAirQualityData {
-  const safePm25 = Math.max(0, Number.isNaN(pm25) ? 0 : pm25);
+  const safePm25 = Math.max(0, Number.isFinite(pm25) ? pm25 : 0);
   const aqiResult = calculateAqi(safePm25);
 
   return {
@@ -109,7 +131,7 @@ export function createManualReadingFromPm25(
     sourceLabel: 'user-entered reading',
     isEstimate: true,
     enteredAt: new Date().toISOString(),
-    cityName: cityName ?? 'Custom Location',
+    cityName: formatCityName(cityName),
   };
 }
 
@@ -122,10 +144,13 @@ export function saveManualReading(reading: ManualAirQualityData): void {
   manualStore = reading;
   try {
     if (typeof window !== 'undefined' && window.sessionStorage) {
-      window.sessionStorage.setItem('saans_manual_reading', JSON.stringify(reading));
+      window.sessionStorage.setItem(MANUAL_READING_KEY, JSON.stringify(reading));
     }
-  } catch {
-    // ignore
+  } catch (err) {
+    logError('Failed saving manual reading to sessionStorage', {
+      action: 'saveManualReading',
+      error: getErrorMessage(err),
+    });
   }
 }
 
@@ -136,15 +161,32 @@ export function saveManualReading(reading: ManualAirQualityData): void {
  */
 export function getManualReading(): ManualAirQualityData | null {
   if (manualStore) return manualStore;
+  if (typeof window === 'undefined' || !window.sessionStorage) return null;
   try {
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      const raw = window.sessionStorage.getItem('saans_manual_reading');
-      if (raw) return JSON.parse(raw) as ManualAirQualityData;
+    const raw = window.sessionStorage.getItem(MANUAL_READING_KEY);
+    if (!raw) return null;
+    const parsed = manualReadingSchema.safeParse(JSON.parse(raw));
+    if (!parsed.success) {
+      logError('Invalid manual reading cleared from sessionStorage', {
+        action: 'getManualReading',
+        error: parsed.error.message,
+      });
+      window.sessionStorage.removeItem(MANUAL_READING_KEY);
+      return null;
     }
-  } catch {
-    // ignore
+    return parsed.data;
+  } catch (err) {
+    logError('Failed parsing manual reading from sessionStorage', {
+      action: 'getManualReading',
+      error: getErrorMessage(err),
+    });
+    try {
+      window.sessionStorage.removeItem(MANUAL_READING_KEY);
+    } catch {
+      // ignore
+    }
+    return null;
   }
-  return null;
 }
 
 /**
@@ -154,9 +196,12 @@ export function clearManualReading(): void {
   manualStore = null;
   try {
     if (typeof window !== 'undefined' && window.sessionStorage) {
-      window.sessionStorage.removeItem('saans_manual_reading');
+      window.sessionStorage.removeItem(MANUAL_READING_KEY);
     }
-  } catch {
-    // ignore
+  } catch (err) {
+    logError('Failed clearing manual reading from sessionStorage', {
+      action: 'clearManualReading',
+      error: getErrorMessage(err),
+    });
   }
 }

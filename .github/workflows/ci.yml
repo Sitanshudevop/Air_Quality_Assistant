@@ -42,6 +42,9 @@ jobs:
       - name: Client Secret Leak Audit
         run: npm run check:no-client-secrets
 
+      - name: Initial JS Bundle Budget Gate
+        run: npm run check:bundle-budget
+
       - name: Knip Dead Code Audit
         run: npm run knip
 

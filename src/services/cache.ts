@@ -1,12 +1,16 @@
 // Dual-tier in-memory and sessionStorage cache with TTL and quota resilience.
-import type {
-  CacheEntry,
-  StorageEnvelope,
-  CacheOptions,
-  CacheInstance,
+import { CACHE_CONFIG } from '../constants/index.js';
+import { getErrorMessage } from '../utils/error.js';
+import { logError } from '../utils/logger.js';
+import {
+  storageEnvelopeSchema,
+  type CacheEntry,
+  type StorageEnvelope,
+  type CacheOptions,
+  type CacheInstance,
 } from './cache.types.js';
 
-const DEFAULT_TTL_MS = 10 * 60 * 1000;
+const DEFAULT_TTL_MS = CACHE_CONFIG.TTL_MS;
 const DEFAULT_PREFIX = 'aq_';
 
 /**
@@ -54,13 +58,23 @@ function readSessionStorage<T>(fullKey: string): T | null {
   try {
     const raw = window.sessionStorage.getItem(fullKey);
     if (!raw) return null;
-    const envelope = JSON.parse(raw) as StorageEnvelope<T>;
-    if (Date.now() >= envelope.expiresAt) {
+    const parsed = storageEnvelopeSchema.safeParse(JSON.parse(raw));
+    if (!parsed.success || Date.now() >= parsed.data.expiresAt) {
+      if (!parsed.success) {
+        logError('Invalid cache envelope removed from sessionStorage', {
+          action: 'readSessionStorage',
+          error: parsed.error.message,
+        });
+      }
       window.sessionStorage.removeItem(fullKey);
       return null;
     }
-    return envelope.value;
-  } catch {
+    return parsed.data.value as T;
+  } catch (err) {
+    logError('Failed to parse cache entry from sessionStorage', {
+      action: 'readSessionStorage',
+      error: getErrorMessage(err),
+    });
     try { window.sessionStorage.removeItem(fullKey); } catch { /* ignore */ }
     return null;
   }
@@ -78,8 +92,11 @@ function writeSessionStorage<T>(
 ): void {
   try {
     window.sessionStorage.setItem(fullKey, JSON.stringify(envelope));
-  } catch {
-    // Quota exceeded or security error: degrade to in-memory gracefully.
+  } catch (err) {
+    logError('Failed writing cache entry to sessionStorage', {
+      action: 'writeSessionStorage',
+      error: getErrorMessage(err),
+    });
   }
 }
 

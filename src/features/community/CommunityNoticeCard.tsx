@@ -42,11 +42,11 @@ function NoticeInputs(props: {
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
       <div>
         <label htmlFor="community-society" className="block font-semibold mb-1">Society / School Name</label>
-        <input id="community-society" type="text" value={props.society} onChange={(e) => props.onSociety(e.target.value)} className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-xs" />
+        <input id="community-society" type="text" maxLength={100} value={props.society} onChange={(e) => props.onSociety(e.target.value)} className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-xs" />
       </div>
       <div>
         <label htmlFor="community-phone" className="block font-semibold mb-1">Emergency Contact Phone</label>
-        <input id="community-phone" type="tel" value={props.phone} onChange={(e) => props.onPhone(e.target.value)} aria-invalid={!props.phoneValid} className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-xs" />
+        <input id="community-phone" type="tel" maxLength={20} value={props.phone} onChange={(e) => props.onPhone(e.target.value)} aria-invalid={!props.phoneValid} className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-xs" />
         {!props.phoneValid && (
           <p role="alert" className="text-[11px] text-rose-700 dark:text-rose-300 mt-1">
             Enter a valid 6–20 digit phone number (using 112 fallback).

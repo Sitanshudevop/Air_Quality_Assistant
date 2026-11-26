@@ -35,9 +35,6 @@ export const airQualityResponseSchema = z.object({
   hourly: airQualityHourlySchema,
 });
 
-/** Alias for Air Quality schema expected by test probes. */
-export const airQualitySchema = airQualityResponseSchema;
-
 /** Schema for hourly weather readings from Open-Meteo Forecast API. */
 export const weatherHourlySchema = z.object({
   time: z.array(z.string()),
@@ -73,9 +70,6 @@ export const weatherResponseSchema = z.union([
     surfacePressure: z.number().optional(),
   }),
 ]);
-
-/** Alias for Weather schema expected by test probes. */
-export const weatherSchema = weatherResponseSchema;
 
 /** Schema for an individual geocoding search result. */
 export const geocodingResultSchema = z.object({

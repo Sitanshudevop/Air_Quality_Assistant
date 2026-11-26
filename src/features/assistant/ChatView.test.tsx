@@ -5,7 +5,12 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import * as aiService from '../../services/ai.js';
 import { ChatView } from './ChatView.js';
-import { CHAT_STORAGE_KEY } from './chatUtils.js';
+import {
+  CHAT_STORAGE_KEY,
+  loadChatHistory,
+  saveChatHistory,
+  type ChatMessage,
+} from './chatUtils.js';
 
 describe('ChatView & chatUtils', () => {
   beforeEach(() => {
@@ -44,6 +49,7 @@ describe('ChatView & chatUtils', () => {
     const { container } = render(<ChatView aqi={200} category="Moderate" cityName="Mumbai" />);
 
     const input = screen.getByLabelText(/Ask the Saans air quality assistant/i);
+    expect(input).toHaveAttribute('maxLength', '1000');
     await user.type(input, 'Should I jog outside?');
     await user.click(screen.getByRole('button', { name: 'Send' }));
 
@@ -52,5 +58,32 @@ describe('ChatView & chatUtils', () => {
     await user.click(screen.getByRole('button', { name: 'Clear Chat' }));
     expect(window.localStorage.getItem(CHAT_STORAGE_KEY)).toBeNull();
     expect((await axe(container)).violations).toHaveLength(0);
+  });
+
+  it('clears corrupted, non-array, invalid-item, and oversized chat history and supports valid round-trip', () => {
+    const oversized = Array.from({ length: 31 }, (_, i) => ({
+      id: `m-${i}`,
+      role: 'user',
+      text: `msg ${i}`,
+    }));
+    const invalidPayloads = [
+      '{',
+      '{}',
+      JSON.stringify([{ id: '1', role: 'system', text: 'x' }]),
+      JSON.stringify(oversized),
+    ];
+
+    for (const payload of invalidPayloads) {
+      window.localStorage.setItem(CHAT_STORAGE_KEY, payload);
+      expect(loadChatHistory()).toEqual([]);
+      expect(window.localStorage.getItem(CHAT_STORAGE_KEY)).toBeNull();
+    }
+
+    const validMessages: ChatMessage[] = [
+      { id: 'u-1', role: 'user', text: 'What is the AQI?' },
+      { id: 'a-1', role: 'assistant', text: 'AQI is 180 (Moderate).' },
+    ];
+    saveChatHistory(validMessages);
+    expect(loadChatHistory()).toEqual(validMessages);
   });
 });

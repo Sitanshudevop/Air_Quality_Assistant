@@ -33,6 +33,11 @@ describe('Open-Meteo Geocoding Client', () => {
     expect(sanitizeQuery(null as unknown as string)).toBe('');
   });
 
+  it('truncates oversized queries to 100 characters in sanitizeQuery', () => {
+    const longQuery = 'a'.repeat(180);
+    expect(sanitizeQuery(longQuery)).toHaveLength(100);
+  });
+
   it('builds encoded URL for search term', () => {
     const url = buildGeocodingUrl('New Delhi');
     expect(url).toContain('geocoding-api.open-meteo.com');

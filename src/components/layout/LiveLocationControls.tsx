@@ -6,6 +6,8 @@ import { searchLocations } from '../../services/geocoding.js';
 import { getCurrentPosition, handleGeolocationDenied } from '../../services/geolocation.js';
 import { createManualReading, saveManualReading, type ManualAirQualityData } from '../../services/manualReading.js';
 import type { AirQualityData, ForecastData, GeocodingLocation } from '../../services/openMeteo.types.js';
+import { getErrorMessage } from '../../utils/error.js';
+import { logError } from '../../utils/logger.js';
 import { Button } from '../ui/Button.js';
 
 /** Props for LiveLocationControls component. */
@@ -56,7 +58,8 @@ export function LiveLocationControls({ onLiveData, onManualReading }: LiveLocati
       onLiveData(aq, fc, label);
       setStatusMsg(`Live data loaded for ${label}`);
       setShowManual(false);
-    } catch {
+    } catch (err) {
+      logError('Live Open-Meteo fetch failed', { action: 'loadCoords', error: getErrorMessage(err) });
       setStatusMsg('Live Open-Meteo data unavailable. Enter your local purifier/app AQI below.');
       setShowManual(true);
     }
@@ -69,7 +72,8 @@ export function LiveLocationControls({ onLiveData, onManualReading }: LiveLocati
       const locs = await searchLocations(query);
       setResults(locs);
       if (locs.length === 0) setStatusMsg('No matching cities found. Try another name or manual entry.');
-    } catch {
+    } catch (err) {
+      logError('Geocoding search failed', { action: 'searchLocations', error: getErrorMessage(err) });
       setStatusMsg('City search offline. Use manual AQI entry below.');
       setShowManual(true);
     }
@@ -96,7 +100,7 @@ export function LiveLocationControls({ onLiveData, onManualReading }: LiveLocati
     <div className="space-y-2 text-xs">
       <form onSubmit={(e) => void handleSearch(e)} className="flex flex-wrap items-center gap-2">
         <label htmlFor="live-city-search" className="sr-only">Search city for live AQI</label>
-        <input id="live-city-search" type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search city (e.g., Delhi, Kanpur)" className="flex-1 min-w-[180px] rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2.5 py-1.5" />
+        <input id="live-city-search" type="text" maxLength={100} value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search city (e.g., Delhi, Kanpur)" className="flex-1 min-w-[180px] rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2.5 py-1.5" />
         <Button type="submit" size="sm" variant="primary">Search</Button>
         <Button size="sm" variant="outline" onClick={() => void handleGeo()}>Use My Location</Button>
         <Button size="sm" variant="ghost" onClick={() => setShowManual((s) => !s)}>{showManual ? 'Hide Manual' : 'Manual AQI'}</Button>

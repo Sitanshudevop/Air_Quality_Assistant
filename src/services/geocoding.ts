@@ -1,4 +1,5 @@
 // Open-Meteo Geocoding API client with input sanitization, caching, and normalization.
+import { API_TIMEOUTS, CACHE_CONFIG } from '../constants/index.js';
 import { roundCoordinates } from './geolocation.js';
 import { geocodingResponseSchema, geocodingSchema } from './openMeteo.schemas.js';
 import { createCache } from './cache.js';
@@ -12,9 +13,8 @@ import type {
 export { geocodingSchema };
 
 const GEOCODING_BASE_URL = 'https://geocoding-api.open-meteo.com/v1/search';
-const CLIENT_TIMEOUT_MS = 6000;
 const geocodingCache = createCache<GeocodingLocation[]>({
-  ttlMs: 30 * 60 * 1000,
+  ttlMs: CACHE_CONFIG.GEOCODING_TTL_MS,
   prefix: 'geo_',
 });
 
@@ -35,7 +35,7 @@ export function sanitizeQuery(query: string): string {
       clean += strippedTags[i];
     }
   }
-  return clean;
+  return clean.slice(0, 100);
 }
 
 /**
@@ -114,7 +114,7 @@ export async function searchLocations(
   const url = buildGeocodingUrl(clean);
   const raw = await fetchJsonWithTimeout<RawGeocodingResponse>(
     url,
-    CLIENT_TIMEOUT_MS,
+    API_TIMEOUTS.OPEN_METEO_TIMEOUT_MS,
     'Open-Meteo Geocoding error',
     signal
   );

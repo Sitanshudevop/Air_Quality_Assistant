@@ -20,6 +20,7 @@ describe('ProfileFormFields Component', () => {
 
     // City Name
     const cityInput = screen.getByLabelText(/City Name/i);
+    expect(cityInput).toHaveAttribute('maxLength', '100');
     await user.clear(cityInput);
     await user.type(cityInput, 'Kanpur');
     expect(handleChange).toHaveBeenCalledWith('cityName', expect.any(String));

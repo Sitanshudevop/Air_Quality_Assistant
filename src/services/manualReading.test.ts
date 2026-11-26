@@ -72,4 +72,43 @@ describe('Manual Reading Entry Fallback', () => {
     clearManualReading();
     expect(getManualReading()).toBeNull();
   });
+
+  it('clears tampered JSON and schema-invalid sessionStorage payloads on getManualReading', () => {
+    clearManualReading();
+    window.sessionStorage.setItem('saans_manual_reading', '{');
+    expect(getManualReading()).toBeNull();
+    expect(window.sessionStorage.getItem('saans_manual_reading')).toBeNull();
+
+    window.sessionStorage.setItem('saans_manual_reading', JSON.stringify({ aqi: 999, pm25: 10 }));
+    expect(getManualReading()).toBeNull();
+    expect(window.sessionStorage.getItem('saans_manual_reading')).toBeNull();
+  });
+
+  it('hydrates valid persisted JSON from sessionStorage after memory reset', () => {
+    const reading = createManualReading({ aqi: 180, cityName: 'Noida' });
+    clearManualReading();
+    window.sessionStorage.setItem('saans_manual_reading', JSON.stringify(reading));
+    expect(getManualReading()).toEqual(reading);
+  });
+
+  it('rejects and purges whitespace-only cityName in sessionStorage', () => {
+    clearManualReading();
+    const whitespaceReading = { ...createManualReading({ aqi: 42 }), cityName: '   ' };
+    window.sessionStorage.setItem('saans_manual_reading', JSON.stringify(whitespaceReading));
+    expect(getManualReading()).toBeNull();
+    expect(window.sessionStorage.getItem('saans_manual_reading')).toBeNull();
+
+    window.sessionStorage.setItem(
+      'saans_manual_reading',
+      JSON.stringify({
+        cityName: '   ',
+        aqi: 42,
+        pm25: 10,
+        updatedAt: new Date().toISOString(),
+        source: 'manual',
+      })
+    );
+    expect(getManualReading()).toBeNull();
+    expect(window.sessionStorage.getItem('saans_manual_reading')).toBeNull();
+  });
 });

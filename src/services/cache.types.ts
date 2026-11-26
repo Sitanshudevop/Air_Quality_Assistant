@@ -1,4 +1,14 @@
 // Type definitions for dual-tier in-memory and sessionStorage cache.
+import { z } from 'zod';
+
+/** Zod schema validating persisted sessionStorage cache envelopes. */
+export const storageEnvelopeSchema = z.object({
+  value: z.unknown().refine((v) => v !== undefined && v !== null, {
+    message: 'Cache envelope value must be defined',
+  }),
+  expiresAt: z.number().finite().nonnegative(),
+  cachedAt: z.number().finite().nonnegative(),
+});
 
 /** In-memory cache entry with expiration timestamp. */
 export interface CacheEntry<T> {

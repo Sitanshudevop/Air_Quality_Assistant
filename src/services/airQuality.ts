@@ -1,7 +1,8 @@
 // Open-Meteo Air Quality API client with caching, validation, and CPCB AQI parsing.
+import { API_TIMEOUTS, CACHE_CONFIG } from '../constants/index.js';
 import { calculateAqi } from '../domain/aqi.js';
 import { roundCoordinates, validateCoordinates } from './geolocation.js';
-import { airQualityResponseSchema, airQualitySchema } from './openMeteo.schemas.js';
+import { airQualityResponseSchema } from './openMeteo.schemas.js';
 import { createCache, generateCacheKey } from './cache.js';
 import { fetchJsonWithTimeout } from './http.js';
 import type {
@@ -10,11 +11,10 @@ import type {
   RawAirQualityResponse,
 } from './openMeteo.types.js';
 
-export { roundCoordinates, validateCoordinates, airQualitySchema };
+export { roundCoordinates, validateCoordinates, airQualityResponseSchema as airQualitySchema };
 
 const AIR_QUALITY_BASE_URL = 'https://air-quality-api.open-meteo.com/v1/air-quality';
-const CLIENT_TIMEOUT_MS = 6000;
-const aqCache = createCache<AirQualityData>({ ttlMs: 10 * 60 * 1000, prefix: 'aq_' });
+const aqCache = createCache<AirQualityData>({ ttlMs: CACHE_CONFIG.TTL_MS, prefix: 'aq_' });
 
 /**
  * Constructs the Open-Meteo Air Quality API request URL with standard pollutants.
@@ -156,7 +156,7 @@ export async function fetchAirQuality(
   const url = buildAirQualityUrl(rounded.lat, rounded.lon);
   const raw = await fetchJsonWithTimeout<unknown>(
     url,
-    CLIENT_TIMEOUT_MS,
+    API_TIMEOUTS.OPEN_METEO_TIMEOUT_MS,
     'Open-Meteo Air Quality error',
     signal
   );

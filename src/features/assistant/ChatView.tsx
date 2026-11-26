@@ -4,6 +4,8 @@ import { getAiResponse } from '../../services/ai.js';
 import type { AqiCategory } from '../../domain/types.js';
 import type { ChatResult } from '../../../shared/types.js';
 import { useLanguage } from '../../state/language.js';
+import { getErrorMessage } from '../../utils/error.js';
+import { logError } from '../../utils/logger.js';
 import { Button } from '../../components/ui/Button.js';
 import { ChatMessageBubble } from './ChatMessageBubble.js';
 import {
@@ -80,7 +82,8 @@ export function ChatView({ aqi, category, cityName }: ChatViewProps): ReactEleme
     try {
       const botMsg = await fetchChatReply(aqi, category, cityName, trimmed);
       setMessages((prev) => [...prev, botMsg]);
-    } catch {
+    } catch (err) {
+      logError('Assistant chat request failed', { action: 'sendChatMessage', error: getErrorMessage(err) });
       setErrorMsg('Unable to send message. Please check your connection and retry.');
       setFailedPrompt(trimmed);
     } finally {
@@ -116,7 +119,7 @@ export function ChatView({ aqi, category, cityName }: ChatViewProps): ReactEleme
       )}
       <form onSubmit={(e: FormEvent<HTMLFormElement>) => { e.preventDefault(); void sendMessage(input); }} className="flex flex-col sm:flex-row gap-2">
         <label htmlFor="chat-input" className="sr-only">Ask the Saans air quality assistant</label>
-        <input id="chat-input" type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about ventilation, masks, or outdoor safety..." className="flex-1 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+        <input id="chat-input" type="text" maxLength={1000} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about ventilation, masks, or outdoor safety..." className="flex-1 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
         <Button type="submit" variant="primary" disabled={isLoading || !input.trim()}>{isLoading ? 'Sending...' : 'Send'}</Button>
       </form>
     </section>

@@ -1,5 +1,23 @@
 // Chat message types, localStorage persistence, suggestion chips, and safety card detection.
+import { z } from 'zod';
+import { provenanceSchema } from '../../../shared/schemas.js';
 import type { Provenance } from '../../../shared/types.js';
+import { getErrorMessage } from '../../utils/error.js';
+import { logError } from '../../utils/logger.js';
+
+/** Zod schema validating a persisted chat message entry. */
+export const chatMessageSchema = z.object({
+  id: z.string().min(1).max(64),
+  role: z.enum(['user', 'assistant']),
+  text: z.string().min(1).max(4000),
+  promptText: z.string().max(1000).optional(),
+  provenance: provenanceSchema.optional(),
+  suggestedActions: z.array(z.string().max(200)).max(10).optional(),
+  isSafetyCard: z.boolean().optional(),
+});
+
+/** Zod schema validating bounded chat history array in localStorage. */
+export const chatHistorySchema = z.array(chatMessageSchema).max(30);
 
 /** Single chat message entry stored and rendered in ChatView. */
 export interface ChatMessage {
@@ -53,17 +71,32 @@ export function detectSafetyResponse(userText: string, replyText: string): boole
  * @returns Array of validated ChatMessage records.
  */
 export function loadChatHistory(): ChatMessage[] {
+  if (typeof window === 'undefined' || !window.localStorage) return [];
   try {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const raw = window.localStorage.getItem(CHAT_STORAGE_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? (parsed as ChatMessage[]) : [];
+    const raw = window.localStorage.getItem(CHAT_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = chatHistorySchema.safeParse(JSON.parse(raw));
+    if (!parsed.success) {
+      logError('Invalid chat history cleared from localStorage', {
+        action: 'loadChatHistory',
+        error: parsed.error.message,
+      });
+      window.localStorage.removeItem(CHAT_STORAGE_KEY);
+      return [];
     }
-  } catch {
-    // Ignore malformed JSON or storage errors
+    return parsed.data;
+  } catch (err) {
+    logError('Failed to parse chat history from localStorage', {
+      action: 'loadChatHistory',
+      error: getErrorMessage(err),
+    });
+    try {
+      window.localStorage.removeItem(CHAT_STORAGE_KEY);
+    } catch {
+      // Ignore storage cleanup errors
+    }
+    return [];
   }
-  return [];
 }
 
 /**
@@ -76,8 +109,11 @@ export function saveChatHistory(messages: readonly ChatMessage[]): void {
     if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages.slice(-30)));
     }
-  } catch {
-    // Ignore storage quota errors
+  } catch (err) {
+    logError('Failed saving chat history to localStorage', {
+      action: 'saveChatHistory',
+      error: getErrorMessage(err),
+    });
   }
 }
 
@@ -89,7 +125,10 @@ export function clearChatHistory(): void {
     if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.removeItem(CHAT_STORAGE_KEY);
     }
-  } catch {
-    // Ignore storage errors
+  } catch (err) {
+    logError('Failed clearing chat history from localStorage', {
+      action: 'clearChatHistory',
+      error: getErrorMessage(err),
+    });
   }
 }

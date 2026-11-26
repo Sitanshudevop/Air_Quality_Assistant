@@ -1,4 +1,6 @@
 // User profile storage, schema validation, migration, and sanitization.
+import { getErrorMessage } from '../utils/error.js';
+import { logError } from '../utils/logger.js';
 import {
   DEFAULT_PROFILE,
   PROFILE_SCHEMA_VERSION,
@@ -12,6 +14,38 @@ export type { StoredProfile };
 
 let inMemoryProfile: StoredProfile | null = null;
 
+function clampProfileNumbers(obj: Record<string, unknown>): {
+  commuteDistanceKm: number;
+  householdMembers: number;
+} {
+  const rawDist = Number(obj.commuteDistanceKm ?? DEFAULT_PROFILE.commuteDistanceKm);
+  const rawMembers = Number(obj.householdMembers ?? DEFAULT_PROFILE.householdMembers);
+  const commuteDistanceKm = Number.isFinite(rawDist)
+    ? Math.min(100, Math.max(0, rawDist))
+    : DEFAULT_PROFILE.commuteDistanceKm;
+  const householdMembers = Number.isFinite(rawMembers)
+    ? Math.min(20, Math.max(1, Math.round(rawMembers)))
+    : DEFAULT_PROFILE.householdMembers;
+  return { commuteDistanceKm, householdMembers };
+}
+
+function normalizeWithValidity(input: unknown): { profile: StoredProfile; valid: boolean } {
+  const obj = (typeof input === 'object' && input !== null && !Array.isArray(input))
+    ? (input as Record<string, unknown>)
+    : {};
+  const merged = {
+    ...DEFAULT_PROFILE,
+    ...obj,
+    ...clampProfileNumbers(obj),
+    version: PROFILE_SCHEMA_VERSION,
+  };
+  const parsed = profileSchema.safeParse(merged);
+  if (!parsed.success) {
+    return { profile: DEFAULT_PROFILE, valid: false };
+  }
+  return { profile: parsed.data, valid: true };
+}
+
 /**
  * Normalizes numerical boundaries on profile attributes.
  *
@@ -19,20 +53,7 @@ let inMemoryProfile: StoredProfile | null = null;
  * @returns Sanitized and clamped StoredProfile.
  */
 export function normalizeProfile(input: unknown): StoredProfile {
-  const obj = (typeof input === 'object' && input !== null) ? (input as Record<string, unknown>) : {};
-  const rawDist = Number(obj.commuteDistanceKm ?? DEFAULT_PROFILE.commuteDistanceKm);
-  const rawMembers = Number(obj.householdMembers ?? DEFAULT_PROFILE.householdMembers);
-
-  const merged = {
-    ...DEFAULT_PROFILE,
-    ...obj,
-    commuteDistanceKm: Math.max(0, Number.isNaN(rawDist) ? 0 : rawDist),
-    householdMembers: Math.max(1, Math.round(Number.isNaN(rawMembers) ? 1 : rawMembers)),
-    version: PROFILE_SCHEMA_VERSION,
-  };
-
-  const parsed = profileSchema.safeParse(merged);
-  return parsed.success ? parsed.data : DEFAULT_PROFILE;
+  return normalizeWithValidity(input).profile;
 }
 
 /**
@@ -42,15 +63,43 @@ export function normalizeProfile(input: unknown): StoredProfile {
  * @returns Fully upgraded StoredProfile.
  */
 export function migrateProfile(oldProfile: unknown): StoredProfile {
-  if (!oldProfile || typeof oldProfile !== 'object') return DEFAULT_PROFILE;
+  if (!oldProfile || typeof oldProfile !== 'object' || Array.isArray(oldProfile)) {
+    return DEFAULT_PROFILE;
+  }
   const legacy = oldProfile as Record<string, unknown>;
-  const migrated = {
+  return normalizeProfile({
     ...legacy,
     cityName: legacy.cityName ?? legacy.city ?? DEFAULT_PROFILE.cityName,
     version: PROFILE_SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
-  };
-  return normalizeProfile(migrated);
+  });
+}
+
+function parseProfileWithValidity(raw: string): { profile: StoredProfile; valid: boolean } {
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      logError('Invalid profile payload shape in localStorage', { action: 'parseProfile' });
+      return { profile: DEFAULT_PROFILE, valid: false };
+    }
+    const legacy = parsed as Record<string, unknown>;
+    const result = normalizeWithValidity({
+      ...legacy,
+      cityName: legacy.cityName ?? legacy.city ?? DEFAULT_PROFILE.cityName,
+      version: PROFILE_SCHEMA_VERSION,
+      updatedAt: typeof legacy.updatedAt === 'string' ? legacy.updatedAt : new Date().toISOString(),
+    });
+    if (!result.valid) {
+      logError('Profile failed schema validation in localStorage', { action: 'parseProfile' });
+    }
+    return result;
+  } catch (err) {
+    logError('Corrupted profile JSON in localStorage', {
+      action: 'parseProfile',
+      error: getErrorMessage(err),
+    });
+    return { profile: DEFAULT_PROFILE, valid: false };
+  }
 }
 
 /**
@@ -60,12 +109,7 @@ export function migrateProfile(oldProfile: unknown): StoredProfile {
  * @returns Validated StoredProfile.
  */
 export function parseProfile(raw: string): StoredProfile {
-  try {
-    const parsed = JSON.parse(raw);
-    return migrateProfile(parsed);
-  } catch {
-    return DEFAULT_PROFILE;
-  }
+  return parseProfileWithValidity(raw).profile;
 }
 
 /**
@@ -75,18 +119,24 @@ export function parseProfile(raw: string): StoredProfile {
  */
 export function getProfile(): StoredProfile {
   if (inMemoryProfile) return inMemoryProfile;
+  if (typeof window === 'undefined' || !window.localStorage) return DEFAULT_PROFILE;
   try {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const stored = window.localStorage.getItem(PROFILE_STORAGE_KEY);
-      if (stored) {
-        inMemoryProfile = parseProfile(stored);
-        return inMemoryProfile;
-      }
+    const stored = window.localStorage.getItem(PROFILE_STORAGE_KEY);
+    if (!stored) return DEFAULT_PROFILE;
+    const result = parseProfileWithValidity(stored);
+    if (!result.valid) {
+      window.localStorage.removeItem(PROFILE_STORAGE_KEY);
+      return DEFAULT_PROFILE;
     }
-  } catch {
-    // Storage access restricted: degrade to default
+    inMemoryProfile = result.profile;
+    return result.profile;
+  } catch (err) {
+    logError('Failed reading profile from localStorage', {
+      action: 'getProfile',
+      error: getErrorMessage(err),
+    });
+    return DEFAULT_PROFILE;
   }
-  return DEFAULT_PROFILE;
 }
 
 /**
@@ -108,8 +158,11 @@ export function saveProfile(partial: Partial<StoredProfile>): StoredProfile {
     if (typeof window !== 'undefined' && window.localStorage) {
       window.localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(normalized));
     }
-  } catch {
-    // QuotaExceededError or security exception: degrade gracefully
+  } catch (err) {
+    logError('Failed saving profile to localStorage', {
+      action: 'saveProfile',
+      error: getErrorMessage(err),
+    });
   }
   return normalized;
 }

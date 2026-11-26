@@ -15,11 +15,13 @@ export const API_TIMEOUTS = {
   UPSTREAM_TIMEOUT_MS: 8000,
   OVERALL_DEADLINE_MS: 9000,
   CLIENT_TIMEOUT_MS: 12000,
+  OPEN_METEO_TIMEOUT_MS: 6000,
 } as const;
 
 /** In-memory cache limits. */
 export const CACHE_CONFIG = {
   TTL_MS: 10 * 60 * 1000,
+  GEOCODING_TTL_MS: 30 * 60 * 1000,
   MAX_ENTRIES: 100,
 } as const;
 

@@ -40,6 +40,15 @@ export const GEMINI_MODELS = {
 /** Maximum allowed payload size in bytes (64 KB). */
 export const MAX_PAYLOAD_BYTES = 64 * 1024;
 
+/** All localStorage keys persisted by Saans modules. */
+export const APP_LOCAL_STORAGE_KEYS = [
+  'saans_user_profile_v1',
+  'saans_chat_history_v1',
+  'saans_tour_completed',
+  'saans_operating_mode',
+  'saans_language_pref',
+] as const;
+
 /** Standard error messages returned by API. */
 export const ERROR_MESSAGES = {
   METHOD_NOT_ALLOWED: 'Method not allowed',

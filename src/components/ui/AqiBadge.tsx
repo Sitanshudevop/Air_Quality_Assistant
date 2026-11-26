@@ -38,7 +38,7 @@ export function AqiBadge({
   isEstimate = true,
   className = '',
 }: AqiBadgeProps): ReactElement {
-  const safeAqi = Math.max(0, Math.min(500, Math.round(aqi)));
+  const safeAqi = Number.isFinite(aqi) ? Math.max(0, Math.min(500, Math.round(aqi))) : 0;
   const icon = LIGHT_AQI_TOKENS[category]?.icon ?? '⚠️';
   const colorClass = BAND_CLASSES[category] ?? BAND_CLASSES.Moderate;
   const label = `${isEstimate ? 'Estimated ' : ''}CPCB AQI ${safeAqi}: ${category}, Dominant: ${dominantPollutant}`;

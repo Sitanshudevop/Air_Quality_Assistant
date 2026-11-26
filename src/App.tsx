@@ -14,18 +14,59 @@ import { AppFooter } from './components/layout/AppFooter.js';
 import { FeatureTabs, type FeatureTabId } from './components/layout/FeatureTabs.js';
 import { LocationBar } from './components/layout/LocationBar.js';
 import { WelcomeCard } from './features/onboarding/WelcomeCard.js';
-import { GuidedTour } from './features/onboarding/GuidedTour.js';
-import { ProfileWizard } from './features/onboarding/ProfileWizard.js';
 import { TodayDashboard } from './features/dashboard/TodayDashboard.js';
-import { HourlyOutlook } from './features/outlook/HourlyOutlook.js';
 import { PrintPlan } from './features/print/PrintPlan.js';
 import { mapStoredProfileToDomain } from './features/routine/routineUtils.js';
+import { checkAiStatus } from './services/ai.js';
 
+const GuidedTour = lazy(() => import('./features/onboarding/GuidedTour.js').then((m) => ({ default: m.GuidedTour })));
+const ProfileWizard = lazy(() => import('./features/onboarding/ProfileWizard.js').then((m) => ({ default: m.ProfileWizard })));
+const HourlyOutlook = lazy(() => import('./features/outlook/HourlyOutlook.js').then((m) => ({ default: m.HourlyOutlook })));
 const RoutineView = lazy(() => import('./features/routine/RoutineView.js').then((m) => ({ default: m.RoutineView })));
 const IndoorView = lazy(() => import('./features/indoor/IndoorView.js').then((m) => ({ default: m.IndoorView })));
 const ImpactView = lazy(() => import('./features/impact/ImpactView.js').then((m) => ({ default: m.ImpactView })));
 const ChatView = lazy(() => import('./features/assistant/ChatView.js').then((m) => ({ default: m.ChatView })));
 const CommunityKitView = lazy(() => import('./features/community/CommunityKitView.js').then((m) => ({ default: m.CommunityKitView })));
+
+function schedulePostPaint(task: () => void): () => void {
+  if (typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function') {
+    const id = window.requestIdleCallback(task);
+    return () => window.cancelIdleCallback(id);
+  }
+  const timer = setTimeout(task, 0);
+  return () => clearTimeout(timer);
+}
+
+function useAiServiceStatus(): boolean | null {
+  const [configured, setConfigured] = useState<boolean | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    const cancelSchedule = schedulePostPaint(() => {
+      void checkAiStatus(controller.signal).then((data) => {
+        if (!controller.signal.aborted) setConfigured(data.configured);
+      });
+    });
+    return () => {
+      cancelSchedule();
+      controller.abort();
+    };
+  }, []);
+  return configured;
+}
+
+function AppModals(props: {
+  isTourOpen: boolean;
+  isProfileOpen: boolean;
+  onCloseTour: () => void;
+  onCloseProfile: () => void;
+}): ReactElement {
+  return (
+    <Suspense fallback={null}>
+      {props.isTourOpen && <GuidedTour isOpen={props.isTourOpen} onClose={props.onCloseTour} />}
+      {props.isProfileOpen && <ProfileWizard isOpen={props.isProfileOpen} onClose={props.onCloseProfile} />}
+    </Suspense>
+  );
+}
 
 function AiStatusCard({ configured }: { configured: boolean | null }): ReactElement {
   return (
@@ -46,20 +87,13 @@ function AppShell(): ReactElement {
   const [isDark, setIsDark] = useState<boolean>(false);
   const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
-  const [configured, setConfigured] = useState<boolean | null>(null);
+  const configured = useAiServiceStatus();
   const [activeTab, setActiveTab] = useState<FeatureTabId>('today');
   const [demoCityId, setDemoCityId] = useState<DemoCityId>('delhi');
   const [demoPersonaId, setDemoPersonaId] = useState<DemoPersonaId>('toddler_grandparent');
   const [liveData, setLiveData] = useState<{ aq: AirQualityData; label: string } | null>(null);
   const [liveForecast, setLiveForecast] = useState<ForecastData | null>(null);
   const [manualData, setManualData] = useState<ManualAirQualityData | null>(null);
-
-  useEffect(() => {
-    fetch('/api/ai-status')
-      .then((res) => (res.ok ? res.json() : { configured: false }))
-      .then((data: { configured: boolean }) => setConfigured(data.configured))
-      .catch(() => setConfigured(false));
-  }, []);
 
   const conditions = resolveActiveConditions({ isDemo, demoCityId, liveData, liveForecast, manualData });
   const profile = resolveEffectiveProfile(isDemo, demoPersonaId);
@@ -95,7 +129,9 @@ function AppShell(): ReactElement {
           {activeTab === 'today' && (
             <>
               <TodayDashboard cityName={conditions.cityName} aqi={conditions.aqi} category={conditions.category} dominantPollutant={conditions.dominantPollutant} pollutants={conditions.pollutants} weatherFactors={conditions.weatherFactors} sourceLabel={conditions.sourceLabel} />
-              <HourlyOutlook points={conditions.hourlyPoints} />
+              <Suspense fallback={<p className="p-4 text-xs">Loading outlook...</p>}>
+                <HourlyOutlook points={conditions.hourlyPoints} />
+              </Suspense>
               <AiStatusCard configured={configured} />
               <PrintPlan cityName={conditions.cityName} aqi={conditions.aqi} category={conditions.category} routineItems={routineItems} />
             </>
@@ -111,8 +147,7 @@ function AppShell(): ReactElement {
       </main>
 
       <AppFooter />
-      <GuidedTour isOpen={isTourOpen} onClose={() => setIsTourOpen(false)} />
-      <ProfileWizard isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
+      <AppModals isTourOpen={isTourOpen} isProfileOpen={isProfileOpen} onCloseTour={() => setIsTourOpen(false)} onCloseProfile={() => setIsProfileOpen(false)} />
     </div>
   );
 }

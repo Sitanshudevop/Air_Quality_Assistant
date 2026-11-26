@@ -54,7 +54,7 @@ export function generateCacheKey(
  * @param fullKey - Storage key with prefix.
  * @returns Stored value or null if absent, corrupted, or expired.
  */
-function readSessionStorage<T>(fullKey: string): T | null {
+function readSessionStorage<T>(fullKey: string): CacheEntry<T> | null {
   try {
     const raw = window.sessionStorage.getItem(fullKey);
     if (!raw) return null;
@@ -69,7 +69,7 @@ function readSessionStorage<T>(fullKey: string): T | null {
       window.sessionStorage.removeItem(fullKey);
       return null;
     }
-    return parsed.data.value as T;
+    return { value: parsed.data.value as T, expiresAt: parsed.data.expiresAt };
   } catch (err) {
     logError('Failed to parse cache entry from sessionStorage', {
       action: 'readSessionStorage',
@@ -122,7 +122,6 @@ interface CacheContext<T> {
   readonly memoryMap: Map<string, CacheEntry<T>>;
   readonly hasSession: boolean;
   readonly prefix: string;
-  readonly ttlMs: number;
 }
 
 /** Resolves cache get request checking L1 memory and L2 sessionStorage. */
@@ -133,10 +132,10 @@ function resolveCacheGet<T>(key: string, ctx: CacheContext<T>): T | null {
     ctx.memoryMap.delete(key);
   }
   if (!ctx.hasSession) return null;
-  const sessionVal = readSessionStorage<T>(ctx.prefix + key);
-  if (sessionVal !== null) {
-    ctx.memoryMap.set(key, { value: sessionVal, expiresAt: Date.now() + ctx.ttlMs });
-    return sessionVal;
+  const sessionEntry = readSessionStorage<T>(ctx.prefix + key);
+  if (sessionEntry !== null) {
+    ctx.memoryMap.set(key, sessionEntry);
+    return sessionEntry.value;
   }
   return null;
 }
@@ -153,7 +152,7 @@ export function createCache<T>(options?: CacheOptions): CacheInstance<T> {
   const prefix = options?.prefix ?? DEFAULT_PREFIX;
   const memoryMap = new Map<string, CacheEntry<T>>();
   const hasSession = enableSession && isSessionStorageAvailable();
-  const ctx: CacheContext<T> = { memoryMap, hasSession, prefix, ttlMs };
+  const ctx: CacheContext<T> = { memoryMap, hasSession, prefix };
 
   return {
     get: (key: string): T | null => resolveCacheGet(key, ctx),

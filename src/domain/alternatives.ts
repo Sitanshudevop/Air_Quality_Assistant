@@ -42,11 +42,12 @@ function computeChoiceMetrics(
   ambientPm25: number,
   vulnMult: number
 ): { dose: number; doseLow: number; doseHigh: number; co2e: number } {
-  const distance = Math.max(0, choice.distanceKm);
+  const distance = Number.isFinite(choice.distanceKm) ? Math.max(0, choice.distanceKm) : 0;
   const specs = resolveModeSpecs(choice.mode);
-  const duration = choice.durationMinutes ?? (distance > 0 ? (distance / specs.speedKmH) * 60 : 0);
+  const rawDuration = choice.durationMinutes ?? (distance > 0 ? (distance / specs.speedKmH) * 60 : 0);
+  const duration = Number.isFinite(rawDuration) ? Math.max(0, rawDuration) : 0;
   const maskRec = ASSUMPTIONS[`mask_${choice.maskType}`] ?? ASSUMPTIONS.mask_none;
-  const pm25 = Math.max(0, ambientPm25);
+  const pm25 = Number.isFinite(ambientPm25) ? Math.max(0, ambientPm25) : 0;
 
   const dose = pm25 * specs.ventilationRateM3Min * duration * (1 - maskRec.value) * specs.infiltration * vulnMult;
   const doseLow = pm25 * (specs.ventilationRateM3Min * 0.8) * duration * (1 - maskRec.high) * (specs.infiltration * 0.8) * vulnMult;

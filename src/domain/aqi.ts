@@ -28,11 +28,12 @@ export const PM10_BREAKPOINTS: readonly Breakpoint[] = [
  * @returns CPCB category name.
  */
 export function getAqiCategory(aqi: number): AqiCategory {
-  if (aqi <= 50) return 'Good';
-  if (aqi <= 100) return 'Satisfactory';
-  if (aqi <= 200) return 'Moderate';
-  if (aqi <= 300) return 'Poor';
-  if (aqi <= 400) return 'Very Poor';
+  const safeAqi = Number.isFinite(aqi) ? Math.max(0, aqi) : 0;
+  if (safeAqi <= 50) return 'Good';
+  if (safeAqi <= 100) return 'Satisfactory';
+  if (safeAqi <= 200) return 'Moderate';
+  if (safeAqi <= 300) return 'Poor';
+  if (safeAqi <= 400) return 'Very Poor';
   return 'Severe';
 }
 
@@ -44,7 +45,8 @@ export function getAqiCategory(aqi: number): AqiCategory {
  * @returns Clamped sub-index integer (0 to 500).
  */
 export function calculateSubIndex(concentration: number, pollutant: Pollutant): number {
-  const c = Math.round(Math.max(0, concentration));
+  const safeConc = Number.isFinite(concentration) ? Math.max(0, concentration) : 0;
+  const c = Math.round(safeConc);
   const breakpoints = pollutant === 'PM2.5' ? PM25_BREAKPOINTS : PM10_BREAKPOINTS;
   const maxBp = breakpoints[breakpoints.length - 1];
 

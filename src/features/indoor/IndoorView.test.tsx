@@ -64,4 +64,28 @@ describe('IndoorView & Subcomponents', () => {
     vi.useRealTimers();
     expect((await axe(container)).violations).toHaveLength(0);
   });
+
+  it('handles height/ACH input changes and NaN/Infinity/zero chaos bounds in CADR calculator', () => {
+    render(<IndoorView aqi={250} cityName="Lucknow" />);
+    const areaInput = screen.getByLabelText(/Room Area/i);
+    const heightInput = screen.getByLabelText(/Ceiling Height/i);
+    const achInput = screen.getByLabelText(/Target ACH/i);
+
+    fireEvent.change(heightInput, { target: { value: '12' } });
+    fireEvent.change(achInput, { target: { value: '6' } });
+    expect(screen.getByTestId('cadr-cfm')).not.toHaveTextContent('NaN');
+
+    for (const val of ['0', '-1', 'NaN', '1e9']) {
+      fireEvent.change(areaInput, { target: { value: val } });
+      fireEvent.change(heightInput, { target: { value: val } });
+      fireEvent.change(achInput, { target: { value: val } });
+      expect(screen.getByTestId('cadr-cfm').textContent).not.toContain('NaN');
+    }
+
+    expect(clampCadrInputs(Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY)).toEqual({
+      areaSqFt: 150,
+      ceilingHeightFt: 9,
+      targetAch: 5,
+    });
+  });
 });

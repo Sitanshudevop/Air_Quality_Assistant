@@ -18,7 +18,10 @@ export async function fetchJsonWithTimeout<T>(
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   const onCallerAbort = (): void => controller.abort();
-  if (signal) signal.addEventListener('abort', onCallerAbort);
+  if (signal) {
+    if (signal.aborted) controller.abort();
+    else signal.addEventListener('abort', onCallerAbort);
+  }
 
   try {
     const res = await fetch(url, { signal: controller.signal });

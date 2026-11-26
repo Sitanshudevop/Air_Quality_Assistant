@@ -54,7 +54,14 @@ export function calculateBenchmarkRatio(
   concentration: number | undefined | null,
   limit: number
 ): BenchmarkRatioResult {
-  if (concentration === undefined || concentration === null || concentration <= 0 || limit <= 0) {
+  if (
+    concentration === undefined ||
+    concentration === null ||
+    !Number.isFinite(concentration) ||
+    !Number.isFinite(limit) ||
+    concentration <= 0 ||
+    limit <= 0
+  ) {
     return { ratio: 0, label: 'Within guideline', isExceeded: false };
   }
 

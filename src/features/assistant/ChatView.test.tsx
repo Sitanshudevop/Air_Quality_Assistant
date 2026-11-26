@@ -86,4 +86,41 @@ describe('ChatView & chatUtils', () => {
     saveChatHistory(validMessages);
     expect(loadChatHistory()).toEqual(validMessages);
   });
+
+  it('triggers suggested action chips, omits Retry without promptText, and aborts in-flight requests on Clear Chat', async () => {
+    const spy = vi.spyOn(aiService, 'getAiResponse')
+      .mockResolvedValueOnce({
+        task: 'chat',
+        result: { reply: 'First answer', suggestedActions: ['Check hourly forecast'] },
+        provenance: { source: 'rules', model: 'rules-v1', cached: false },
+      })
+      .mockResolvedValueOnce({
+        task: 'chat',
+        result: { reply: 'Follow-up answer' },
+        provenance: { source: 'gemini', model: 'gemini-2.5-flash', cached: false },
+      });
+
+    const user = userEvent.setup();
+    render(<ChatView aqi={190} category="Moderate" cityName="Delhi" />);
+
+    await user.click(screen.getByRole('button', { name: 'Is it safe to open windows now?' }));
+    await waitFor(() => expect(screen.getByText('First answer')).toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: 'Check hourly forecast' }));
+    await waitFor(() => expect(screen.getByText('Follow-up answer')).toBeInTheDocument());
+
+    let capturedSignal: AbortSignal | undefined;
+    spy.mockImplementationOnce((input) => {
+      capturedSignal = input.signal;
+      return new Promise(() => {});
+    });
+    const input = screen.getByLabelText(/Ask the Saans air quality assistant/i);
+    await user.type(input, 'In-flight question');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+    expect(capturedSignal?.aborted).toBe(false);
+
+    await user.click(screen.getByRole('button', { name: 'Clear Chat' }));
+    expect(capturedSignal?.aborted).toBe(true);
+    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
+  });
 });

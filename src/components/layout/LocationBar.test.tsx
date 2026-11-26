@@ -75,4 +75,52 @@ describe('LocationBar & LiveLocationControls', () => {
     await waitFor(() => expect(screen.getByText(/Location access denied/i)).toBeInTheDocument());
     expect((await axe(container)).violations).toHaveLength(0);
   });
+
+  it('handles live coords success, empty/zero/failed search, geolocation success, manual toggle, and debounce abort', async () => {
+    const mockAq = {
+      latitude: 28.61, longitude: 77.21, currentAqi: 185, currentCategory: 'Moderate' as const,
+      dominantPollutant: 'PM2.5' as const, isEstimate: true as const,
+      pollutants: { pm2_5: 85 }, hourly: [], source: 'Open-Meteo CAMS' as const, fetchedAt: '2026-11-26T00:00:00Z',
+    };
+    const searchSpy = vi.spyOn(geocoding, 'searchLocations')
+      .mockResolvedValueOnce([])
+      .mockRejectedValueOnce(new Error('Search down'))
+      .mockResolvedValueOnce([{ id: 2, name: 'Delhi', latitude: 28.61, longitude: 77.21, displayName: 'Delhi, India' }]);
+    vi.spyOn(airQuality, 'fetchAirQuality').mockResolvedValue(mockAq);
+    vi.spyOn(forecast, 'fetchForecast').mockRejectedValue(new Error('No forecast'));
+    vi.spyOn(geolocation, 'getCurrentPosition').mockResolvedValueOnce({ lat: 28.61, lon: 77.21 });
+
+    const onLiveData = vi.fn();
+    const user = userEvent.setup();
+    const { unmount } = render(
+      <LocationBar
+        isDemo={false} demoCityId="delhi" demoPersonaId="toddler_grandparent"
+        onSelectDemoCity={vi.fn()} onSelectDemoPersona={vi.fn()}
+        onLiveData={onLiveData} onManualReading={vi.fn()}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Search' }));
+    expect(searchSpy).not.toHaveBeenCalled();
+
+    const searchInput = screen.getByLabelText(/Search city/i);
+    await user.type(searchInput, 'Nowhere');
+    await user.click(screen.getByRole('button', { name: 'Search' }));
+    await waitFor(() => expect(screen.getByText(/No matching cities found/i)).toBeInTheDocument());
+
+    await user.clear(searchInput);
+    await user.type(searchInput, 'OfflineCity');
+    await user.click(screen.getByRole('button', { name: 'Search' }));
+    await waitFor(() => expect(screen.getByText(/City search offline/i)).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: 'Hide Manual' }));
+    expect(screen.queryByLabelText(/Purifier\/App AQI/i)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Use My Location/i }));
+    await waitFor(() => expect(onLiveData).toHaveBeenCalledWith(mockAq, null, '28.61, 77.21'));
+
+    await user.clear(searchInput);
+    await user.type(searchInput, 'Delhi');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Delhi, India' })).toBeInTheDocument(), { timeout: 1500 });
+    unmount();
+  });
 });

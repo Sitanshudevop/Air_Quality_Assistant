@@ -4,7 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { ProfileFormFields } from './ProfileFormFields.js';
-import { DEFAULT_PROFILE } from '../../services/profile.types.js';
+import { DEFAULT_PROFILE, type StoredProfile } from '../../services/profile.types.js';
 
 describe('ProfileFormFields Component', () => {
   it('triggers onChange for all input fields', async () => {
@@ -60,5 +60,28 @@ describe('ProfileFormFields Component', () => {
     );
     const results = await axe(container);
     expect(results.violations).toHaveLength(0);
+  });
+
+  it('defaults undefined vulnerability and clamps chaos numeric inputs without NaN', () => {
+    const handleChange = vi.fn();
+    render(
+      <ProfileFormFields
+        formData={{ ...DEFAULT_PROFILE, vulnerability: undefined } as unknown as StoredProfile}
+        onChange={handleChange}
+      />
+    );
+    expect(screen.getByLabelText(/Vulnerability/i)).toHaveValue('healthy_adult');
+
+    const distanceInput = screen.getByLabelText(/Commute Distance/i);
+    const membersInput = screen.getByLabelText(/Household Members/i);
+    fireEvent.change(distanceInput, { target: { value: '-5' } });
+    expect(handleChange).toHaveBeenLastCalledWith('commuteDistanceKm', 0);
+    fireEvent.change(distanceInput, { target: { value: '1e9' } });
+    expect(handleChange).toHaveBeenLastCalledWith('commuteDistanceKm', 100);
+
+    fireEvent.change(membersInput, { target: { value: '0' } });
+    expect(handleChange).toHaveBeenLastCalledWith('householdMembers', 1);
+    fireEvent.change(membersInput, { target: { value: '1e9' } });
+    expect(handleChange).toHaveBeenLastCalledWith('householdMembers', 20);
   });
 });

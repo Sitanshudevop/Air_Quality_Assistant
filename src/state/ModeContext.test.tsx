@@ -3,6 +3,7 @@ import React from 'react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import { ModeProvider, useMode } from './ModeContext.js';
+import { MODE_STORAGE_KEY, toggleMode as toggleGlobalMode } from './mode.js';
 
 /** Test consumer component exercising useMode hook. */
 function ModeConsumer(): React.ReactElement {
@@ -81,5 +82,20 @@ describe('ModeContext and useMode', () => {
     expect(() => render(<ModeConsumer />)).toThrow(
       'useMode must be used within a ModeProvider'
     );
+  });
+
+  it('loads persisted live mode when initialMode is omitted and reacts to external mode changes', () => {
+    window.localStorage.setItem(MODE_STORAGE_KEY, 'live');
+    render(
+      <ModeProvider>
+        <ModeConsumer />
+      </ModeProvider>
+    );
+    expect(screen.getByTestId('mode-value').textContent).toBe('live');
+
+    act(() => {
+      toggleGlobalMode('live');
+    });
+    expect(screen.getByTestId('mode-value').textContent).toBe('demo');
   });
 });

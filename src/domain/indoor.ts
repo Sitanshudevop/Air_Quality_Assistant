@@ -20,9 +20,11 @@ export const INDOOR_MYTHS: readonly MythBuster[] = [
  * @returns Clean Air Delivery Rate in CFM.
  */
 export function calculateCadrRequirement(areaSqFt: number, ceilingHeightFt = 9.0, targetAch = 5.0): number {
-  if (areaSqFt <= 0) return 0;
-  const volumeCuFt = areaSqFt * Math.max(1, ceilingHeightFt);
-  return Math.round((volumeCuFt * Math.max(1, targetAch)) / 60);
+  if (!Number.isFinite(areaSqFt) || areaSqFt <= 0) return 0;
+  const safeHeight = Number.isFinite(ceilingHeightFt) ? Math.max(1, ceilingHeightFt) : 9.0;
+  const safeAch = Number.isFinite(targetAch) ? Math.max(1, targetAch) : 5.0;
+  const volumeCuFt = areaSqFt * safeHeight;
+  return Math.round((volumeCuFt * safeAch) / 60);
 }
 
 /**
@@ -32,16 +34,17 @@ export function calculateCadrRequirement(areaSqFt: number, ceilingHeightFt = 9.0
  * @returns Ventilation guidance object.
  */
 export function getVentilationRecommendation(aqi: number): VentilationAdvice {
-  if (aqi > 400) {
+  const safeAqi = Number.isFinite(aqi) ? Math.max(0, aqi) : 0;
+  if (safeAqi > 400) {
     return { allowed: false, window: 'None', durationMinutes: 0, advice: 'Keep windows sealed; severe outdoor smog presents immediate hazards.' };
   }
-  if (aqi > 300) {
+  if (safeAqi > 300) {
     return { allowed: false, window: '13:00 - 13:10 (flush only if CO2 high)', durationMinutes: 10, advice: 'Keep sealed unless stuffy; restrict any flush strictly to peak afternoon thermals.' };
   }
-  if (aqi > 200) {
+  if (safeAqi > 200) {
     return { allowed: true, window: '12:30 - 14:30', durationMinutes: 15, advice: 'Brief 15-minute midday cross-ventilation during peak solar boundary layer mixing.' };
   }
-  if (aqi > 100) {
+  if (safeAqi > 100) {
     return { allowed: true, window: '11:30 - 15:30', durationMinutes: 30, advice: 'Midday ventilation permitted for 30 minutes during warmer convective hours.' };
   }
   return { allowed: true, window: '10:00 - 17:00', durationMinutes: 60, advice: 'Natural ventilation safe during daylight hours.' };

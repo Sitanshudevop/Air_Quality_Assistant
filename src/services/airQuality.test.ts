@@ -127,4 +127,20 @@ describe('Open-Meteo Air Quality Client', () => {
     controller.abort();
     await expect(fetchAirQuality(28.61, 77.21, controller.signal)).rejects.toThrow();
   });
+
+  it('falls back safely when coordinates, hourly arrays, or pm2_5 slots are missing or null', () => {
+    const parsed = parseAirQualityResponse({
+      current: { pm2_5: null, pm10: null },
+      hourly: { time: ['2026-11-24T00:00Z'], pm2_5: [null] },
+    });
+    expect(parsed.latitude).toBe(0);
+    expect(parsed.longitude).toBe(0);
+    expect(parsed.pollutants.pm2_5).toBe(0);
+
+    const emptyTimes = parseAirQualityResponse({
+      hourly: { time: [] },
+    });
+    expect(emptyTimes.hourly).toEqual([]);
+    expect(emptyTimes.pollutants.pm2_5).toBe(0);
+  });
 });

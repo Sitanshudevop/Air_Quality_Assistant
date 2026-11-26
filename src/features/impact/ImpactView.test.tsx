@@ -47,4 +47,24 @@ describe('ImpactView & ComparisonCard', () => {
     });
     expect((await axe(container)).violations).toHaveLength(0);
   });
+
+  it('handles transport mode select change, omitted healthAdvice, and chaos pm25/distance values', async () => {
+    vi.spyOn(aiService, 'getAiResponse').mockResolvedValueOnce({
+      task: 'explain-impact',
+      result: { explanation: 'Walk raises inhalation rate.' },
+      provenance: { source: 'rules', model: 'rules-v1', cached: false },
+    });
+    const user = userEvent.setup();
+    render(<ImpactView aqi={0} pm25={Number.NaN} cityName="Delhi" />);
+
+    await user.selectOptions(screen.getByLabelText('Transport Mode', { selector: '#opt1-mode' }), 'walk');
+    expect(screen.getByText(/Option A: Walking/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Explain with AI/i }));
+    await waitFor(() => expect(screen.getByText('Walk raises inhalation rate.')).toBeInTheDocument());
+
+    expect(clampDistanceKm(Number.NaN)).toBe(0);
+    expect(clampDistanceKm(Number.POSITIVE_INFINITY)).toBe(0);
+    expect(document.body.textContent).not.toContain('NaN');
+  });
 });

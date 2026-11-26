@@ -59,8 +59,8 @@ function resolveCoefficients(params: ExposureParams): ResolvedCoefficients {
  * @returns Exposure calculation result with non-medical caveat.
  */
 export function calculateRelativeDose(params: ExposureParams): ExposureResult {
-  const pm25 = Math.max(0, params.pm25);
-  const duration = Math.max(0, params.durationMinutes);
+  const pm25 = Number.isFinite(params.pm25) ? Math.max(0, params.pm25) : 0;
+  const duration = Number.isFinite(params.durationMinutes) ? Math.max(0, params.durationMinutes) : 0;
   const coeff = resolveCoefficients(params);
 
   const dose = pm25 * coeff.vNom * duration * (1 - coeff.etaNom) * coeff.fNom * coeff.wNom;

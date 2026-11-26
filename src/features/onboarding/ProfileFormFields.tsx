@@ -43,7 +43,10 @@ function CommuteInputs({ formData, onChange }: ProfileFormFieldsProps): ReactEle
           min="0"
           max="100"
           value={formData.commuteDistanceKm}
-          onChange={(e) => onChange('commuteDistanceKm', Math.max(0, Number(e.target.value)))}
+          onChange={(e) => {
+            const parsed = Number(e.target.value);
+            onChange('commuteDistanceKm', Number.isFinite(parsed) ? Math.min(100, Math.max(0, parsed)) : 0);
+          }}
           className={inputClass}
         />
       </div>
@@ -104,7 +107,10 @@ export function ProfileFormFields({ formData, onChange }: ProfileFormFieldsProps
           min="1"
           max="20"
           value={formData.householdMembers}
-          onChange={(e) => onChange('householdMembers', Math.max(1, Number(e.target.value)))}
+          onChange={(e) => {
+            const parsed = Number(e.target.value);
+            onChange('householdMembers', Number.isFinite(parsed) ? Math.min(20, Math.max(1, Math.round(parsed))) : 1);
+          }}
           className={inputClass}
         />
       </div>

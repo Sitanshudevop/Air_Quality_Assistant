@@ -23,7 +23,9 @@ interface BenchmarkRowProps {
 function BenchmarkRow({ label, observed, whoLimit, naaqsLimit }: BenchmarkRowProps): ReactElement {
   const who = calculateBenchmarkRatio(observed, whoLimit);
   const naaqs = calculateBenchmarkRatio(observed, naaqsLimit);
-  const displayVal = observed ? Number(observed.toFixed(1)) : '—';
+  const displayVal = typeof observed === 'number' && Number.isFinite(observed)
+    ? Number(Math.max(0, observed).toFixed(1))
+    : '—';
 
   return (
     <div className="p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/60">
@@ -36,14 +38,14 @@ function BenchmarkRow({ label, observed, whoLimit, naaqsLimit }: BenchmarkRowPro
 
       <div className="grid grid-cols-2 gap-2 text-xs">
         <div className="p-2 rounded bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700">
-          <div className="text-[11px] text-neutral-500 dark:text-neutral-400">WHO 2021 (15 µg/m³)</div>
+          <div className="text-[11px] text-neutral-500 dark:text-neutral-400">WHO 2021 ({whoLimit} µg/m³)</div>
           <div className={`font-extrabold mt-0.5 ${who.isExceeded ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
             {who.label}
           </div>
         </div>
 
         <div className="p-2 rounded bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700">
-          <div className="text-[11px] text-neutral-500 dark:text-neutral-400">Indian NAAQS (60 µg/m³)</div>
+          <div className="text-[11px] text-neutral-500 dark:text-neutral-400">Indian NAAQS ({naaqsLimit} µg/m³)</div>
           <div className={`font-extrabold mt-0.5 ${naaqs.isExceeded ? 'text-amber-700 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
             {naaqs.label}
           </div>

@@ -137,4 +137,32 @@ describe('Open-Meteo Forecast Client', () => {
     controller.abort();
     await expect(fetchForecast(28.61, 77.21, controller.signal)).rejects.toThrow();
   });
+
+  it('covers moderate/low stagnation, undefined/late-night inversion, and nullish forecast fallbacks', async () => {
+    expect(detectInversion({ windSpeed: 0.5, humidity: 85 })).toBe(true);
+    expect(detectInversion({ windSpeed: 0.5, humidity: 85, hourOfDay: 22 })).toBe(true);
+    expect(parseWeatherFactors({}).stagnationRisk).toBe('moderate');
+    expect(parseWeatherFactors({ windSpeed: 2.2, humidity: 50 }).stagnationRisk).toBe('moderate');
+    expect(parseWeatherFactors({ windSpeed: 3.5, humidity: 40 }).stagnationRisk).toBe('low');
+
+    const nullishHourly = parseHourlyForecast({
+      latitude: 28.61,
+      longitude: 77.21,
+      hourly: {
+        time: ['2026-11-24T00:00:00Z'],
+        temperature_2m: [null],
+        relative_humidity_2m: [null],
+        wind_speed_10m: [null],
+        surface_pressure: [null],
+      },
+    });
+    expect(nullishHourly[0]).toMatchObject({ temperature: 20, humidity: 50, windSpeed: 2, surfacePressure: 1013 });
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ latitude: 28.61, longitude: 77.21, current: {}, hourly: { time: [] } }),
+    } as Response);
+    const sparse = await fetchForecast(28.61, 77.21);
+    expect(sparse.current.temperature).toBe(20);
+  });
 });

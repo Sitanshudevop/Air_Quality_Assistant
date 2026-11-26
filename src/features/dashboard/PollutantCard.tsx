@@ -52,8 +52,8 @@ export function PollutantCard({ values, className = '' }: PollutantCardProps): R
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {CRITERIA_POLLUTANTS.map(({ key, name, formula, unit }) => {
           const val = values[key];
-          const displayVal = val !== undefined && val !== null && !Number.isNaN(val)
-            ? Number(val.toFixed(1))
+          const displayVal = typeof val === 'number' && Number.isFinite(val)
+            ? Number(Math.max(0, val).toFixed(1))
             : '—';
 
           return (

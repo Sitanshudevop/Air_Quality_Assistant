@@ -11,6 +11,10 @@ describe('App Component', () => {
     vi.restoreAllMocks();
     window.localStorage.clear();
     document.documentElement.className = '';
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ configured: false }),
+    } as Response);
   });
 
   it('renders title and displays Ready when service is configured', async () => {
@@ -47,13 +51,17 @@ describe('App Component', () => {
     });
   });
 
-  it('renders semantic landmarks, skip link, and persistent demo banner', () => {
+  it('renders semantic landmarks, skip link, and persistent demo banner', async () => {
     render(<App />);
     expect(screen.getByRole('link', { name: /Skip to main content/i })).toBeInTheDocument();
     expect(screen.getByRole('banner')).toBeInTheDocument();
     expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
     expect(screen.getByText(DEMO_BANNER_TEXT)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('ai-status')).toHaveTextContent(/Ready|Offline/);
+      expect(screen.getByRole('heading', { name: /Next 24-48h Hourly Outlook/i })).toBeInTheDocument();
+    });
   });
 
   it('toggles mode and updates demo banner presence', async () => {
@@ -66,6 +74,7 @@ describe('App Component', () => {
 
     // After switching to live mode, demo banner disappears
     expect(screen.queryByText(DEMO_BANNER_TEXT)).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('ai-status')).toHaveTextContent(/Ready|Offline/));
   });
 
   it('toggles dark theme class on document element', async () => {
@@ -79,6 +88,7 @@ describe('App Component', () => {
     const lightBtn = screen.getByRole('button', { name: /Switch to light theme/i });
     await user.click(lightBtn);
     expect(document.documentElement.classList.contains('dark')).toBe(false);
+    await waitFor(() => expect(screen.getByTestId('ai-status')).toHaveTextContent(/Ready|Offline/));
   });
 
   it('opens and closes Guided Tour and Profile Wizard modals', async () => {
@@ -88,16 +98,17 @@ describe('App Component', () => {
     // Open tour from header
     const tourBtn = screen.getByRole('button', { name: 'Tour' });
     await user.click(tourBtn);
-    expect(screen.getByRole('dialog', { name: /Dual Operating Modes/i })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('dialog', { name: /Dual Operating Modes/i })).toBeInTheDocument());
     await user.click(screen.getByRole('button', { name: 'Skip Tour' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
     // Open profile wizard from header
     const profileBtn = screen.getByRole('button', { name: 'Profile' });
     await user.click(profileBtn);
-    expect(screen.getByRole('dialog', { name: /Family Smog Profile/i })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('dialog', { name: /Family Smog Profile/i })).toBeInTheDocument());
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('ai-status')).toHaveTextContent(/Ready|Offline/));
   });
 
   it('passes automated accessibility audits', async () => {
@@ -107,7 +118,10 @@ describe('App Component', () => {
     } as Response);
 
     const { container } = render(<App />);
-    await waitFor(() => screen.getByTestId('ai-status'));
+    await waitFor(() => {
+      expect(screen.getByTestId('ai-status')).toHaveTextContent('Ready');
+      expect(screen.getByRole('heading', { name: /Next 24-48h Hourly Outlook/i })).toBeInTheDocument();
+    });
     const results = await axe(container);
     expect(results.violations).toEqual([]);
   });
@@ -136,5 +150,28 @@ describe('App Component', () => {
 
     await user.click(screen.getByRole('button', { name: /Switch language to Hindi/i }));
     expect(screen.getByRole('heading', { name: /सामुदायिक स्मॉग एक्शन किट/i })).toBeInTheDocument();
+  });
+
+  it('exercises WelcomeCard actions, persona switch, and live manual reading callbacks', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.selectOptions(screen.getByLabelText(/Household Persona/i), 'commuter_couple');
+    await user.click(screen.getByRole('button', { name: 'Set Up Family Profile' }));
+    await waitFor(() => expect(screen.getByRole('dialog', { name: /Family Smog Profile/i })).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    await user.click(screen.getByRole('button', { name: 'Guided Tour' }));
+    await waitFor(() => expect(screen.getByRole('dialog', { name: /Dual Operating Modes/i })).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: 'Skip Tour' }));
+
+    await user.click(screen.getByRole('button', { name: /Current mode is/i }));
+    await user.click(screen.getByRole('button', { name: 'Manual AQI' }));
+    await user.click(screen.getByRole('button', { name: /Apply Manual Reading/i }));
+    expect(screen.getByRole('heading', { name: 'Manual Location' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '1-Click Demo Launch' }));
+    expect(screen.getByText(DEMO_BANNER_TEXT)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('ai-status')).toHaveTextContent(/Ready|Offline/));
   });
 });

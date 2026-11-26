@@ -1,5 +1,5 @@
 // Profile onboarding wizard modal for managing user preferences and safe reset.
-import { useState, useEffect, type ReactElement, type RefObject, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type ReactElement, type RefObject, type FormEvent } from 'react';
 import { Modal } from '../../components/ui/Modal.js';
 import { Button } from '../../components/ui/Button.js';
 import { getProfile, saveProfile, clearProfile, DEFAULT_PROFILE } from '../../services/profile.js';
@@ -30,6 +30,11 @@ export function ProfileWizard({
   const [formData, setFormData] = useState<StoredProfile>(DEFAULT_PROFILE);
   const [isConfirmClear, setIsConfirmClear] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<string>('');
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (closeTimerRef.current !== null) clearTimeout(closeTimerRef.current);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -47,7 +52,8 @@ export function ProfileWizard({
     const saved = saveProfile(formData);
     onProfileUpdated?.(saved);
     setStatusMessage('Profile saved successfully.');
-    setTimeout(() => onClose(), 600);
+    if (closeTimerRef.current !== null) clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = setTimeout(() => onClose(), 600);
   };
 
   const handleClearConfirmed = (): void => {

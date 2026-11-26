@@ -44,8 +44,10 @@ export function OutlookDataTable({
         <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
           {points.map((pt, idx) => {
             const timeLabel = formatHour(pt.time);
-            const aqi = Math.round(pt.aqi);
-            const pm25 = pt.pm2_5 ? Number(pt.pm2_5.toFixed(1)) : '—';
+            const aqi = Number.isFinite(pt.aqi) ? Math.max(0, Math.round(pt.aqi)) : 0;
+            const pm25 = typeof pt.pm2_5 === 'number' && Number.isFinite(pt.pm2_5)
+              ? Number(Math.max(0, pt.pm2_5).toFixed(1))
+              : '—';
             const advice = getHourlyAdvice(aqi);
 
             return (

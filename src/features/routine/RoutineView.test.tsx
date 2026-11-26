@@ -53,4 +53,14 @@ describe('RoutineView & RoutineUtils', () => {
     expect(screen.getByText(/No routine actions available/i)).toBeInTheDocument();
     expect((await axe(container)).violations).toHaveLength(0);
   });
+
+  it('maps empty {} and undefined profiles safely to defaults', () => {
+    expect(mapStoredProfileToDomain({})).toEqual({
+      vulnerability: 'healthy_adult',
+      commuteMode: undefined,
+      hasPurifier: false,
+      cookingFuel: 'lpg',
+    });
+    expect(mapStoredProfileToDomain(undefined).vulnerability).toBe('healthy_adult');
+  });
 });

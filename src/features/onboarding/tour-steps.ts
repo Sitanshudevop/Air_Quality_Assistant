@@ -37,15 +37,16 @@ export function skipTour(): void {
  * @returns True if tour completion is persisted in memory or localStorage.
  */
 export function isTourCompleted(): boolean {
-  if (memoryCompleted) return true;
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
-      return window.localStorage.getItem(TOUR_COMPLETED_KEY) === 'true';
+      const completed = window.localStorage.getItem(TOUR_COMPLETED_KEY) === 'true';
+      memoryCompleted = completed;
+      return completed;
     }
   } catch {
-    // Ignore storage access errors
+    return memoryCompleted;
   }
-  return false;
+  return memoryCompleted;
 }
 
 /**

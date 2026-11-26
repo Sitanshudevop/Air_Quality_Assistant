@@ -1,6 +1,7 @@
 // User profile storage, schema validation, migration, and sanitization.
 import { getErrorMessage } from '../utils/error.js';
 import { logError } from '../utils/logger.js';
+import { clearAllAppStorage } from './storageReset.js';
 import {
   DEFAULT_PROFILE,
   PROFILE_SCHEMA_VERSION,
@@ -168,16 +169,9 @@ export function saveProfile(partial: Partial<StoredProfile>): StoredProfile {
 }
 
 /**
- * Completely purges profile from localStorage and clears active tab sessionStorage.
+ * Completely purges profile, all app localStorage keys, sessionStorage, and L1 service caches.
  */
 export function clearProfile(): void {
   inMemoryProfile = null;
-  try {
-    if (typeof window !== 'undefined') {
-      window.localStorage?.removeItem(PROFILE_STORAGE_KEY);
-      window.sessionStorage?.clear();
-    }
-  } catch {
-    // ignore
-  }
+  clearAllAppStorage();
 }

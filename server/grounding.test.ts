@@ -136,14 +136,34 @@ describe('Numeric Grounding Verification', () => {
     expect(verifyNumericGrounding({ text, facts, extraAllowedNumbers })).toBe(expected);
   });
 
-  it('extracts strings cleanly from nested task outputs', () => {
+  it('extracts strings cleanly from nested task outputs and enforces depth/leaf boundaries', () => {
     const combined = extractTextForGrounding({
       narrative: 'Delhi plan',
       recommendations: ['Wear N95', 'Stay indoors'],
-      nested: { note: 'Check 12 PM window', skip: null },
+      count: 42,
+      flag: true,
+      nested: { note: 'Check 12 PM window', skip: null, deep: { l2: { l3: { l4: 'too-deep-string' } } } },
     });
     expect(combined).toContain('Delhi plan');
     expect(combined).toContain('Wear N95');
     expect(combined).toContain('Check 12 PM window');
+    expect(combined).not.toContain('too-deep-string');
+  });
+
+  it('ignores non-finite entries in extraAllowedNumbers', () => {
+    expect(
+      verifyNumericGrounding({
+        text: 'AQI is 120.',
+        facts: [],
+        extraAllowedNumbers: [Number.NaN, 'abc', 120],
+      })
+    ).toBe(true);
+    expect(
+      verifyNumericGrounding({
+        text: 'AQI is 999.',
+        facts: [],
+        extraAllowedNumbers: [Number.NaN, 'abc'],
+      })
+    ).toBe(false);
   });
 });

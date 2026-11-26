@@ -24,16 +24,21 @@ export interface ChatViewProps {
   readonly cityName: string;
 }
 
-async function fetchChatReply(
-  aqi: number,
-  category: AqiCategory,
-  cityName: string,
-  userText: string
-): Promise<ChatMessage> {
+interface FetchChatReplyOptions {
+  readonly aqi: number;
+  readonly category: AqiCategory;
+  readonly cityName: string;
+  readonly userText: string;
+  readonly signal: AbortSignal;
+}
+
+async function fetchChatReply(opts: FetchChatReplyOptions): Promise<ChatMessage> {
+  const { aqi, category, cityName, userText, signal } = opts;
   const res = await getAiResponse({
     task: 'chat',
     context: { aqi: Math.round(aqi), city: cityName, facts: [`Current AQI in ${cityName} is ${Math.round(aqi)} (${category}).`] },
     userText,
+    signal,
   });
   const result = res.result as ChatResult;
   const replyText = result?.reply ?? `Current AQI in ${cityName} is ${Math.round(aqi)} (${category}).`;
@@ -46,6 +51,18 @@ async function fetchChatReply(
     suggestedActions: result?.suggestedActions,
     isSafetyCard: detectSafetyResponse(userText, replyText),
   };
+}
+
+function ChatHeader(props: { title: string; disclaimer: string; isHindi: boolean; onClear: () => void }): ReactElement {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <div>
+        <h2 id="chat-heading" lang={props.isHindi ? 'hi' : undefined} className="text-lg font-bold">{props.title}</h2>
+        <p className="text-xs text-neutral-600 dark:text-neutral-400">{props.disclaimer}</p>
+      </div>
+      <Button size="sm" variant="outline" onClick={props.onClear}>Clear Chat</Button>
+    </div>
+  );
 }
 
 /**
@@ -62,7 +79,10 @@ export function ChatView({ aqi, category, cityName }: ChatViewProps): ReactEleme
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [failedPrompt, setFailedPrompt] = useState<string | null>(null);
   const inFlightRef = useRef<boolean>(false);
+  const abortRef = useRef<AbortController | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => () => { abortRef.current?.abort(); }, []);
 
   useEffect(() => {
     if (messages.length === 0) clearChatHistory();
@@ -73,6 +93,9 @@ export function ChatView({ aqi, category, cityName }: ChatViewProps): ReactEleme
   const sendMessage = async (rawText: string): Promise<void> => {
     const trimmed = rawText.trim();
     if (!trimmed || inFlightRef.current) return;
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     inFlightRef.current = true;
     setIsLoading(true);
     setErrorMsg(null);
@@ -80,29 +103,34 @@ export function ChatView({ aqi, category, cityName }: ChatViewProps): ReactEleme
     setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: 'user', text: trimmed }]);
     setInput('');
     try {
-      const botMsg = await fetchChatReply(aqi, category, cityName, trimmed);
-      setMessages((prev) => [...prev, botMsg]);
+      const botMsg = await fetchChatReply({ aqi, category, cityName, userText: trimmed, signal: controller.signal });
+      if (!controller.signal.aborted) setMessages((prev) => [...prev, botMsg]);
     } catch (err) {
+      if (controller.signal.aborted) return;
       logError('Assistant chat request failed', { action: 'sendChatMessage', error: getErrorMessage(err) });
       setErrorMsg('Unable to send message. Please check your connection and retry.');
       setFailedPrompt(trimmed);
     } finally {
-      inFlightRef.current = false;
-      setIsLoading(false);
+      if (abortRef.current === controller) {
+        inFlightRef.current = false;
+        setIsLoading(false);
+      }
     }
+  };
+
+  const handleClear = (): void => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    inFlightRef.current = false;
+    setIsLoading(false);
+    setMessages([]);
+    setErrorMsg(null);
+    clearChatHistory();
   };
 
   return (
     <section aria-labelledby="chat-heading" className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 id="chat-heading" lang={language === 'hi' ? 'hi' : undefined} className="text-lg font-bold">{t('assistant.title')}</h2>
-          <p className="text-xs text-neutral-600 dark:text-neutral-400">{t('disclaimer.medical')}</p>
-        </div>
-        <Button size="sm" variant="outline" onClick={() => { setMessages([]); setErrorMsg(null); clearChatHistory(); }}>
-          Clear Chat
-        </Button>
-      </div>
+      <ChatHeader title={t('assistant.title')} disclaimer={t('disclaimer.medical')} isHindi={language === 'hi'} onClear={handleClear} />
       <div className="flex flex-wrap gap-2" aria-label="Prompt suggestions">
         {PROMPT_SUGGESTIONS.map((chip) => <Button key={chip} size="sm" variant="secondary" disabled={isLoading} onClick={() => void sendMessage(chip)}>{chip}</Button>)}
       </div>

@@ -1,5 +1,6 @@
 // Morning briefing card delivering "Today at a glance" safety orientation and one-click sharing.
 import { useState, type ReactElement } from 'react';
+import { Sunrise, Copy, Share2, Check } from 'lucide-react';
 import type { AqiCategory, VulnerabilityGroup } from '../../domain/types.js';
 import type { HourlyAirQualityPoint } from '../../services/openMeteo.types.js';
 import { generateMorningBriefing, type MorningBriefing } from '../../domain/morningBriefing.js';
@@ -24,23 +25,23 @@ function copyToClipboard(text: string): Promise<boolean> {
 function BriefingPillars({ briefing }: { briefing: MorningBriefing }): ReactElement {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-      <div className="p-3.5 rounded-2xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-800 space-y-1">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">Commute Transit</div>
-        <p className="text-xs text-neutral-800 dark:text-neutral-200 leading-relaxed font-medium">
+      <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 space-y-1">
+        <div className="text-[11px] font-bold uppercase tracking-wider text-bento-muted">Commute Transit</div>
+        <p className="text-xs text-bento-ink dark:text-neutral-200 leading-relaxed font-medium">
           {briefing.commuteSafety}
         </p>
       </div>
 
-      <div className="p-3.5 rounded-2xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-800 space-y-1">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">School Morning</div>
-        <p className="text-xs text-neutral-800 dark:text-neutral-200 leading-relaxed font-medium">
+      <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 space-y-1">
+        <div className="text-[11px] font-bold uppercase tracking-wider text-bento-muted">School Morning</div>
+        <p className="text-xs text-bento-ink dark:text-neutral-200 leading-relaxed font-medium">
           {briefing.schoolAdvice}
         </p>
       </div>
 
-      <div className="p-3.5 rounded-2xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-800 space-y-1">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">Evening Inversion</div>
-        <p className="text-xs text-neutral-800 dark:text-neutral-200 leading-relaxed font-medium">
+      <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 space-y-1">
+        <div className="text-[11px] font-bold uppercase tracking-wider text-bento-muted">Evening Inversion</div>
+        <p className="text-xs text-bento-ink dark:text-neutral-200 leading-relaxed font-medium">
           {briefing.eveningPeak}
         </p>
       </div>
@@ -82,37 +83,37 @@ export function MorningBriefingCard(props: MorningBriefingCardProps): ReactEleme
   return (
     <section
       aria-label="Today at a glance morning briefing"
-      className={`p-5 rounded-[24px] border border-neutral-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm space-y-4 ${className}`.trim()}
+      className={`p-6 rounded-3xl bg-bento-canvas/50 dark:bg-neutral-800/40 space-y-4 ${className}`.trim()}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="text-[11px] font-bold text-teal-700 dark:text-teal-400 uppercase tracking-wide">
-            🌅 Today at a glance
+          <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-teal-700 dark:text-teal-400 uppercase tracking-wide">
+            <Sunrise size={14} aria-hidden="true" /> Today at a glance
           </div>
-          <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100">
+          <h3 className="text-base font-bold text-bento-ink dark:text-neutral-100">
             Morning Briefing: {cityName}
           </h3>
         </div>
 
         <div className="flex items-center gap-2">
           {feedback && <span role="status" className="text-xs font-semibold text-teal-700 dark:text-teal-400">{feedback}</span>}
-          <button type="button" onClick={() => void handleCopy()} className="px-3 py-1.5 rounded-full border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 text-xs font-semibold text-neutral-800 dark:text-neutral-200 focus:ring-2 focus:ring-teal-600">
-            📋 Copy Briefing
+          <button type="button" onClick={() => void handleCopy()} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-neutral-800 hover:bg-neutral-100 text-xs font-semibold text-bento-ink dark:text-neutral-200 shadow-sm focus:ring-2 focus:ring-bento-ink/30">
+            <Copy size={12} aria-hidden="true" /> Copy Briefing
           </button>
-          <button type="button" onClick={() => void handleShare()} className="px-3.5 py-1.5 rounded-full bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 text-xs font-semibold hover:bg-neutral-800 focus:ring-2 focus:ring-teal-600 shadow-sm">
-            ↗ Share
+          <button type="button" onClick={() => void handleShare()} className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-bento-ink text-white dark:bg-white dark:text-bento-ink text-xs font-semibold hover:opacity-90 focus:ring-2 focus:ring-bento-ink/30 shadow-sm">
+            <Share2 size={12} aria-hidden="true" /> Share
           </button>
         </div>
       </div>
 
       <BriefingPillars briefing={briefing} />
 
-      <div className="p-4 rounded-2xl bg-neutral-50/50 dark:bg-neutral-800/30 border border-neutral-200/60 dark:border-neutral-700/60">
-        <h4 className="text-xs font-bold uppercase tracking-wide text-neutral-700 dark:text-neutral-300 mb-2">Priority Action Checklist</h4>
-        <ul className="space-y-1.5 text-xs text-neutral-700 dark:text-neutral-300">
+      <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900">
+        <h4 className="text-xs font-bold uppercase tracking-wide text-bento-muted dark:text-neutral-300 mb-2">Priority Action Checklist</h4>
+        <ul className="space-y-1.5 text-xs text-bento-ink dark:text-neutral-300">
           {briefing.checklist.map((item) => (
             <li key={item} className="flex items-start gap-2">
-              <span className="text-teal-700 dark:text-teal-400 font-bold" aria-hidden="true">✓</span>
+              <Check size={14} className="text-teal-700 dark:text-teal-400 shrink-0 mt-0.5" aria-hidden="true" />
               <span>{item}</span>
             </li>
           ))}

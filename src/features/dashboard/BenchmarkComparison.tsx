@@ -28,24 +28,24 @@ function BenchmarkRow({ label, observed, whoLimit, naaqsLimit }: BenchmarkRowPro
     : '—';
 
   return (
-    <div className="p-3.5 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-800/40">
+    <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900">
       <div className="flex items-center justify-between mb-2 text-xs">
-        <span className="font-bold text-neutral-900 dark:text-neutral-100">{label}</span>
-        <span className="text-neutral-500 dark:text-neutral-400">
-          Observed: <strong className="text-neutral-900 dark:text-neutral-100">{displayVal} µg/m³</strong>
+        <span className="font-bold text-bento-ink dark:text-neutral-100">{label}</span>
+        <span className="text-bento-muted dark:text-neutral-400">
+          Observed: <strong className="text-bento-ink dark:text-neutral-100">{displayVal} µg/m³</strong>
         </span>
       </div>
 
       <div className="grid grid-cols-2 gap-2 text-xs">
-        <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800">
-          <div className="text-[11px] text-neutral-500 dark:text-neutral-400">WHO 2021 ({whoLimit} µg/m³)</div>
+        <div className="p-2.5 rounded-xl bg-bento-canvas/60 dark:bg-neutral-800">
+          <div className="text-[11px] text-bento-muted dark:text-neutral-400">WHO 2021 ({whoLimit} µg/m³)</div>
           <div className={`font-extrabold mt-0.5 ${who.isExceeded ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
             {who.label}
           </div>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800">
-          <div className="text-[11px] text-neutral-500 dark:text-neutral-400">Indian NAAQS ({naaqsLimit} µg/m³)</div>
+        <div className="p-2.5 rounded-xl bg-bento-canvas/60 dark:bg-neutral-800">
+          <div className="text-[11px] text-bento-muted dark:text-neutral-400">Indian NAAQS ({naaqsLimit} µg/m³)</div>
           <div className={`font-extrabold mt-0.5 ${naaqs.isExceeded ? 'text-amber-700 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
             {naaqs.label}
           </div>
@@ -65,7 +65,7 @@ export function BenchmarkComparison({ values, className = '' }: BenchmarkCompari
   return (
     <section
       aria-label="Health and Regulatory Benchmarks"
-      className={`p-5 rounded-[24px] border border-neutral-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm ${className}`.trim()}
+      className={`p-6 rounded-3xl bg-bento-canvas/50 dark:bg-neutral-800/40 ${className}`.trim()}
     >
       <details open className="group">
         <summary className="flex items-center justify-between cursor-pointer list-none focus:outline-none focus:ring-2 focus:ring-teal-600 rounded-lg py-1">

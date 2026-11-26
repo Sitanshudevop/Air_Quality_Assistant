@@ -26,7 +26,7 @@ describe('App Component', () => {
     } as Response);
 
     render(<App />);
-    expect(screen.getByRole('heading', { level: 1, name: 'Saans (सांस)' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /Today's air in Delhi is Severe/i })).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByTestId('ai-status')).toHaveTextContent('AI: live');

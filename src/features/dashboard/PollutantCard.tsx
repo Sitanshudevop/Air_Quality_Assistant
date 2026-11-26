@@ -41,17 +41,17 @@ function PollutantItem(props: { meta: PollutantMeta; val?: number | null; showDe
   const pct = isNum ? Math.min(100, Math.round((Math.max(0, val) / meta.maxRef) * 100)) : 0;
 
   return (
-    <div className="p-3 rounded-2xl border border-neutral-200/80 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-800/40 space-y-1.5">
+    <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 space-y-1.5">
       <div className="flex items-baseline justify-between text-xs">
-        <span className="font-bold text-neutral-900 dark:text-neutral-100">{meta.formula}</span>
-        <span className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate max-w-[110px]">{meta.name}</span>
+        <span className="font-bold text-bento-ink dark:text-neutral-100">{meta.formula}</span>
+        <span className="text-[11px] text-bento-muted dark:text-neutral-400 truncate max-w-[110px]">{meta.name}</span>
       </div>
       <div className="flex items-baseline gap-1">
-        <span className="text-xl font-extrabold text-neutral-900 dark:text-neutral-50">{displayVal}</span>
-        <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">{meta.unit}</span>
+        <span className="text-xl font-extrabold text-bento-ink dark:text-neutral-50">{displayVal}</span>
+        <span className="text-xs text-bento-muted dark:text-neutral-400 font-medium">{meta.unit}</span>
       </div>
       <div className="w-full bg-neutral-200 dark:bg-neutral-700 h-1.5 rounded-full overflow-hidden">
-        <div className="bg-teal-700 dark:bg-teal-400 h-full rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
+        <div className="bg-bento-ink dark:bg-white h-full rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
       </div>
       {showDetails && (
         <p className="text-[10px] text-neutral-500 dark:text-neutral-400 pt-0.5">
@@ -74,7 +74,7 @@ export function PollutantCard({ values, className = '' }: PollutantCardProps): R
   return (
     <section
       aria-label="Criteria Pollutants Breakdown"
-      className={`p-5 rounded-[24px] border border-neutral-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm ${className}`.trim()}
+      className={`p-6 rounded-3xl bg-bento-canvas/50 dark:bg-neutral-800/40 ${className}`.trim()}
     >
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">

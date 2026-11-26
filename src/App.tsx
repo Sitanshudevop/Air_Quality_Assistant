@@ -11,8 +11,9 @@ import { SkipLink } from './components/ui/SkipLink.js';
 import { DemoBanner } from './components/layout/DemoBanner.js';
 import { BentoShell } from './components/layout/BentoShell.js';
 import { AppFooter } from './components/layout/AppFooter.js';
-import { FeatureTabs, type FeatureTabId } from './components/layout/FeatureTabs.js';
+import type { FeatureTabId } from './components/layout/FeatureTabs.js';
 import { LocationBar } from './components/layout/LocationBar.js';
+import { useLiveLocation } from './components/layout/useLiveLocation.js';
 import { AppTabPanels } from './components/layout/AppTabPanels.js';
 import { WelcomeRibbon } from './features/onboarding/WelcomeRibbon.js';
 import { mapStoredProfileToDomain } from './features/routine/routineUtils.js';
@@ -31,10 +32,8 @@ function schedulePostPaint(task: () => void): () => void {
 }
 
 function AppModals(props: {
-  isTourOpen: boolean;
-  isProfileOpen: boolean;
-  onCloseTour: () => void;
-  onCloseProfile: () => void;
+  isTourOpen: boolean; isProfileOpen: boolean;
+  onCloseTour: () => void; onCloseProfile: () => void;
 }): ReactElement {
   return (
     <Suspense fallback={null}>
@@ -42,21 +41,6 @@ function AppModals(props: {
       {props.isProfileOpen && <ProfileWizard isOpen={props.isProfileOpen} onClose={props.onCloseProfile} />}
     </Suspense>
   );
-}
-
-function useAppState(opts: {
-  isDemo: boolean;
-  demoCityId: DemoCityId;
-  demoPersonaId: DemoPersonaId;
-  liveData: { aq: AirQualityData; label: string } | null;
-  liveForecast: ForecastData | null;
-  manualData: ManualAirQualityData | null;
-}): { conditions: ReturnType<typeof resolveActiveConditions>; profile: ReturnType<typeof resolveEffectiveProfile>; domainProfile: ReturnType<typeof mapStoredProfileToDomain>; routineItems: ReturnType<typeof generateRoutine> } {
-  const conditions = resolveActiveConditions(opts);
-  const profile = resolveEffectiveProfile(opts.isDemo, opts.demoPersonaId);
-  const domainProfile = mapStoredProfileToDomain(profile);
-  const routineItems = conditions.category ? generateRoutine(conditions.category, domainProfile) : [];
-  return { conditions, profile, domainProfile, routineItems };
 }
 
 function AppShell(): ReactElement {
@@ -79,26 +63,45 @@ function AppShell(): ReactElement {
     return () => { cancel(); controller.abort(); };
   }, []);
 
-  const { conditions, profile, domainProfile, routineItems } = useAppState({ isDemo, demoCityId, demoPersonaId, liveData, liveForecast, manualData });
+  const liveState = useLiveLocation({
+    onLiveData: (aq, fc, label) => { setLiveData({ aq, label }); setLiveForecast(fc); setManualData(null); },
+    onManualReading: (reading) => setManualData(reading),
+    onSwitchToLive: () => { if (isDemo) setMode('live'); },
+  });
+
+  const conditions = resolveActiveConditions({ isDemo, demoCityId, liveData, liveForecast, manualData });
+  const profile = resolveEffectiveProfile(isDemo, demoPersonaId);
+  const domainProfile = mapStoredProfileToDomain(profile);
+  const routineItems = conditions.category ? generateRoutine(conditions.category, domainProfile) : [];
   const handleToggleTheme = (): void => { const n = !isDark; setIsDark(n); document.documentElement.classList.toggle('dark', n); };
   const focusSearch = (): void => { document.getElementById('live-city-search')?.focus(); };
-  const headerProps = {
-    mode, onToggleMode: toggleMode, cityName: conditions.cityName, category: conditions.category,
-    onSearchCity: (q: string) => { const el = document.getElementById('live-city-search') as HTMLInputElement | null; if (el) { el.value = q; el.dispatchEvent(new Event('input', { bubbles: true })); } focusSearch(); },
-    onUseLocation: () => { document.getElementById('use-location-btn')?.click(); },
-    onLaunchDemo: () => setMode('demo'),
-  };
 
   return (
     <>
       <SkipLink targetId="#main-content" />
       <DemoBanner isDemo={isDemo} />
-      <BentoShell activeTab={activeTab} onSelectTab={setActiveTab} isDark={isDark} onToggleTheme={handleToggleTheme} onToggleLang={toggleLanguage} onOpenTour={() => setIsTourOpen(true)} onOpenProfile={() => setIsProfileOpen(true)} headerProps={headerProps}>
-        <main id="main-content" tabIndex={-1} className="space-y-5 focus:outline-none pt-2">
+      <BentoShell
+        activeTab={activeTab} onSelectTab={setActiveTab} isDark={isDark} onToggleTheme={handleToggleTheme}
+        onToggleLang={toggleLanguage} onOpenTour={() => setIsTourOpen(true)} onOpenProfile={() => setIsProfileOpen(true)}
+        headerProps={{
+          mode, onToggleMode: toggleMode, cityName: conditions.cityName, category: conditions.category,
+          searchQuery: liveState.query, onSearchChange: liveState.onQueryChange,
+          onSearchSubmit: liveState.onSearchSubmit, onUseLocation: liveState.onGeo, onToggleManual: liveState.onToggleManual,
+        }}
+      >
+        <main id="main-content" tabIndex={-1} className="space-y-5 focus:outline-none">
           <WelcomeRibbon onLaunchDemo={() => setMode('demo')} onOpenProfile={() => setIsProfileOpen(true)} onStartTour={() => setIsTourOpen(true)} />
-          <LocationBar isDemo={isDemo} demoCityId={demoCityId} demoPersonaId={demoPersonaId} onSelectDemoCity={setDemoCityId} onSelectDemoPersona={setDemoPersonaId} onLiveData={(aq, fc, label) => { setLiveData({ aq, label }); setLiveForecast(fc); setManualData(null); }} onManualReading={(reading) => setManualData(reading)} />
-          <FeatureTabs activeTab={activeTab} onSelectTab={setActiveTab} />
-          <AppTabPanels key={`panel-${profileVer}`} activeTab={activeTab} conditions={conditions} profile={profile} domainProfile={domainProfile} routineItems={routineItems} onLaunchDemo={() => setMode('demo')} onFocusSearch={focusSearch} onProfileUpdated={() => setProfileVer((v) => v + 1)} />
+          <LocationBar
+            isDemo={isDemo} demoCityId={demoCityId} demoPersonaId={demoPersonaId}
+            onSelectDemoCity={setDemoCityId} onSelectDemoPersona={setDemoPersonaId}
+            onLiveData={(aq, fc, label) => { setLiveData({ aq, label }); setLiveForecast(fc); setManualData(null); }}
+            onManualReading={(reading) => setManualData(reading)} liveState={liveState}
+          />
+          <AppTabPanels
+            key={`panel-${profileVer}`} activeTab={activeTab} conditions={conditions} profile={profile}
+            domainProfile={domainProfile} routineItems={routineItems}
+            onLaunchDemo={() => setMode('demo')} onFocusSearch={focusSearch} onProfileUpdated={() => setProfileVer((v) => v + 1)}
+          />
         </main>
       </BentoShell>
       <AppFooter />
@@ -114,10 +117,6 @@ function AppShell(): ReactElement {
  */
 export function App(): ReactElement {
   return (
-    <LanguageProvider>
-      <ModeProvider>
-        <AppShell />
-      </ModeProvider>
-    </LanguageProvider>
+    <LanguageProvider><ModeProvider><AppShell /></ModeProvider></LanguageProvider>
   );
 }

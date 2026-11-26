@@ -59,7 +59,7 @@ export function WeatherMixingFactors({
   return (
     <section
       aria-label="Atmospheric Weather Mixing Factors"
-      className={`p-5 rounded-[24px] border border-neutral-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm ${className}`.trim()}
+      className={`p-6 rounded-3xl bg-bento-canvas/50 dark:bg-neutral-800/40 ${className}`.trim()}
     >
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
@@ -82,32 +82,32 @@ export function WeatherMixingFactors({
       </p>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
-        <div className="p-3 rounded-2xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-800 flex items-center gap-2.5">
-          <Thermometer size={18} className="text-neutral-500 flex-shrink-0" aria-hidden="true" />
+        <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 flex items-center gap-2.5">
+          <Thermometer size={18} className="text-bento-muted shrink-0" aria-hidden="true" />
           <div>
-            <div className="text-[11px] text-neutral-500 dark:text-neutral-400">Temperature</div>
-            <div className="text-base font-bold text-neutral-900 dark:text-neutral-100">{temp}°C</div>
+            <div className="text-[11px] text-bento-muted dark:text-neutral-400">Temperature</div>
+            <div className="text-base font-bold text-bento-ink dark:text-neutral-100">{temp}°C</div>
           </div>
         </div>
-        <div className="p-3 rounded-2xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-800 flex items-center gap-2.5">
-          <Droplets size={18} className="text-neutral-500 flex-shrink-0" aria-hidden="true" />
+        <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 flex items-center gap-2.5">
+          <Droplets size={18} className="text-bento-muted shrink-0" aria-hidden="true" />
           <div>
-            <div className="text-[11px] text-neutral-500 dark:text-neutral-400">Humidity</div>
-            <div className="text-base font-bold text-neutral-900 dark:text-neutral-100">{humidity}%</div>
+            <div className="text-[11px] text-bento-muted dark:text-neutral-400">Humidity</div>
+            <div className="text-base font-bold text-bento-ink dark:text-neutral-100">{humidity}%</div>
           </div>
         </div>
-        <div className="p-3 rounded-2xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-800 flex items-center gap-2.5">
-          <WindIcon size={18} className="text-neutral-500 flex-shrink-0" aria-hidden="true" />
+        <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 flex items-center gap-2.5">
+          <WindIcon size={18} className="text-bento-muted shrink-0" aria-hidden="true" />
           <div>
-            <div className="text-[11px] text-neutral-500 dark:text-neutral-400">Wind Speed</div>
-            <div className="text-base font-bold text-neutral-900 dark:text-neutral-100">{wind} m/s</div>
+            <div className="text-[11px] text-bento-muted dark:text-neutral-400">Wind Speed</div>
+            <div className="text-base font-bold text-bento-ink dark:text-neutral-100">{wind} m/s</div>
           </div>
         </div>
-        <div className="p-3 rounded-2xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-800 flex items-center gap-2.5">
-          <Gauge size={18} className="text-neutral-500 flex-shrink-0" aria-hidden="true" />
+        <div className="p-3.5 rounded-2xl bg-white dark:bg-neutral-900 flex items-center gap-2.5">
+          <Gauge size={18} className="text-bento-muted shrink-0" aria-hidden="true" />
           <div>
-            <div className="text-[11px] text-neutral-500 dark:text-neutral-400">Pressure</div>
-            <div className="text-base font-bold text-neutral-900 dark:text-neutral-100">{pressure} hPa</div>
+            <div className="text-[11px] text-bento-muted dark:text-neutral-400">Pressure</div>
+            <div className="text-base font-bold text-bento-ink dark:text-neutral-100">{pressure} hPa</div>
           </div>
         </div>
       </div>

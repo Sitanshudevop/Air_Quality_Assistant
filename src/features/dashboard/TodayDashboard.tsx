@@ -5,7 +5,8 @@ import type { DataOrigin, DataStatus } from '../../state/activeConditions.js';
 import { DataEmptyState } from '../../components/ui/DataEmptyState.js';
 import { DataSkeleton } from '../../components/ui/DataSkeleton.js';
 import { DataErrorState } from '../../components/ui/DataErrorState.js';
-import { TodayHero } from './TodayHero.js';
+import { TodayDashboardMeta } from './TodayDashboardMeta.js';
+import { KpiRow } from './KpiRow.js';
 import { MorningBriefingCard } from '../briefing/MorningBriefingCard.js';
 import { ActivityVerdictsCard } from '../verdicts/ActivityVerdictsCard.js';
 import { PersonalizePlanCard } from './PersonalizePlanCard.js';
@@ -58,14 +59,17 @@ function DashboardContent(props: TodayDashboardProps): ReactElement {
       aria-label="Today Air Quality Condition"
       className={`space-y-6 text-neutral-900 dark:text-neutral-50 ${props.className ?? ''}`.trim()}
     >
-      <TodayHero
+      <TodayDashboardMeta
         cityName={props.cityName}
-        aqi={props.aqi}
-        category={props.category}
-        dominantPollutant={props.dominantPollutant}
         timestamp={props.timestamp}
         sourceLabel={props.sourceLabel}
         isEstimate={props.isEstimate}
+      />
+      <KpiRow
+        aqi={props.aqi}
+        category={props.category}
+        dominantPollutant={props.dominantPollutant}
+        hourlyPoints={props.hourlyPoints}
       />
       <MorningBriefingCard
         cityName={props.cityName}

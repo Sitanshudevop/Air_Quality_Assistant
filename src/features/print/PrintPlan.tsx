@@ -33,7 +33,7 @@ export function PrintPlan({
   return (
     <section
       aria-labelledby="print-plan-heading"
-      className="print-card p-4 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 space-y-3"
+      className="print-card p-6 rounded-3xl bg-bento-canvas/50 dark:bg-neutral-800/40 space-y-3"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
@@ -47,7 +47,7 @@ export function PrintPlan({
         <PrintButton label="Print Family Smog Plan" />
       </div>
 
-      <div className="print-emergency p-3 rounded-lg border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/30 text-xs">
+      <div className="print-emergency p-3.5 rounded-2xl bg-bento-blush dark:bg-rose-950/30 text-bento-ink dark:text-rose-200 text-xs">
         <strong>Emergency Medical Contacts:</strong> National Emergency 112 | Ambulance 102. Seek
         urgent hospital care for severe breathlessness, chest pain, or cyanosis.
       </div>

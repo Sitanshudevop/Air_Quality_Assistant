@@ -28,10 +28,9 @@ export function WelcomeRibbon({ onLaunchDemo, onOpenProfile, onStartTour }: Welc
   };
 
   return (
-    <div
-      role="banner"
+    <section
       aria-label="Welcome to Saans"
-      className="flex flex-wrap items-center justify-between gap-2 px-5 py-2 bg-bento-lavender dark:bg-neutral-800 text-xs text-bento-ink dark:text-white"
+      className="flex flex-wrap items-center justify-between gap-2 px-5 py-2.5 rounded-2xl bg-bento-lavender dark:bg-neutral-800 text-xs text-bento-ink dark:text-white"
     >
       <div className="flex flex-wrap items-center gap-3">
         <span className="font-semibold">New here?</span>
@@ -53,6 +52,6 @@ export function WelcomeRibbon({ onLaunchDemo, onOpenProfile, onStartTour }: Welc
       >
         <X size={14} aria-hidden="true" />
       </button>
-    </div>
+    </section>
   );
 }

@@ -83,7 +83,7 @@ export function PersonalizePlanCard({ onProfileUpdated, className = '' }: Person
   };
 
   return (
-    <section aria-labelledby="personalize-plan-heading" className={`p-5 sm:p-6 rounded-[24px] bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-sm space-y-4 ${className}`.trim()}>
+    <section aria-labelledby="personalize-plan-heading" className={`p-6 rounded-3xl bg-bento-canvas/50 dark:bg-neutral-800/40 space-y-4 ${className}`.trim()}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 id="personalize-plan-heading" className="text-base font-bold text-neutral-900 dark:text-neutral-100">

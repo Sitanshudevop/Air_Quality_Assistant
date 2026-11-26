@@ -37,7 +37,7 @@ export function CleanerHoursCard({
   return (
     <section
       aria-label="Cleaner Hours and Cache Freshness"
-      className={`p-5 rounded-[24px] border border-neutral-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm space-y-4 ${className}`.trim()}
+      className={`p-6 rounded-3xl bg-bento-canvas/50 dark:bg-neutral-800/40 space-y-4 ${className}`.trim()}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -68,7 +68,7 @@ export function CleanerHoursCard({
         </div>
       </div>
 
-      <div className="p-4 rounded-2xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-800 space-y-2">
+      <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 space-y-2">
         <div className="flex items-baseline justify-between text-xs">
           <span className="font-bold text-neutral-900 dark:text-neutral-100">
             {res.cleanHoursCount} of {res.totalHours} evaluated hours

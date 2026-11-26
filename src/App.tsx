@@ -105,8 +105,8 @@ function AppShell(): ReactElement {
             onProfileUpdated={() => setProfileVer((v) => v + 1)}
           />
         </main>
+        <AppFooter />
       </BentoShell>
-      <AppFooter />
       <AppModals isTourOpen={isTourOpen} isProfileOpen={isProfileOpen} onCloseTour={() => setIsTourOpen(false)} onCloseProfile={() => setIsProfileOpen(false)} />
     </>
   );

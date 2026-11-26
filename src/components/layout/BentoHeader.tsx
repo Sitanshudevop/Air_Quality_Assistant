@@ -1,6 +1,6 @@
 // Multi-tier responsive Bento header: logo + greeting + mobile utilities + search + GPS + mode toggle.
 import type { FormEvent, ReactElement } from 'react';
-import { Search, LocateFixed, Loader2, SlidersHorizontal, Languages, Sun, Moon, Compass, UserCircle } from 'lucide-react';
+import { Search, X, LocateFixed, Loader2, SlidersHorizontal, Languages, Sun, Moon, Compass, UserCircle } from 'lucide-react';
 import type { OperatingMode } from '../../state/mode.js';
 import { useLanguage } from '../../state/language.js';
 import type { AqiCategory } from '../../domain/types.js';
@@ -87,14 +87,23 @@ function SearchAndLocationBar(props: {
   return (
     <div className="flex items-center gap-2 min-w-0 flex-1 xl:max-w-xl">
       <form onSubmit={props.onSubmit} className="flex items-center flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-1 min-w-0 min-h-[44px] bg-bento-canvas dark:bg-neutral-800 rounded-full px-3.5 py-2 focus-within:ring-2 focus-within:ring-bento-ink/25">
-          <Search size={14} className="text-bento-muted shrink-0" aria-hidden="true" />
+        <div className="flex items-center gap-2 bg-slate-100/90 hover:bg-slate-100 focus-within:bg-white focus-within:ring-2 focus-within:ring-slate-900/15 focus-within:border-slate-300 border border-slate-200/80 dark:bg-neutral-800 dark:border-neutral-700 dark:focus-within:bg-neutral-900 rounded-full px-3.5 py-2 min-h-[44px] transition-all w-full max-w-md min-w-0">
+          <Search size={15} className="text-slate-400 shrink-0" aria-hidden="true" />
           <label htmlFor="live-city-search" className="sr-only">Search city</label>
           <input
             id="live-city-search" type="search" maxLength={100} value={props.searchQuery}
+            spellCheck={false} autoComplete="off"
             onChange={(e) => props.onSearchChange(e.target.value)} placeholder="Search city..." aria-label="Search city"
-            className="flex-1 bg-transparent text-xs text-bento-ink dark:text-white placeholder-bento-muted outline-none min-w-0"
+            className="bg-transparent border-none outline-none ring-0 focus:outline-none focus:ring-0 appearance-none [&::-webkit-search-cancel-button]:hidden w-full text-sm text-slate-900 dark:text-white placeholder:text-slate-400 p-0 min-w-0"
           />
+          {props.searchQuery && (
+            <button
+              type="button" onClick={() => props.onSearchChange('')} aria-label="Clear search"
+              className="text-slate-400 hover:text-slate-700 dark:hover:text-white shrink-0 p-0.5 rounded-full transition-colors"
+            >
+              <X size={14} aria-hidden="true" />
+            </button>
+          )}
         </div>
       </form>
       <button

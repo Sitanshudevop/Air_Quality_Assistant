@@ -1,4 +1,4 @@
-// BentoShell: responsive outer layout with sticky tablet/desktop sidebar, mobile bottom nav, and rounded card.
+// BentoShell: viewport-locked desktop shell with stationary hover-expanding sidebar and scrollable main content.
 import type { ReactElement } from 'react';
 import type { FeatureTabId } from './FeatureTabs.js';
 import { BentoSidebar } from './BentoSidebar.js';
@@ -19,7 +19,7 @@ export interface BentoShellProps {
 }
 
 /**
- * Responsive Bento dashboard shell across mobile (320px+), tablet, desktop, and ultra-wide screens.
+ * Responsive Bento dashboard shell with viewport-locked sidebar on desktop and bottom nav on mobile.
  *
  * @param props - Layout state, utility callbacks, header props, and child content.
  * @returns React element.
@@ -29,8 +29,8 @@ export function BentoShell({
   onOpenTour, onOpenProfile, headerProps, children,
 }: BentoShellProps): ReactElement {
   return (
-    <div className="min-h-dvh overflow-x-hidden bg-bento-canvas dark:bg-neutral-950 p-0 md:p-4 pb-24 md:pb-4 font-sans transition-colors">
-      <div className="max-w-[1600px] mx-auto flex items-start gap-4 min-w-0">
+    <div className="min-h-dvh overflow-x-clip md:h-dvh md:overflow-hidden bg-bento-canvas dark:bg-neutral-950 p-0 md:p-4 pb-24 md:pb-4 font-sans transition-colors">
+      <div className="max-w-[1600px] mx-auto flex items-stretch gap-4 min-w-0 md:h-full">
         <BentoSidebar
           activeTab={activeTab}
           onSelectTab={onSelectTab}
@@ -41,7 +41,7 @@ export function BentoShell({
           onOpenProfile={onOpenProfile}
         />
 
-        <div className="flex-1 min-w-0 flex flex-col bg-white dark:bg-neutral-900 rounded-none md:rounded-3xl shadow-sm">
+        <div className="flex-1 min-w-0 flex flex-col bg-white dark:bg-neutral-900 rounded-none md:rounded-3xl shadow-sm md:h-full md:overflow-hidden">
           <BentoHeader
             {...headerProps}
             isDark={isDark}
@@ -50,7 +50,7 @@ export function BentoShell({
             onOpenTour={onOpenTour}
             onOpenProfile={onOpenProfile}
           />
-          <div className="px-3.5 sm:px-6 pb-6 min-w-0">
+          <div className="flex-1 min-w-0 md:overflow-y-auto px-3.5 sm:px-6 pb-6">
             {children}
           </div>
         </div>

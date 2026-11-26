@@ -5,11 +5,11 @@ import type { ActiveConditions } from '../../state/activeConditions.js';
 import type { StoredProfile } from '../../services/profile.types.js';
 import type { RoutineItem, UserProfile } from '../../domain/types.js';
 import { TodayDashboard } from '../../features/dashboard/TodayDashboard.js';
+import { HourlyOutlook } from '../../features/outlook/HourlyOutlook.js';
 import { PrintPlan } from '../../features/print/PrintPlan.js';
 import { TabEmptyNotice } from '../ui/TabEmptyNotice.js';
 import { TabHeader } from './TabHeader.js';
 
-const HourlyOutlook = lazy(() => import('../../features/outlook/HourlyOutlook.js').then((m) => ({ default: m.HourlyOutlook })));
 const RoutineView = lazy(() => import('../../features/routine/RoutineView.js').then((m) => ({ default: m.RoutineView })));
 const IndoorView = lazy(() => import('../../features/indoor/IndoorView.js').then((m) => ({ default: m.IndoorView })));
 const ImpactView = lazy(() => import('../../features/impact/ImpactView.js').then((m) => ({ default: m.ImpactView })));
@@ -46,15 +46,13 @@ function TodayPanel(p: AppTabPanelsProps): ReactElement {
         timestamp={conditions.timestamp}
         isEstimate={conditions.isEstimate}
         errorMessage={conditions.errorMessage}
+        vulnerability={p.domainProfile.vulnerability}
+        hourlyPoints={conditions.hourlyPoints}
         onFocusSearch={onFocusSearch}
         onLaunchDemo={onLaunchDemo}
         onProfileUpdated={onProfileUpdated}
       />
-      {showOutlook && (
-        <Suspense fallback={<p className="p-4 text-xs">Loading outlook...</p>}>
-          <HourlyOutlook points={conditions.hourlyPoints} />
-        </Suspense>
-      )}
+      {showOutlook && <HourlyOutlook points={conditions.hourlyPoints} />}
       <PrintPlan cityName={conditions.cityName} aqi={conditions.aqi} category={conditions.category} routineItems={routineItems} />
     </>
   );

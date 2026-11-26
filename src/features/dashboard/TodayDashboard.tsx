@@ -1,16 +1,19 @@
-// Today condition dashboard aggregating hero, profile calibration, criteria pollutants, benchmarks, and mixing factors.
+// Today condition dashboard aggregating hero, morning briefing, verdicts, calibration, metrics, and cleaner hours.
 import type { ReactElement } from 'react';
-import type { AqiCategory } from '../../domain/types.js';
+import type { AqiCategory, VulnerabilityGroup } from '../../domain/types.js';
 import type { DataOrigin, DataStatus } from '../../state/activeConditions.js';
 import { DataEmptyState } from '../../components/ui/DataEmptyState.js';
 import { DataSkeleton } from '../../components/ui/DataSkeleton.js';
 import { DataErrorState } from '../../components/ui/DataErrorState.js';
 import { TodayHero } from './TodayHero.js';
+import { MorningBriefingCard } from '../briefing/MorningBriefingCard.js';
+import { ActivityVerdictsCard } from '../verdicts/ActivityVerdictsCard.js';
 import { PersonalizePlanCard } from './PersonalizePlanCard.js';
+import { CleanerHoursCard } from './CleanerHoursCard.js';
 import { PollutantCard, type PollutantValues } from './PollutantCard.js';
 import { BenchmarkComparison } from './BenchmarkComparison.js';
 import { WeatherMixingFactors } from './WeatherMixingFactors.js';
-import type { WeatherFactors } from '../../services/openMeteo.types.js';
+import type { HourlyAirQualityPoint, WeatherFactors } from '../../services/openMeteo.types.js';
 import type { StoredProfile } from '../../services/profile.types.js';
 
 /** Props for TodayDashboard component. */
@@ -19,8 +22,9 @@ export interface TodayDashboardProps {
   aqi?: number; category?: AqiCategory; dominantPollutant?: string;
   isEstimate?: boolean; pollutants?: PollutantValues; weatherFactors?: Partial<WeatherFactors>;
   sourceLabel?: string; timestamp?: string; errorMessage?: string; className?: string;
+  vulnerability?: VulnerabilityGroup; hourlyPoints?: readonly HourlyAirQualityPoint[];
   onFocusSearch?: () => void; onUseLocation?: () => void; onManualReading?: () => void;
-  onLaunchDemo?: () => void; onRetry?: () => void;
+  onLaunchDemo?: () => void; onRetry?: () => void; onRefreshCache?: () => void;
   onProfileUpdated?: (profile: StoredProfile) => void;
 }
 
@@ -63,9 +67,21 @@ function DashboardContent(props: TodayDashboardProps): ReactElement {
         sourceLabel={props.sourceLabel}
         isEstimate={props.isEstimate}
       />
-
+      <MorningBriefingCard
+        cityName={props.cityName}
+        aqi={props.aqi}
+        category={props.category}
+        vulnerability={props.vulnerability}
+        points={props.hourlyPoints}
+      />
+      <ActivityVerdictsCard
+        aqi={props.aqi}
+        category={props.category}
+        vulnerability={props.vulnerability}
+        points={props.hourlyPoints}
+      />
       <PersonalizePlanCard onProfileUpdated={props.onProfileUpdated} />
-
+      <CleanerHoursCard points={props.hourlyPoints} onRefresh={props.onRefreshCache} />
       <DashboardMetrics
         pollutants={props.pollutants}
         weatherFactors={props.weatherFactors}
@@ -88,7 +104,6 @@ export function TodayDashboard(props: TodayDashboardProps): ReactElement {
   if (currentStatus === 'loading') {
     return <DataSkeleton className={props.className} />;
   }
-
   if (currentStatus === 'error') {
     return (
       <DataErrorState
@@ -99,7 +114,6 @@ export function TodayDashboard(props: TodayDashboardProps): ReactElement {
       />
     );
   }
-
   if (currentStatus === 'empty' || props.aqi === undefined) {
     return (
       <DataEmptyState

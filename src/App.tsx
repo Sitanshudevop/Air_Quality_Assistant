@@ -14,6 +14,7 @@ import { AppFooter } from './components/layout/AppFooter.js';
 import { FeatureTabs, type FeatureTabId } from './components/layout/FeatureTabs.js';
 import { LocationBar } from './components/layout/LocationBar.js';
 import { AppTabPanels } from './components/layout/AppTabPanels.js';
+import { BottomNav } from './components/layout/BottomNav.js';
 import { WelcomeCard } from './features/onboarding/WelcomeCard.js';
 import { mapStoredProfileToDomain } from './features/routine/routineUtils.js';
 import { checkAiStatus } from './services/ai.js';
@@ -55,6 +56,7 @@ function AppShell(): ReactElement {
   const [liveData, setLiveData] = useState<{ aq: AirQualityData; label: string } | null>(null);
   const [liveForecast, setLiveForecast] = useState<ForecastData | null>(null);
   const [manualData, setManualData] = useState<ManualAirQualityData | null>(null);
+  const [profileVer, setProfileVer] = useState<number>(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -74,12 +76,12 @@ function AppShell(): ReactElement {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-50 font-sans p-4 sm:p-6 transition-colors">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50/40 via-white to-white text-neutral-900 dark:bg-gradient-to-b dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-900 dark:text-neutral-50 font-sans p-4 sm:p-6 pb-20 md:pb-8 transition-colors">
       <SkipLink targetId="#main-content" />
       <DemoBanner isDemo={isDemo} />
       <AppHeader mode={mode} onToggleMode={toggleMode} isDark={isDark} onToggleTheme={handleToggleTheme} onOpenTour={() => setIsTourOpen(true)} onOpenProfile={() => setIsProfileOpen(true)} />
 
-      <main id="main-content" tabIndex={-1} className="max-w-5xl mx-auto space-y-6 focus:outline-none">
+      <main id="main-content" tabIndex={-1} className="max-w-[1200px] mx-auto space-y-6 focus:outline-none">
         <WelcomeCard onLaunchDemo={() => setMode('demo')} onOpenProfile={() => setIsProfileOpen(true)} onStartTour={() => setIsTourOpen(true)} />
         <LocationBar
           isDemo={isDemo}
@@ -92,6 +94,7 @@ function AppShell(): ReactElement {
         />
         <FeatureTabs activeTab={activeTab} onSelectTab={setActiveTab} />
         <AppTabPanels
+          key={`panel-${profileVer}`}
           activeTab={activeTab}
           conditions={conditions}
           profile={profile}
@@ -99,10 +102,12 @@ function AppShell(): ReactElement {
           routineItems={routineItems}
           onLaunchDemo={() => setMode('demo')}
           onFocusSearch={() => document.getElementById('live-city-search')?.focus()}
+          onProfileUpdated={() => setProfileVer((v) => v + 1)}
         />
       </main>
 
       <AppFooter />
+      <BottomNav activeTab={activeTab} onSelectTab={setActiveTab} />
       <AppModals isTourOpen={isTourOpen} isProfileOpen={isProfileOpen} onCloseTour={() => setIsTourOpen(false)} onCloseProfile={() => setIsProfileOpen(false)} />
     </div>
   );

@@ -18,7 +18,7 @@ export const LIGHT_THEME = {
   textSecondary: '#334155',
   textMuted: '#475569',
   controlBorder: '#64748b',
-  brand: '#0369a1',
+  brand: '#0f766e',
 } as const;
 
 /** Theme token definitions for dark mode. */
@@ -29,7 +29,7 @@ export const DARK_THEME = {
   textSecondary: '#cbd5e1',
   textMuted: '#94a3b8',
   controlBorder: '#94a3b8',
-  brand: '#38bdf8',
+  brand: '#2dd4bf',
 } as const;
 
 /** Light theme CPCB AQI band color tokens. */

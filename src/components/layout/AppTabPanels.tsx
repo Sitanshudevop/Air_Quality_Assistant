@@ -7,6 +7,7 @@ import type { RoutineItem, UserProfile } from '../../domain/types.js';
 import { TodayDashboard } from '../../features/dashboard/TodayDashboard.js';
 import { PrintPlan } from '../../features/print/PrintPlan.js';
 import { TabEmptyNotice } from '../ui/TabEmptyNotice.js';
+import { TabHeader } from './TabHeader.js';
 
 const HourlyOutlook = lazy(() => import('../../features/outlook/HourlyOutlook.js').then((m) => ({ default: m.HourlyOutlook })));
 const RoutineView = lazy(() => import('../../features/routine/RoutineView.js').then((m) => ({ default: m.RoutineView })));
@@ -24,12 +25,12 @@ export interface AppTabPanelsProps {
   readonly routineItems: readonly RoutineItem[];
   readonly onLaunchDemo: () => void;
   readonly onFocusSearch: () => void;
+  readonly onProfileUpdated?: (profile: StoredProfile) => void;
 }
 
 function TodayPanel(p: AppTabPanelsProps): ReactElement {
-  const { conditions, routineItems, onFocusSearch, onLaunchDemo } = p;
+  const { conditions, routineItems, onFocusSearch, onLaunchDemo, onProfileUpdated } = p;
   const showOutlook = conditions.status === 'ready' && conditions.hourlyPoints.length > 0;
-
   return (
     <>
       <TodayDashboard
@@ -47,6 +48,7 @@ function TodayPanel(p: AppTabPanelsProps): ReactElement {
         errorMessage={conditions.errorMessage}
         onFocusSearch={onFocusSearch}
         onLaunchDemo={onLaunchDemo}
+        onProfileUpdated={onProfileUpdated}
       />
       {showOutlook && (
         <Suspense fallback={<p className="p-4 text-xs">Loading outlook...</p>}>
@@ -61,7 +63,12 @@ function TodayPanel(p: AppTabPanelsProps): ReactElement {
 function RoutinePanel(p: AppTabPanelsProps): ReactElement {
   const { conditions, profile, onLaunchDemo, onFocusSearch } = p;
   if (conditions.status === 'ready' && conditions.aqi !== undefined && conditions.category) {
-    return <RoutineView aqi={conditions.aqi} category={conditions.category} cityName={conditions.cityName ?? ''} profile={profile} />;
+    return (
+      <div className="space-y-4">
+        <TabHeader breadcrumbCurrent="Daily Routine" title="Daily Routine" subtitle={`8 diurnal blocks for ${conditions.cityName ?? 'your city'} (${conditions.category}, Est. AQI ${conditions.aqi})`} />
+        <RoutineView aqi={conditions.aqi} category={conditions.category} cityName={conditions.cityName ?? ''} profile={profile} />
+      </div>
+    );
   }
   return <TabEmptyNotice tabName="Daily Routine" onLaunchDemo={onLaunchDemo} onFocusSearch={onFocusSearch} />;
 }
@@ -69,7 +76,12 @@ function RoutinePanel(p: AppTabPanelsProps): ReactElement {
 function IndoorPanel(p: AppTabPanelsProps): ReactElement {
   const { conditions, onLaunchDemo, onFocusSearch } = p;
   if (conditions.status === 'ready' && conditions.aqi !== undefined) {
-    return <IndoorView aqi={conditions.aqi} cityName={conditions.cityName ?? ''} />;
+    return (
+      <div className="space-y-4">
+        <TabHeader breadcrumbCurrent="Indoor Hacks" title="Indoor Hacks" subtitle="CADR calculations, room ventilation locks, and low-cost purification" />
+        <IndoorView aqi={conditions.aqi} cityName={conditions.cityName ?? ''} />
+      </div>
+    );
   }
   return <TabEmptyNotice tabName="Indoor Hacks" onLaunchDemo={onLaunchDemo} onFocusSearch={onFocusSearch} />;
 }
@@ -77,20 +89,34 @@ function IndoorPanel(p: AppTabPanelsProps): ReactElement {
 function ImpactPanel(p: AppTabPanelsProps): ReactElement {
   const { conditions, domainProfile, onLaunchDemo, onFocusSearch } = p;
   if (conditions.status === 'ready' && conditions.aqi !== undefined && conditions.pm25 !== undefined) {
-    return <ImpactView aqi={conditions.aqi} pm25={conditions.pm25} cityName={conditions.cityName ?? ''} vulnerability={domainProfile.vulnerability} />;
+    return (
+      <div className="space-y-4">
+        <TabHeader breadcrumbCurrent="Impact Explainer" title="Impact Explainer" subtitle="Evaluate exposure reductions across travel modes and mask ratings" />
+        <ImpactView aqi={conditions.aqi} pm25={conditions.pm25} cityName={conditions.cityName ?? ''} vulnerability={domainProfile.vulnerability} />
+      </div>
+    );
   }
   return <TabEmptyNotice tabName="Impact Explainer" onLaunchDemo={onLaunchDemo} onFocusSearch={onFocusSearch} />;
 }
 
 function ChatPanel(p: AppTabPanelsProps): ReactElement {
-  const { conditions } = p;
-  return <ChatView aqi={conditions.aqi ?? 0} category={conditions.category ?? 'Moderate'} cityName={conditions.cityName ?? 'your city'} />;
+  return (
+    <div className="space-y-4">
+      <TabHeader breadcrumbCurrent="Assistant" title="AI Air Quality Assistant" subtitle="Ask questions on air pollution, health protection, and emergency precautions" />
+      <ChatView aqi={p.conditions.aqi ?? 0} category={p.conditions.category ?? 'Moderate'} cityName={p.conditions.cityName ?? 'your city'} />
+    </div>
+  );
 }
 
 function CommunityPanel(p: AppTabPanelsProps): ReactElement {
   const { conditions, onLaunchDemo, onFocusSearch } = p;
   if (conditions.status === 'ready' && conditions.aqi !== undefined && conditions.category) {
-    return <CommunityKitView aqi={conditions.aqi} category={conditions.category} cityName={conditions.cityName ?? ''} />;
+    return (
+      <div className="space-y-4">
+        <TabHeader breadcrumbCurrent="Community Kit" title="Community Kit" subtitle="Posters, awareness templates, and local clean air initiatives" />
+        <CommunityKitView aqi={conditions.aqi} category={conditions.category} cityName={conditions.cityName ?? ''} />
+      </div>
+    );
   }
   return <TabEmptyNotice tabName="Community Kit" onLaunchDemo={onLaunchDemo} onFocusSearch={onFocusSearch} />;
 }
@@ -112,7 +138,6 @@ const TAB_VIEWS: Record<FeatureTabId, (p: AppTabPanelsProps) => ReactElement> = 
  */
 export function AppTabPanels(props: AppTabPanelsProps): ReactElement {
   const View = TAB_VIEWS[props.activeTab] ?? TodayPanel;
-
   return (
     <div id={`tabpanel-${props.activeTab}`} role="tabpanel" aria-labelledby={`tab-${props.activeTab}`} className="space-y-6">
       <Suspense fallback={<p className="p-4 text-xs">Loading section...</p>}>

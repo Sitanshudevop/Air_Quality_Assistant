@@ -8,8 +8,8 @@
   --color-text-primary: #0f172a;
   --color-text-secondary: #334155;
   --color-text-muted: #475569;
-  --color-brand: #0369a1;
-  --color-focus-ring: #0369a1;
+  --color-brand: #0f766e;
+  --color-focus-ring: #0f766e;
 
   /* CPCB AQI Band Tokens - Light Theme */
   --aqi-good-bg: #ecfdf5;
@@ -51,8 +51,8 @@
   --color-text-primary: #f8fafc;
   --color-text-secondary: #cbd5e1;
   --color-text-muted: #94a3b8;
-  --color-brand: #38bdf8;
-  --color-focus-ring: #38bdf8;
+  --color-brand: #2dd4bf;
+  --color-focus-ring: #2dd4bf;
 
   /* CPCB AQI Band Tokens - Dark Theme */
   --aqi-good-bg: #064e3b;

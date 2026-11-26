@@ -8,6 +8,17 @@
   color-scheme: light dark;
 }
 
+body {
+  background: linear-gradient(180deg, #f0fdf4 0%, #fbfdfc 60%, #ffffff 100%);
+  color: #111827;
+  min-height: 100vh;
+}
+
+.dark body {
+  background: #091310;
+  color: #f9fafb;
+}
+
 .break-words {
   overflow-wrap: anywhere;
   word-break: break-word;

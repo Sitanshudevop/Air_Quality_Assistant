@@ -19,8 +19,10 @@ function ManualAqiForm(props: {
   onSubmit: (e: FormEvent) => void;
 }): ReactElement {
   return (
-    <form onSubmit={props.onSubmit} className="flex flex-wrap items-center gap-2 pt-1">
-      <label htmlFor="manual-aqi-input" className="font-semibold">Purifier/App AQI:</label>
+    <form onSubmit={props.onSubmit} className="flex flex-wrap items-center gap-2 pt-2 border-t border-neutral-200/80 dark:border-neutral-800">
+      <label htmlFor="manual-aqi-input" className="font-semibold text-xs text-neutral-700 dark:text-neutral-300">
+        Purifier / App AQI:
+      </label>
       <input
         id="manual-aqi-input"
         type="number"
@@ -28,9 +30,42 @@ function ManualAqiForm(props: {
         max={500}
         value={props.manualAqi}
         onChange={(e) => props.onChangeAqi(e.target.value)}
-        className="w-24 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2 py-1"
+        className="w-24 rounded-full border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-1 text-xs"
       />
-      <Button type="submit" size="sm" variant="primary">Apply Manual Reading</Button>
+      <button type="submit" className="px-4 py-1.5 rounded-full bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 text-xs font-semibold hover:bg-neutral-800 transition-colors shadow-sm">
+        Apply Manual Reading
+      </button>
+    </form>
+  );
+}
+
+function SearchInputGroup(props: {
+  query: string;
+  onQueryChange: (v: string) => void;
+  onSubmit: (e: FormEvent) => void;
+  onGeo: () => void;
+  onToggleManual: () => void;
+  showManual: boolean;
+}): ReactElement {
+  return (
+    <form onSubmit={props.onSubmit} className="flex flex-wrap items-center gap-2">
+      <div className="flex-1 min-w-[200px] flex items-center bg-white dark:bg-neutral-800 rounded-full border border-neutral-300 dark:border-neutral-700 px-3 py-1 shadow-sm focus-within:ring-2 focus-within:ring-teal-600">
+        <label htmlFor="live-city-search" className="sr-only">Search city for live AQI</label>
+        <input
+          id="live-city-search"
+          type="text"
+          maxLength={100}
+          value={props.query}
+          onChange={(e) => props.onQueryChange(e.target.value)}
+          placeholder="Search city (e.g., Delhi, Kanpur)"
+          className="w-full bg-transparent border-none text-xs text-neutral-900 dark:text-neutral-50 focus:outline-none"
+        />
+        <button type="submit" className="ml-2 px-3 py-1 rounded-full bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 text-xs font-semibold hover:bg-neutral-800 transition-colors">
+          Search
+        </button>
+      </div>
+      <Button size="sm" variant="outline" onClick={props.onGeo}>Use My Location</Button>
+      <Button size="sm" variant="ghost" onClick={props.onToggleManual}>{props.showManual ? 'Hide Manual' : 'Manual AQI'}</Button>
     </form>
   );
 }
@@ -56,10 +91,7 @@ export function LiveLocationControls({ onLiveData, onManualReading }: LiveLocati
     const controller = new AbortController();
     searchAbortRef.current = controller;
     await executeLocationSearch({
-      term,
-      signal: controller.signal,
-      onResults: setResults,
-      onStatus: setStatusMsg,
+      term, signal: controller.signal, onResults: setResults, onStatus: setStatusMsg,
       onErrorFallback: () => setShowManual(true),
     });
   }, []);
@@ -82,17 +114,6 @@ export function LiveLocationControls({ onLiveData, onManualReading }: LiveLocati
     });
   };
 
-  const handleQueryChange = (val: string): void => {
-    setQuery(val);
-    if (!val.trim()) { debouncedSearchRef.current?.cancel(); searchAbortRef.current?.abort(); setResults([]); return; }
-    debouncedSearchRef.current?.(val);
-  };
-
-  const handleGeo = async (): Promise<void> => {
-    try { const coords = await getCurrentPosition(); await loadCoords(coords.lat, coords.lon, `${coords.lat}, ${coords.lon}`); }
-    catch (err) { setStatusMsg(handleGeolocationDenied(err as { error?: string; message?: string }).reason); }
-  };
-
   const handleManualSubmit = (e: FormEvent): void => {
     e.preventDefault();
     const reading = createManualReading({ aqi: manualAqi, cityName: query.trim() || 'Manual Location' });
@@ -101,18 +122,35 @@ export function LiveLocationControls({ onLiveData, onManualReading }: LiveLocati
     setStatusMsg(`Using ${reading.sourceLabel}: AQI ${reading.aqi}`);
   };
 
+  const handleGeo = async (): Promise<void> => {
+    try { const c = await getCurrentPosition(); await loadCoords(c.lat, c.lon, `${c.lat}, ${c.lon}`); }
+    catch (err) { setStatusMsg(handleGeolocationDenied(err as { error?: string; message?: string }).reason); }
+  };
+
   return (
     <div className="space-y-2 text-xs">
-      <form onSubmit={(e) => { e.preventDefault(); debouncedSearchRef.current?.cancel(); if (query.trim()) void runSearch(query); }} className="flex flex-wrap items-center gap-2">
-        <label htmlFor="live-city-search" className="sr-only">Search city for live AQI</label>
-        <input id="live-city-search" type="text" maxLength={100} value={query} onChange={(e) => handleQueryChange(e.target.value)} placeholder="Search city (e.g., Delhi, Kanpur)" className="flex-1 min-w-[180px] rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2.5 py-1.5" />
-        <Button type="submit" size="sm" variant="primary">Search</Button>
-        <Button size="sm" variant="outline" onClick={() => void handleGeo()}>Use My Location</Button>
-        <Button size="sm" variant="ghost" onClick={() => setShowManual((s) => !s)}>{showManual ? 'Hide Manual' : 'Manual AQI'}</Button>
-      </form>
+      <SearchInputGroup
+        query={query}
+        onQueryChange={(val) => {
+          setQuery(val);
+          if (!val.trim()) { debouncedSearchRef.current?.cancel(); searchAbortRef.current?.abort(); setResults([]); return; }
+          debouncedSearchRef.current?.(val);
+        }}
+        onSubmit={(e) => { e.preventDefault(); debouncedSearchRef.current?.cancel(); if (query.trim()) void runSearch(query); }}
+        onGeo={() => void handleGeo()}
+        onToggleManual={() => setShowManual((s) => !s)}
+        showManual={showManual}
+      />
+      <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+        Geolocation rounds coordinates to ~1.1 km; no exact location or personal data is ever collected.
+      </p>
       {results.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {results.slice(0, 5).map((loc) => <Button key={loc.id} size="sm" variant="secondary" onClick={() => void loadCoords(loc.latitude, loc.longitude, loc.displayName)}>{loc.displayName}</Button>)}
+        <div className="flex flex-wrap gap-1.5 pt-1">
+          {results.slice(0, 5).map((loc) => (
+            <Button key={loc.id} size="sm" variant="secondary" onClick={() => void loadCoords(loc.latitude, loc.longitude, loc.displayName)}>
+              {loc.displayName}
+            </Button>
+          ))}
         </div>
       )}
       {showManual && <ManualAqiForm manualAqi={manualAqi} onChangeAqi={setManualAqi} onSubmit={handleManualSubmit} />}

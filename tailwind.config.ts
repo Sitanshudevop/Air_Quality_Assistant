@@ -18,11 +18,12 @@ export default {
           700: '#334155',
           800: '#1e293b',
           900: '#0f172a',
+          950: '#090d16',
         },
         brand: {
-          light: '#38bdf8',
-          DEFAULT: '#0284c7',
-          dark: '#0369a1',
+          light: '#2dd4bf',
+          DEFAULT: '#0f766e',
+          dark: '#115e59',
         },
         status: {
           good: '#16a34a',
@@ -30,6 +31,13 @@ export default {
           poor: '#ea580c',
           severe: '#dc2626',
         },
+      },
+      borderRadius: {
+        card: '24px',
+        pill: '9999px',
+      },
+      maxWidth: {
+        content: '1200px',
       },
       fontFamily: {
         sans: [

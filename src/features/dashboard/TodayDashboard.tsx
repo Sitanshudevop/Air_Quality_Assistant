@@ -1,15 +1,17 @@
-// Today condition dashboard aggregating AQI, criteria pollutants, benchmarks, and mixing factors.
+// Today condition dashboard aggregating hero, profile calibration, criteria pollutants, benchmarks, and mixing factors.
 import type { ReactElement } from 'react';
 import type { AqiCategory } from '../../domain/types.js';
 import type { DataOrigin, DataStatus } from '../../state/activeConditions.js';
-import { AqiBadge } from '../../components/ui/AqiBadge.js';
 import { DataEmptyState } from '../../components/ui/DataEmptyState.js';
 import { DataSkeleton } from '../../components/ui/DataSkeleton.js';
 import { DataErrorState } from '../../components/ui/DataErrorState.js';
+import { TodayHero } from './TodayHero.js';
+import { PersonalizePlanCard } from './PersonalizePlanCard.js';
 import { PollutantCard, type PollutantValues } from './PollutantCard.js';
 import { BenchmarkComparison } from './BenchmarkComparison.js';
 import { WeatherMixingFactors } from './WeatherMixingFactors.js';
 import type { WeatherFactors } from '../../services/openMeteo.types.js';
+import type { StoredProfile } from '../../services/profile.types.js';
 
 /** Props for TodayDashboard component. */
 export interface TodayDashboardProps {
@@ -19,30 +21,7 @@ export interface TodayDashboardProps {
   sourceLabel?: string; timestamp?: string; errorMessage?: string; className?: string;
   onFocusSearch?: () => void; onUseLocation?: () => void; onManualReading?: () => void;
   onLaunchDemo?: () => void; onRetry?: () => void;
-}
-
-function DashboardHeader(props: { cityName?: string; timestamp?: string; sourceLabel?: string }): ReactElement {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-neutral-200 dark:border-neutral-800">
-      <div>
-        <h2 className="text-xl font-bold tracking-tight">{props.cityName ?? 'Unknown Location'}</h2>
-        {props.timestamp && (
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-            Observed: <time>{props.timestamp}</time>
-          </p>
-        )}
-      </div>
-
-      {props.sourceLabel && (
-        <span
-          role="status"
-          className="text-xs px-2.5 py-1 rounded-full font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-700"
-        >
-          Source: {props.sourceLabel}
-        </span>
-      )}
-    </div>
-  );
+  onProfileUpdated?: (profile: StoredProfile) => void;
 }
 
 function DashboardMetrics(props: {
@@ -55,7 +34,7 @@ function DashboardMetrics(props: {
   const showBenchmarks = Boolean(vals && (vals.pm2_5 !== undefined || vals.pm10 !== undefined));
 
   return (
-    <>
+    <div className="space-y-4">
       {vals && <PollutantCard values={vals} />}
       {showBenchmarks && vals && <BenchmarkComparison values={vals} />}
       {props.weatherFactors && (
@@ -65,31 +44,27 @@ function DashboardMetrics(props: {
           sourceLabel={props.sourceLabel}
         />
       )}
-    </>
+    </div>
   );
 }
 
 function DashboardContent(props: TodayDashboardProps): ReactElement {
-  const showBadge = props.aqi !== undefined && props.category !== undefined;
-
   return (
     <article
       aria-label="Today Air Quality Condition"
-      className={`space-y-4 text-neutral-900 dark:text-neutral-50 ${props.className ?? ''}`.trim()}
+      className={`space-y-6 text-neutral-900 dark:text-neutral-50 ${props.className ?? ''}`.trim()}
     >
-      <DashboardHeader cityName={props.cityName} timestamp={props.timestamp} sourceLabel={props.sourceLabel} />
+      <TodayHero
+        cityName={props.cityName}
+        aqi={props.aqi}
+        category={props.category}
+        dominantPollutant={props.dominantPollutant}
+        timestamp={props.timestamp}
+        sourceLabel={props.sourceLabel}
+        isEstimate={props.isEstimate}
+      />
 
-      {showBadge && (
-        <div className="flex flex-col sm:flex-row items-center justify-center p-2">
-          <AqiBadge
-            aqi={props.aqi!}
-            category={props.category!}
-            dominantPollutant={props.dominantPollutant}
-            isEstimate={props.isEstimate}
-            className="w-full sm:max-w-xs"
-          />
-        </div>
-      )}
+      <PersonalizePlanCard onProfileUpdated={props.onProfileUpdated} />
 
       <DashboardMetrics
         pollutants={props.pollutants}

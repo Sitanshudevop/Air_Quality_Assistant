@@ -70,7 +70,7 @@ export function BentoSidebar({
   return (
     <aside
       aria-label="Sidebar navigation"
-      className="hidden lg:flex sticky top-4 h-[calc(100vh-2rem)] self-start flex-col justify-between w-16 bg-white dark:bg-neutral-900 rounded-3xl py-5 shadow-sm shrink-0"
+      className="hidden md:flex sticky top-4 h-[calc(100dvh-2rem)] self-start flex-col justify-between w-16 bg-white dark:bg-neutral-900 rounded-3xl py-5 shadow-sm shrink-0"
     >
       <div className="flex flex-col items-center gap-1.5">
         <SaansLogo className="mb-3" />

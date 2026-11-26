@@ -1,4 +1,4 @@
-// BentoShell: outer app layout with sticky sidebar, header, and rounded main dashboard card.
+// BentoShell: responsive outer layout with sticky tablet/desktop sidebar, mobile bottom nav, and rounded card.
 import type { ReactElement } from 'react';
 import type { FeatureTabId } from './FeatureTabs.js';
 import { BentoSidebar } from './BentoSidebar.js';
@@ -19,9 +19,9 @@ export interface BentoShellProps {
 }
 
 /**
- * Outer Bento dashboard shell: sticky left sidebar, top header, and main content area.
+ * Responsive Bento dashboard shell across mobile (320px+), tablet, desktop, and ultra-wide screens.
  *
- * @param props - Layout state and child content.
+ * @param props - Layout state, utility callbacks, header props, and child content.
  * @returns React element.
  */
 export function BentoShell({
@@ -29,8 +29,8 @@ export function BentoShell({
   onOpenTour, onOpenProfile, headerProps, children,
 }: BentoShellProps): ReactElement {
   return (
-    <div className="min-h-screen bg-bento-canvas dark:bg-neutral-950 p-2 sm:p-4 pb-20 lg:pb-4 font-sans transition-colors">
-      <div className="max-w-[1360px] mx-auto flex items-start gap-4">
+    <div className="min-h-dvh overflow-x-hidden bg-bento-canvas dark:bg-neutral-950 p-0 md:p-4 pb-24 md:pb-4 font-sans transition-colors">
+      <div className="max-w-[1600px] mx-auto flex items-start gap-4 min-w-0">
         <BentoSidebar
           activeTab={activeTab}
           onSelectTab={onSelectTab}
@@ -41,9 +41,16 @@ export function BentoShell({
           onOpenProfile={onOpenProfile}
         />
 
-        <div className="flex-1 min-w-0 flex flex-col bg-white dark:bg-neutral-900 rounded-3xl shadow-sm">
-          <BentoHeader {...headerProps} />
-          <div className="px-5 sm:px-6 pb-6">
+        <div className="flex-1 min-w-0 flex flex-col bg-white dark:bg-neutral-900 rounded-none md:rounded-3xl shadow-sm">
+          <BentoHeader
+            {...headerProps}
+            isDark={isDark}
+            onToggleTheme={onToggleTheme}
+            onToggleLang={onToggleLang}
+            onOpenTour={onOpenTour}
+            onOpenProfile={onOpenProfile}
+          />
+          <div className="px-3.5 sm:px-6 pb-6 min-w-0">
             {children}
           </div>
         </div>

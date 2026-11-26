@@ -25,10 +25,10 @@ export function ChatMessageBubble({
 }: ChatMessageBubbleProps): ReactElement {
   const isUser = msg.role === 'user';
   const cardCls = isUser
-    ? 'bg-sky-700 text-white ml-auto max-w-[85%]'
+    ? 'bg-sky-700 text-white ml-auto max-w-[88%] sm:max-w-[75%]'
     : msg.isSafetyCard
-      ? 'bg-rose-50 text-rose-950 border-2 border-rose-400 dark:bg-rose-950/60 dark:text-rose-100 dark:border-rose-700'
-      : 'bg-neutral-100 text-neutral-900 border border-neutral-300 dark:bg-neutral-800 dark:text-neutral-100 dark:border-neutral-700';
+      ? 'bg-rose-50 text-rose-950 border-2 border-rose-400 dark:bg-rose-950/60 dark:text-rose-100 dark:border-rose-700 max-w-[88%] sm:max-w-[75%]'
+      : 'bg-neutral-100 text-neutral-900 border border-neutral-300 dark:bg-neutral-800 dark:text-neutral-100 dark:border-neutral-700 max-w-[88%] sm:max-w-[75%]';
 
   return (
     <div className={`p-3 rounded-xl text-xs space-y-2 ${cardCls}`}>

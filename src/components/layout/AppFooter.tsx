@@ -37,7 +37,7 @@ export function AppFooter({ className = '' }: AppFooterProps): ReactElement {
   return (
     <footer
       role="contentinfo"
-      className={`max-w-5xl mx-auto mt-12 pt-6 border-t border-neutral-200 dark:border-neutral-800 text-xs text-neutral-600 dark:text-neutral-300 space-y-3 ${className}`.trim()}
+      className={`max-w-[1600px] mx-auto px-4 sm:px-6 mt-8 pt-6 pb-24 md:pb-8 border-t border-neutral-200 dark:border-neutral-800 text-xs text-neutral-600 dark:text-neutral-300 space-y-3 ${className}`.trim()}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">

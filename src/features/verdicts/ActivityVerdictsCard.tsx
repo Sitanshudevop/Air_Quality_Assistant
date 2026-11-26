@@ -49,7 +49,7 @@ function ActivityItem({ item }: { item: ActivityVerdictItem }): ReactElement {
         </span>
       </div>
 
-      <p className="text-xs text-bento-ink/80 dark:text-neutral-300 leading-relaxed flex-1">
+      <p className="text-xs text-bento-ink/80 dark:text-neutral-300 leading-relaxed flex-1 break-words">
         {item.reason}
       </p>
 
@@ -110,7 +110,7 @@ export function ActivityVerdictsCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 min-w-0">
         {verdicts.map((item) => (
           <ActivityItem key={item.id} item={item} />
         ))}

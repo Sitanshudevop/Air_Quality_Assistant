@@ -25,7 +25,7 @@ const GRID_LEVELS = [
 ];
 
 function FloatingTooltip({ point }: { point: SvgPoint }): ReactElement {
-  const leftPct = Math.min(82, Math.max(18, (point.x / CHART_WIDTH) * 100));
+  const leftPct = Math.min(78, Math.max(22, (point.x / CHART_WIDTH) * 100));
   return (
     <div
       role="status"
@@ -70,13 +70,13 @@ export function AccessibleSvgChart({ points, className = '' }: AccessibleSvgChar
   const curvePath = buildSmoothCurvePath(coords);
   const baseY = CHART_HEIGHT - PADDING.bottom;
   const areaPath = buildSmoothAreaPath(coords, baseY);
-  const step = Math.max(1, Math.floor(coords.length / 6));
+  const step = Math.max(1, Math.floor(coords.length / 5));
   const summary = getOutlookSummary(points);
   const colW = coords.length > 1 ? (CHART_WIDTH - PADDING.left - PADDING.right) / coords.length : 24;
   const activePt = hoverIdx !== null ? coords[hoverIdx] : undefined;
 
   return (
-    <div className={`relative w-full overflow-x-auto ${className}`.trim()} onMouseLeave={() => setHoverIdx(null)}>
+    <div className={`relative w-full min-w-0 overflow-hidden ${className}`.trim()} onMouseLeave={() => setHoverIdx(null)}>
       <p className="sr-only" data-testid="chart-text-summary">{summary}</p>
       {activePt && <FloatingTooltip point={activePt} />}
 
@@ -84,7 +84,8 @@ export function AccessibleSvgChart({ points, className = '' }: AccessibleSvgChar
         role="img"
         aria-labelledby="chart-title chart-desc"
         viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
-        className="w-full min-w-[500px] h-auto"
+        preserveAspectRatio="xMidYMid meet"
+        className="w-full h-[220px] sm:h-[280px] lg:h-[320px]"
       >
         <defs>
           <linearGradient id="saansAqiGrad" x1="0" y1="0" x2="0" y2="1">
@@ -124,6 +125,7 @@ export function AccessibleSvgChart({ points, className = '' }: AccessibleSvgChar
               fill="transparent"
               onMouseEnter={() => setHoverIdx(i)}
               onFocus={() => setHoverIdx(i)}
+              onClick={() => setHoverIdx(i)}
             >
               <title>{`${c.timeLabel}: AQI ${c.aqi} (${c.category})`}</title>
             </rect>

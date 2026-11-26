@@ -52,8 +52,8 @@ function CurrentAqiCard({ aqi, category, dominantPollutant, hourlyPoints }: KpiR
         <span className="text-xs font-semibold text-bento-ink/60 uppercase tracking-wide">Current AQI</span>
         <Wind size={16} className="text-bento-ink/40" aria-hidden="true" />
       </div>
-      <p className="text-4xl font-extrabold tracking-tight text-bento-ink" aria-label={`AQI ${aqi ?? '—'}`}>{aqi ?? '—'}</p>
-      <div className="flex items-center justify-between gap-2">
+      <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-bento-ink" aria-label={`AQI ${aqi ?? '—'}`}>{aqi ?? '—'}</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-xs font-bold text-bento-ink/75">{category ?? 'No data'}</span>
         {dominantPollutant && <span className="text-[11px] font-semibold bg-bento-ink text-white px-2 py-0.5 rounded-full">{dominantPollutant}</span>}
       </div>
@@ -69,8 +69,8 @@ function RangeCard(props: { title: string; value: string; subtitle: string; bg: 
         <span className="text-xs font-semibold text-bento-ink/60 uppercase tracking-wide">{props.title}</span>
         {props.icon}
       </div>
-      <p className="text-4xl font-extrabold tracking-tight text-bento-ink">{props.value}</p>
-      <span className="text-xs text-bento-muted font-medium">{props.subtitle}</span>
+      <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-bento-ink">{props.value}</p>
+      <span className="text-xs text-bento-muted font-medium break-words">{props.subtitle}</span>
     </div>
   );
 }
@@ -83,7 +83,7 @@ function CleanWindowCard({ points }: { points: readonly HourlyAirQualityPoint[] 
         <span className="text-xs font-semibold text-bento-ink/60 uppercase tracking-wide">Clean Air Window</span>
         <Clock3 size={16} className="text-bento-ink/40" aria-hidden="true" />
       </div>
-      <p className="text-4xl font-extrabold tracking-tight text-bento-ink">{clean ? `${clean.cleanHoursCount}` : '—'}</p>
+      <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-bento-ink">{clean ? `${clean.cleanHoursCount}` : '—'}</p>
       <span className="text-xs text-bento-muted font-medium">{clean ? `of ${clean.totalHours} hrs below 100 AQI` : 'Load forecast for clean hours'}</span>
       {clean && (
         <div className="w-full bg-white/60 h-1.5 rounded-full overflow-hidden">
@@ -104,7 +104,7 @@ export function KpiRow({ aqi, category, dominantPollutant, hourlyPoints = [] }: 
   const { min, peak } = findExtremes(hourlyPoints);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 min-[400px]:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-5 min-w-0">
       <CurrentAqiCard aqi={aqi} category={category} dominantPollutant={dominantPollutant} hourlyPoints={hourlyPoints} />
       <RangeCard title="Minimum AQI" value={min ? `${min.aqi}` : '—'} subtitle={min ? `Best Window @ ${min.hour}` : 'Load forecast for best hour'} bg="bg-bento-mint" icon={<ArrowDownRight size={16} className="text-emerald-700/70" aria-hidden="true" />} />
       <RangeCard title="Peak Inversion" value={peak ? `${peak.aqi}` : '—'} subtitle={peak ? `AQI @ ${peak.hour}` : 'Load forecast for peak'} bg="bg-bento-blush" icon={<AlertTriangle size={16} className="text-rose-700/70" aria-hidden="true" />} />

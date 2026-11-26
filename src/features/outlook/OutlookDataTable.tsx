@@ -27,13 +27,13 @@ export function OutlookDataTable({
   className = '',
 }: OutlookDataTableProps): ReactElement {
   return (
-    <div className={`overflow-x-auto ${className}`.trim()}>
+    <div className={`w-full overflow-x-auto ${className}`.trim()}>
       <table className="w-full text-left text-xs border-collapse">
         <caption className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-2 text-left">
           Hourly Air Quality Forecast and Activity Windows
         </caption>
         <thead>
-          <tr className="border-b border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-semibold">
+          <tr className="border-b border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-semibold whitespace-nowrap">
             <th scope="col" className="p-2.5">Time</th>
             <th scope="col" className="p-2.5">Est. AQI</th>
             <th scope="col" className="p-2.5">Category</th>
@@ -52,13 +52,13 @@ export function OutlookDataTable({
 
             return (
               <tr key={`${pt.time}-${idx}`} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-                <th scope="row" className="p-2.5 font-medium text-neutral-900 dark:text-neutral-100">
+                <th scope="row" className="p-2.5 font-medium text-neutral-900 dark:text-neutral-100 whitespace-nowrap">
                   {timeLabel}
                 </th>
-                <td className="p-2.5 font-bold text-neutral-900 dark:text-neutral-50">{aqi}</td>
-                <td className="p-2.5">{pt.category}</td>
-                <td className="p-2.5">{pm25}</td>
-                <td className="p-2.5 text-neutral-600 dark:text-neutral-400">{advice}</td>
+                <td className="p-2.5 font-bold text-neutral-900 dark:text-neutral-50 whitespace-nowrap">{aqi}</td>
+                <td className="p-2.5 whitespace-nowrap">{pt.category}</td>
+                <td className="p-2.5 whitespace-nowrap">{pm25}</td>
+                <td className="p-2.5 text-neutral-600 dark:text-neutral-400 min-w-[200px]">{advice}</td>
               </tr>
             );
           })}

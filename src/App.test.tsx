@@ -83,11 +83,11 @@ describe('App Component', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    const themeBtn = screen.getByRole('button', { name: /Switch to dark theme/i });
+    const themeBtn = screen.getAllByRole('button', { name: /Switch to dark theme/i })[0];
     await user.click(themeBtn);
     expect(document.documentElement.classList.contains('dark')).toBe(true);
 
-    const lightBtn = screen.getByRole('button', { name: /Switch to light theme/i });
+    const lightBtn = screen.getAllByRole('button', { name: /Switch to light theme/i })[0];
     await user.click(lightBtn);
     expect(document.documentElement.classList.contains('dark')).toBe(false);
   });
@@ -96,13 +96,13 @@ describe('App Component', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    const tourBtn = screen.getByRole('button', { name: 'Tour' });
+    const tourBtn = screen.getAllByRole('button', { name: 'Tour' })[0];
     await user.click(tourBtn);
     await waitFor(() => expect(screen.getByRole('dialog', { name: /Dual Operating Modes/i })).toBeInTheDocument());
     await user.click(screen.getByRole('button', { name: 'Skip Tour' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
-    const profileBtn = screen.getByRole('button', { name: 'Profile' });
+    const profileBtn = screen.getAllByRole('button', { name: 'Profile' })[0];
     await user.click(profileBtn);
     await waitFor(() => expect(screen.getByRole('dialog', { name: /Family Smog Profile/i })).toBeInTheDocument());
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
@@ -113,7 +113,7 @@ describe('App Component', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    const routineNav = screen.getByRole('button', { name: 'Daily Routine' });
+    const routineNav = screen.getAllByRole('button', { name: 'Daily Routine' })[0];
     await user.click(routineNav);
     expect(routineNav).toHaveAttribute('aria-current', 'page');
   });

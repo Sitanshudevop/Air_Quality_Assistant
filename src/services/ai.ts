@@ -5,6 +5,7 @@ import { getIndoorRecommendations, getVentilationRecommendation } from '../domai
 import { generateRoutine } from '../domain/routine.js';
 import { aiResponseSchema } from '../../shared/schemas.js';
 import type { AiResponse, AiStatusResponse, AllowedTask, TaskContext } from '../../shared/types.js';
+import { setAiCallStatus } from './aiStatus.js';
 
 /** Input options for requesting an AI-assisted task response. */
 export interface GetAiResponseInput {
@@ -23,16 +24,8 @@ function buildClientFallbackResult(task: AllowedTask, context: TaskContext): unk
   const vent = getVentilationRecommendation(context.aqi);
 
   if (task === 'indoor-tips') {
-    const recs = getIndoorRecommendations({
-      roomType: 'living',
-      roomAreaSqFt: 180,
-      ceilingHeightFt: 9,
-      currentOutdoorAqi: context.aqi,
-    });
-    return {
-      tips: [vent.advice, ...recs.actions.map((a) => `${a.title}: ${a.detail}`)].slice(0, 4),
-      urgency: context.aqi > 200 ? 'high' : 'medium',
-    };
+    const recs = getIndoorRecommendations({ roomType: 'living', roomAreaSqFt: 180, ceilingHeightFt: 9, currentOutdoorAqi: context.aqi });
+    return { tips: [vent.advice, ...recs.actions.map((a) => `${a.title}: ${a.detail}`)].slice(0, 4), urgency: context.aqi > 200 ? 'high' : 'medium' };
   }
   if (task === 'narrate-plan') {
     const items = generateRoutine(category);
@@ -99,10 +92,16 @@ export async function checkAiStatus(signal?: AbortSignal): Promise<AiStatusRespo
   const { controller, cleanup } = createTimeoutController(signal);
   try {
     const res = await fetch('/api/ai-status', { signal: controller.signal });
-    if (!res.ok) return { configured: false };
+    if (!res.ok) {
+      setAiCallStatus('rules');
+      return { configured: false };
+    }
     const data = (await res.json()) as Partial<AiStatusResponse>;
-    return { configured: data.configured === true };
+    const isReady = data.configured === true;
+    setAiCallStatus(isReady ? 'live' : 'rules');
+    return { configured: isReady };
   } catch {
+    setAiCallStatus('rules');
     return { configured: false };
   } finally {
     cleanup();
@@ -120,6 +119,7 @@ export async function getAiResponse(input: GetAiResponseInput): Promise<AiRespon
   const context = input.context ?? DEFAULT_CONTEXT;
   const offline = input.isOffline === true || (typeof navigator !== 'undefined' && navigator.onLine === false);
   if (offline) {
+    setAiCallStatus('rules');
     return buildClientFallback(input.task, context, start);
   }
 
@@ -131,10 +131,16 @@ export async function getAiResponse(input: GetAiResponseInput): Promise<AiRespon
       body: JSON.stringify({ task: input.task, context, userText: input.userText }),
       signal: controller.signal,
     });
-    if (!res.ok) return buildClientFallback(input.task, context, start);
+    if (!res.ok) {
+      setAiCallStatus('rules');
+      return buildClientFallback(input.task, context, start);
+    }
     const parsed = aiResponseSchema.safeParse(await res.json());
+    const isGemini = parsed.success && parsed.data.provenance.source === 'gemini';
+    setAiCallStatus(isGemini ? 'live' : 'rules');
     return parsed.success ? parsed.data : buildClientFallback(input.task, context, start);
   } catch {
+    setAiCallStatus('rules');
     return buildClientFallback(input.task, context, start);
   } finally {
     cleanup();

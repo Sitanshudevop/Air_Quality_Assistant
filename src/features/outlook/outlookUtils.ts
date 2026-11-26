@@ -83,16 +83,13 @@ export function generatePolylinePoints(
  * Identifies the best outdoor/ventilation window and peak inversion window.
  *
  * @param points - Hourly forecast points.
- * @returns Best and worst activity windows.
+ * @returns Best and worst activity windows or null if series is empty.
  */
 export function findActivityWindows(
   points: readonly HourlyAirQualityPoint[]
-): { best: ActivityWindow; worst: ActivityWindow } {
+): { best: ActivityWindow; worst: ActivityWindow } | null {
   if (points.length === 0) {
-    return {
-      best: { hourLabel: '14:00', aqi: 150, advice: 'Afternoon solar mixing window' },
-      worst: { hourLabel: '07:00', aqi: 450, advice: 'Peak nocturnal inversion window' },
-    };
+    return null;
   }
 
   let minPoint = points[0] ?? { aqi: 0, time: '' };
@@ -115,4 +112,19 @@ export function findActivityWindows(
       advice: 'Peak particulate stagnation; keep windows sealed and air purifier on.',
     },
   };
+}
+
+/**
+ * Produces an accessible textual summary of the hourly air quality trend.
+ *
+ * @param points - Hourly forecast series.
+ * @returns Plain-language summary text.
+ */
+export function getOutlookSummary(points: readonly HourlyAirQualityPoint[]): string {
+  if (points.length === 0) return 'No hourly forecast data available.';
+  const windows = findActivityWindows(points);
+  if (!windows) return 'No hourly forecast data available.';
+  const first = points[0];
+  const last = points[points.length - 1];
+  return `Hourly AQI begins at ${Math.round(first.aqi)} (${first.category}), offers best ventilation at ${windows.best.hourLabel} (AQI ${windows.best.aqi}), and reaches peak inversion at ${windows.worst.hourLabel} (AQI ${windows.worst.aqi}). Outlook concludes at AQI ${Math.round(last.aqi)}.`;
 }

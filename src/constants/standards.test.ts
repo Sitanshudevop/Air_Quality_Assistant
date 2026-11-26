@@ -27,7 +27,9 @@ describe('AIR_STANDARDS & ActiveConditions', () => {
       liveForecast: null,
       manualData: null,
     });
-    expect(awaiting.sourceLabel).toContain('Awaiting live');
+    expect(awaiting.status).toBe('empty');
+    expect(awaiting.origin).toBe('live');
+    expect(awaiting.aqi).toBeUndefined();
 
     const manual = resolveActiveConditions({
       isDemo: false,

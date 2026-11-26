@@ -7,6 +7,7 @@ import {
   PADDING,
   computeSvgCoordinates,
   generatePolylinePoints,
+  getOutlookSummary,
 } from './outlookUtils.js';
 
 /** Props for AccessibleSvgChart component. */
@@ -35,9 +36,13 @@ export function AccessibleSvgChart({
   const coords = computeSvgCoordinates(points);
   const polylineStr = generatePolylinePoints(points);
   const step = Math.max(1, Math.floor(coords.length / 6));
+  const summary = getOutlookSummary(points);
 
   return (
     <div className={`w-full overflow-x-auto ${className}`.trim()}>
+      <p className="sr-only" data-testid="chart-text-summary">
+        {summary}
+      </p>
       <svg
         role="img"
         aria-labelledby="chart-title chart-desc"
@@ -45,10 +50,7 @@ export function AccessibleSvgChart({
         className="w-full min-w-[500px] h-auto text-neutral-800 dark:text-neutral-200"
       >
         <title id="chart-title">Next 24 to 48 Hours Air Quality Outlook</title>
-        <desc id="chart-desc">
-          Line chart illustrating hourly estimated CPCB AQI fluctuations, highlighting best outdoor
-          windows and peak inversion hours.
-        </desc>
+        <desc id="chart-desc">{summary}</desc>
 
         {/* AQI Reference Grid Lines */}
         {GRID_LEVELS.map((g) => (

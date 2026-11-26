@@ -7,43 +7,19 @@ import type { AirQualityData, ForecastData } from '../services/openMeteo.types.j
 import type { ManualAirQualityData } from '../services/manualReading.js';
 
 const SAMPLE_AQ: AirQualityData = {
-  latitude: 28.61,
-  longitude: 77.21,
-  currentAqi: 240,
-  currentCategory: 'Poor',
-  dominantPollutant: 'PM2.5',
-  isEstimate: true,
-  pollutants: { pm2_5: 102, pm10: 180, no2: 45 },
-  hourly: [],
-  source: 'Open-Meteo CAMS',
-  fetchedAt: '2026-11-26T00:00:00Z',
+  latitude: 28.61, longitude: 77.21, currentAqi: 240, currentCategory: 'Poor', dominantPollutant: 'PM2.5',
+  isEstimate: true, pollutants: { pm2_5: 102, pm10: 180, no2: 45 }, hourly: [], source: 'Open-Meteo CAMS', fetchedAt: '2026-11-26T00:00:00Z',
 };
 
 const SAMPLE_FORECAST: ForecastData = {
-  latitude: 28.61,
-  longitude: 77.21,
-  current: {
-    temperature: 19,
-    humidity: 72,
-    windSpeed: 1.4,
-    surfacePressure: 1015,
-    stagnationRisk: 'high',
-    isInversion: false,
-    summary: 'Light breeze provides minimal pollutant dispersion.',
-  },
-  hourly: [],
-  fetchedAt: '2026-11-26T00:00:00Z',
+  latitude: 28.61, longitude: 77.21, current: {
+    temperature: 19, humidity: 72, windSpeed: 1.4, surfacePressure: 1015, stagnationRisk: 'high', isInversion: false, summary: 'Light breeze.',
+  }, hourly: [], fetchedAt: '2026-11-26T00:00:00Z',
 };
 
 const SAMPLE_MANUAL: ManualAirQualityData = {
-  aqi: 310,
-  pm25: 132,
-  category: 'Very Poor',
-  source: 'user-entered reading',
-  sourceLabel: 'user-entered reading',
-  isEstimate: true,
-  enteredAt: '2026-11-26T00:00:00Z',
-  cityName: 'Noida',
+  aqi: 310, pm25: 132, category: 'Very Poor', source: 'user-entered reading', sourceLabel: 'user-entered reading',
+  isEstimate: true, enteredAt: '2026-11-26T00:00:00Z', cityName: 'Noida',
 };
 
 describe('activeConditions state resolution', () => {
@@ -87,7 +63,7 @@ describe('activeConditions state resolution', () => {
     });
     expect(withForecast.cityName).toBe('Delhi, India');
     expect(withForecast.aqi).toBe(240);
-    expect(withForecast.weatherFactors.stagnationRisk).toBe('high');
+    expect(withForecast.weatherFactors?.stagnationRisk).toBe('high');
 
     const withoutForecast = resolveActiveConditions({
       isDemo: false,
@@ -96,11 +72,11 @@ describe('activeConditions state resolution', () => {
       liveForecast: null,
       manualData: null,
     });
-    expect(withoutForecast.weatherFactors).toEqual({});
+    expect(withoutForecast.weatherFactors).toBeUndefined();
     expect(withoutForecast.pm25).toBe(102);
   });
 
-  it('returns awaiting search placeholder in live mode without live or manual data', () => {
+  it('returns empty status in live mode without live or manual data and no dummy values', () => {
     const cond = resolveActiveConditions({
       isDemo: false,
       demoCityId: 'delhi',
@@ -108,9 +84,37 @@ describe('activeConditions state resolution', () => {
       liveForecast: null,
       manualData: null,
     });
-    expect(cond.cityName).toBe('Live City Search Required');
-    expect(cond.aqi).toBe(0);
-    expect(cond.category).toBe('Good');
+    expect(cond.status).toBe('empty');
+    expect(cond.origin).toBe('live');
+    expect(cond.cityName).toBeUndefined();
+    expect(cond.aqi).toBeUndefined();
+    expect(cond.category).toBeUndefined();
+    expect(cond.pollutants).toBeUndefined();
+    expect(cond.weatherFactors).toBeUndefined();
+    expect(cond.hourlyPoints).toEqual([]);
+  });
+
+  it('supports loading and error statuses during live queries', () => {
+    const loading = resolveActiveConditions({
+      isDemo: false,
+      demoCityId: 'delhi',
+      liveData: null,
+      liveForecast: null,
+      manualData: null,
+      isLoading: true,
+    });
+    expect(loading.status).toBe('loading');
+
+    const err = resolveActiveConditions({
+      isDemo: false,
+      demoCityId: 'delhi',
+      liveData: null,
+      liveForecast: null,
+      manualData: null,
+      error: 'Network timeout',
+    });
+    expect(err.status).toBe('error');
+    expect(err.errorMessage).toBe('Network timeout');
   });
 
   it('resolves stored profile in live mode, persona overlay in demo mode, and empty {} fallback', () => {

@@ -11,7 +11,7 @@ describe('PrintPlan & PrintButton Components', () => {
     vi.restoreAllMocks();
   });
 
-  it('renders emergency contacts, routine highlights, citations, and triggers window.print()', async () => {
+  it('renders emergency contacts, human-readable routine labels, citations, and triggers print', async () => {
     const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
     const user = userEvent.setup();
     const routineItems = generateRoutine('Severe');
@@ -21,10 +21,21 @@ describe('PrintPlan & PrintButton Components', () => {
     );
 
     expect(screen.getByText(/National Emergency 112/i)).toBeInTheDocument();
+    expect(screen.getByText('Wake-up:')).toBeInTheDocument();
+    expect(screen.getByText('Commute:')).toBeInTheDocument();
+    expect(screen.queryByText('WAKE:')).not.toBeInTheDocument();
+    expect(screen.queryByText('COMMUTE:')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /CPCB India NAAQS/i })).toHaveAttribute('rel', 'noopener noreferrer');
 
     await user.click(screen.getByRole('button', { name: /Print Family Smog Plan/i }));
     expect(printSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders null when aqi or category is missing', () => {
+    const { container } = render(
+      <PrintPlan cityName="Delhi" aqi={undefined} category={undefined} routineItems={[]} />
+    );
+    expect(container.firstChild).toBeNull();
   });
 
   it('passes automated accessibility audit', async () => {

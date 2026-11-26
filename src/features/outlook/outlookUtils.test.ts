@@ -6,6 +6,7 @@ import {
   computeSvgCoordinates,
   generatePolylinePoints,
   findActivityWindows,
+  getOutlookSummary,
   CHART_WIDTH,
   CHART_HEIGHT,
 } from './outlookUtils.js';
@@ -39,12 +40,11 @@ describe('outlookUtils', () => {
     expect(coords[0]?.y).toBeLessThan(CHART_HEIGHT);
   });
 
-  it('handles empty points array without error', () => {
+  it('handles empty points array without error returning null windows and summary', () => {
     expect(computeSvgCoordinates([])).toEqual([]);
     expect(generatePolylinePoints([])).toBe('');
-    const windows = findActivityWindows([]);
-    expect(windows.best.hourLabel).toBe('14:00');
-    expect(windows.worst.hourLabel).toBe('07:00');
+    expect(findActivityWindows([])).toBeNull();
+    expect(getOutlookSummary([])).toContain('No hourly forecast');
   });
 
   it('generates valid polyline coordinate string', () => {
@@ -63,11 +63,12 @@ describe('outlookUtils', () => {
       makeMockPoint(20, 380),
     ];
 
-    const { best, worst } = findActivityWindows(points);
-    expect(best.hourLabel).toBe('14:00');
-    expect(best.aqi).toBe(180);
-    expect(worst.hourLabel).toBe('06:00');
-    expect(worst.aqi).toBe(450);
+    const windows = findActivityWindows(points);
+    expect(windows).not.toBeNull();
+    expect(windows?.best.hourLabel).toBe('14:00');
+    expect(windows?.best.aqi).toBe(180);
+    expect(windows?.worst.hourLabel).toBe('06:00');
+    expect(windows?.worst.aqi).toBe(450);
   });
 
   it('handles flat uniform AQI values safely without division by zero', () => {

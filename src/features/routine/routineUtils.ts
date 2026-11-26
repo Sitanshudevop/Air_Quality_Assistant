@@ -4,14 +4,14 @@ import type { StoredProfile } from '../../services/profile.types.js';
 
 /** Display label and typical time window for each diurnal routine block. */
 export const TIME_BLOCK_META: Readonly<Record<RoutinePeriod, { readonly label: string; readonly window: string }>> = {
-  wake: { label: 'Wake Up', window: '06:00 – 07:30' },
-  commute: { label: 'Morning Commute', window: '08:00 – 09:30' },
-  work_school: { label: 'Work & School', window: '09:30 – 12:30' },
-  midday: { label: 'Midday Window', window: '12:30 – 15:00' },
+  wake: { label: 'Wake-up', window: '06:00 – 07:30' },
+  commute: { label: 'Commute', window: '08:00 – 09:30' },
+  work_school: { label: 'Work / School', window: '09:30 – 12:30' },
+  midday: { label: 'Midday', window: '12:30 – 15:00' },
   exercise: { label: 'Exercise', window: '16:00 – 18:00' },
-  cooking: { label: 'Evening Cooking', window: '19:00 – 20:30' },
-  evening: { label: 'Evening Indoors', window: '20:30 – 22:00' },
-  sleep: { label: 'Sleep Preparation', window: '22:00 – 06:00' },
+  cooking: { label: 'Cooking', window: '19:00 – 20:30' },
+  evening: { label: 'Evening', window: '20:30 – 22:00' },
+  sleep: { label: 'Sleep', window: '22:00 – 06:00' },
 };
 
 const VULN_MAP: Readonly<Record<string, VulnerabilityGroup>> = {

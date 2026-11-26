@@ -48,6 +48,13 @@ describe('HourlyOutlook Component', () => {
     expect(screen.getByRole('img')).toBeInTheDocument();
   });
 
+  it('renders nothing when points array is empty', () => {
+    const { container } = render(<HourlyOutlook points={[]} />);
+    expect(container.firstChild).toBeNull();
+    expect(screen.queryByText('Next 24-48h Hourly Outlook')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Best Ventilation Window/i)).not.toBeInTheDocument();
+  });
+
   it('satisfies automated accessibility audits', async () => {
     const { container } = render(<HourlyOutlook points={mockHourlyPoints} />);
     const results = await axe(container);

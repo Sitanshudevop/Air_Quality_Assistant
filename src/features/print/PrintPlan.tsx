@@ -2,12 +2,13 @@
 import type { ReactElement } from 'react';
 import type { AqiCategory, RoutineItem } from '../../domain/types.js';
 import { PrintButton } from '../../components/PrintButton.js';
+import { TIME_BLOCK_META } from '../routine/routineUtils.js';
 
 /** Props for PrintPlan component. */
 export interface PrintPlanProps {
-  readonly cityName: string;
-  readonly aqi: number;
-  readonly category: AqiCategory;
+  readonly cityName?: string;
+  readonly aqi?: number;
+  readonly category?: AqiCategory;
   readonly routineItems: readonly RoutineItem[];
 }
 
@@ -15,14 +16,18 @@ export interface PrintPlanProps {
  * Printable family smog emergency summary with 112/102 contacts and expanded citations.
  *
  * @param props - Active city, AQI category, and deterministic routine items.
- * @returns Print-ready summary section with interactive print trigger.
+ * @returns Print-ready summary section or null if air quality data is absent.
  */
 export function PrintPlan({
   cityName,
   aqi,
   category,
   routineItems,
-}: PrintPlanProps): ReactElement {
+}: PrintPlanProps): ReactElement | null {
+  if (aqi === undefined || !category || !cityName) {
+    return null;
+  }
+
   const topActions = routineItems.slice(0, 4);
 
   return (
@@ -51,7 +56,7 @@ export function PrintPlan({
         <ul className="list-disc list-inside text-xs space-y-1 text-neutral-700 dark:text-neutral-300">
           {topActions.map((item) => (
             <li key={item.id}>
-              <strong className="uppercase">{item.timeBlock}:</strong> {item.action}
+              <strong>{TIME_BLOCK_META[item.timeBlock]?.label ?? item.timeBlock}:</strong> {item.action}
             </li>
           ))}
         </ul>

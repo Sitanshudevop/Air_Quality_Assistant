@@ -4,7 +4,7 @@ import type { HourlyAirQualityPoint } from '../../services/openMeteo.types.js';
 import { Button } from '../../components/ui/Button.js';
 import { AccessibleSvgChart } from './AccessibleSvgChart.js';
 import { OutlookDataTable } from './OutlookDataTable.js';
-import { findActivityWindows } from './outlookUtils.js';
+import { findActivityWindows, getOutlookSummary } from './outlookUtils.js';
 
 /** Props for HourlyOutlook component. */
 export interface HourlyOutlookProps {
@@ -16,21 +16,30 @@ export interface HourlyOutlookProps {
  * 24-48h hourly outlook container providing dual SVG chart and accessible table representations.
  *
  * @param props - Hourly air quality points and optional container styling.
- * @returns React component element.
+ * @returns React component element or null when points are empty.
  */
 export function HourlyOutlook({
   points = [],
   className = '',
-}: HourlyOutlookProps): ReactElement {
+}: HourlyOutlookProps): ReactElement | null {
   const [view, setView] = useState<'chart' | 'table'>('chart');
-  const { best, worst } = findActivityWindows(points);
+  if (points.length === 0) {
+    return null;
+  }
+
+  const windows = findActivityWindows(points);
+  if (!windows) {
+    return null;
+  }
+  const { best, worst } = windows;
+  const summary = getOutlookSummary(points);
 
   return (
     <section
       aria-label="Next 24 to 48 Hours Hourly Outlook"
       className={`p-4 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm ${className}`.trim()}
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div>
           <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100">
             Next 24-48h Hourly Outlook
@@ -59,6 +68,10 @@ export function HourlyOutlook({
           </Button>
         </div>
       </div>
+
+      <p className="text-xs text-neutral-700 dark:text-neutral-300 mb-3 bg-neutral-50 dark:bg-neutral-800/60 p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700">
+        {summary}
+      </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 text-xs">
         <div className="p-2.5 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200">

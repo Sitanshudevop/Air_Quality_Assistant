@@ -109,6 +109,15 @@ describe('App Component', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('switches tabs when header navigation links are clicked', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const routineNav = screen.getByRole('button', { name: 'Daily Routine' });
+    await user.click(routineNav);
+    expect(routineNav).toHaveAttribute('aria-current', 'page');
+  });
+
   it('passes automated accessibility audits', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
       ok: true,

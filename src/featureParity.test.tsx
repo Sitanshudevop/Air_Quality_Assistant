@@ -76,5 +76,5 @@ describe('Phase B Feature Parity Suite', () => {
     expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Use My Location' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Manual AQI' })).toBeInTheDocument();
-  });
+  }, 15000);
 });

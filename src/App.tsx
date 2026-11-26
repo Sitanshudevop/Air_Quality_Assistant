@@ -79,7 +79,16 @@ function AppShell(): ReactElement {
     <div className="min-h-screen bg-gradient-to-b from-emerald-50/40 via-white to-white text-neutral-900 dark:bg-gradient-to-b dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-900 dark:text-neutral-50 font-sans p-4 sm:p-6 pb-20 md:pb-8 transition-colors">
       <SkipLink targetId="#main-content" />
       <DemoBanner isDemo={isDemo} />
-      <AppHeader mode={mode} onToggleMode={toggleMode} isDark={isDark} onToggleTheme={handleToggleTheme} onOpenTour={() => setIsTourOpen(true)} onOpenProfile={() => setIsProfileOpen(true)} />
+      <AppHeader
+        mode={mode}
+        onToggleMode={toggleMode}
+        isDark={isDark}
+        onToggleTheme={handleToggleTheme}
+        onOpenTour={() => setIsTourOpen(true)}
+        onOpenProfile={() => setIsProfileOpen(true)}
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+      />
 
       <main id="main-content" tabIndex={-1} className="max-w-[1200px] mx-auto space-y-6 focus:outline-none">
         <WelcomeCard onLaunchDemo={() => setMode('demo')} onOpenProfile={() => setIsProfileOpen(true)} onStartTour={() => setIsTourOpen(true)} />

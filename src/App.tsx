@@ -1,7 +1,7 @@
-// Root application component integrating shell landmarks, providers, tabs, and lazy views.
+// Root application component integrating BentoShell, providers, tabs, and lazy views.
 import { lazy, Suspense, useEffect, useState, type ReactElement } from 'react';
 import { ModeProvider, useMode } from './state/ModeContext.js';
-import { LanguageProvider } from './state/language.js';
+import { LanguageProvider, useLanguage } from './state/language.js';
 import { resolveActiveConditions, resolveEffectiveProfile } from './state/activeConditions.js';
 import type { DemoCityId, DemoPersonaId } from './constants/demo/types.js';
 import { generateRoutine } from './domain/routine.js';
@@ -9,13 +9,12 @@ import type { ManualAirQualityData } from './services/manualReading.js';
 import type { AirQualityData, ForecastData } from './services/openMeteo.types.js';
 import { SkipLink } from './components/ui/SkipLink.js';
 import { DemoBanner } from './components/layout/DemoBanner.js';
-import { AppHeader } from './components/layout/AppHeader.js';
+import { BentoShell } from './components/layout/BentoShell.js';
 import { AppFooter } from './components/layout/AppFooter.js';
 import { FeatureTabs, type FeatureTabId } from './components/layout/FeatureTabs.js';
 import { LocationBar } from './components/layout/LocationBar.js';
 import { AppTabPanels } from './components/layout/AppTabPanels.js';
-import { BottomNav } from './components/layout/BottomNav.js';
-import { WelcomeCard } from './features/onboarding/WelcomeCard.js';
+import { WelcomeRibbon } from './features/onboarding/WelcomeRibbon.js';
 import { mapStoredProfileToDomain } from './features/routine/routineUtils.js';
 import { checkAiStatus } from './services/ai.js';
 
@@ -45,8 +44,24 @@ function AppModals(props: {
   );
 }
 
+function useAppState(opts: {
+  isDemo: boolean;
+  demoCityId: DemoCityId;
+  demoPersonaId: DemoPersonaId;
+  liveData: { aq: AirQualityData; label: string } | null;
+  liveForecast: ForecastData | null;
+  manualData: ManualAirQualityData | null;
+}): { conditions: ReturnType<typeof resolveActiveConditions>; profile: ReturnType<typeof resolveEffectiveProfile>; domainProfile: ReturnType<typeof mapStoredProfileToDomain>; routineItems: ReturnType<typeof generateRoutine> } {
+  const conditions = resolveActiveConditions(opts);
+  const profile = resolveEffectiveProfile(opts.isDemo, opts.demoPersonaId);
+  const domainProfile = mapStoredProfileToDomain(profile);
+  const routineItems = conditions.category ? generateRoutine(conditions.category, domainProfile) : [];
+  return { conditions, profile, domainProfile, routineItems };
+}
+
 function AppShell(): ReactElement {
   const { mode, toggleMode, isDemo, setMode } = useMode();
+  const { toggleLanguage } = useLanguage();
   const [isDark, setIsDark] = useState<boolean>(false);
   const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
@@ -64,61 +79,31 @@ function AppShell(): ReactElement {
     return () => { cancel(); controller.abort(); };
   }, []);
 
-  const conditions = resolveActiveConditions({ isDemo, demoCityId, liveData, liveForecast, manualData });
-  const profile = resolveEffectiveProfile(isDemo, demoPersonaId);
-  const domainProfile = mapStoredProfileToDomain(profile);
-  const routineItems = conditions.category ? generateRoutine(conditions.category, domainProfile) : [];
-
-  const handleToggleTheme = (): void => {
-    const nextDark = !isDark;
-    setIsDark(nextDark);
-    document.documentElement.classList.toggle('dark', nextDark);
+  const { conditions, profile, domainProfile, routineItems } = useAppState({ isDemo, demoCityId, demoPersonaId, liveData, liveForecast, manualData });
+  const handleToggleTheme = (): void => { const n = !isDark; setIsDark(n); document.documentElement.classList.toggle('dark', n); };
+  const focusSearch = (): void => { document.getElementById('live-city-search')?.focus(); };
+  const headerProps = {
+    mode, onToggleMode: toggleMode, cityName: conditions.cityName, category: conditions.category,
+    onSearchCity: (q: string) => { const el = document.getElementById('live-city-search') as HTMLInputElement | null; if (el) { el.value = q; el.dispatchEvent(new Event('input', { bubbles: true })); } focusSearch(); },
+    onUseLocation: () => { document.getElementById('use-location-btn')?.click(); },
+    onLaunchDemo: () => setMode('demo'),
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50/40 via-white to-white text-neutral-900 dark:bg-gradient-to-b dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-900 dark:text-neutral-50 font-sans p-4 sm:p-6 pb-20 md:pb-8 transition-colors">
+    <>
       <SkipLink targetId="#main-content" />
       <DemoBanner isDemo={isDemo} />
-      <AppHeader
-        mode={mode}
-        onToggleMode={toggleMode}
-        isDark={isDark}
-        onToggleTheme={handleToggleTheme}
-        onOpenTour={() => setIsTourOpen(true)}
-        onOpenProfile={() => setIsProfileOpen(true)}
-        activeTab={activeTab}
-        onSelectTab={setActiveTab}
-      />
-
-      <main id="main-content" tabIndex={-1} className="max-w-[1200px] mx-auto space-y-6 focus:outline-none">
-        <WelcomeCard onLaunchDemo={() => setMode('demo')} onOpenProfile={() => setIsProfileOpen(true)} onStartTour={() => setIsTourOpen(true)} />
-        <LocationBar
-          isDemo={isDemo}
-          demoCityId={demoCityId}
-          demoPersonaId={demoPersonaId}
-          onSelectDemoCity={setDemoCityId}
-          onSelectDemoPersona={setDemoPersonaId}
-          onLiveData={(aq, fc, label) => { setLiveData({ aq, label }); setLiveForecast(fc); setManualData(null); }}
-          onManualReading={(reading) => setManualData(reading)}
-        />
-        <FeatureTabs activeTab={activeTab} onSelectTab={setActiveTab} />
-        <AppTabPanels
-          key={`panel-${profileVer}`}
-          activeTab={activeTab}
-          conditions={conditions}
-          profile={profile}
-          domainProfile={domainProfile}
-          routineItems={routineItems}
-          onLaunchDemo={() => setMode('demo')}
-          onFocusSearch={() => document.getElementById('live-city-search')?.focus()}
-          onProfileUpdated={() => setProfileVer((v) => v + 1)}
-        />
-      </main>
-
+      <BentoShell activeTab={activeTab} onSelectTab={setActiveTab} isDark={isDark} onToggleTheme={handleToggleTheme} onToggleLang={toggleLanguage} onOpenTour={() => setIsTourOpen(true)} onOpenProfile={() => setIsProfileOpen(true)} headerProps={headerProps}>
+        <main id="main-content" tabIndex={-1} className="space-y-5 focus:outline-none pt-2">
+          <WelcomeRibbon onLaunchDemo={() => setMode('demo')} onOpenProfile={() => setIsProfileOpen(true)} onStartTour={() => setIsTourOpen(true)} />
+          <LocationBar isDemo={isDemo} demoCityId={demoCityId} demoPersonaId={demoPersonaId} onSelectDemoCity={setDemoCityId} onSelectDemoPersona={setDemoPersonaId} onLiveData={(aq, fc, label) => { setLiveData({ aq, label }); setLiveForecast(fc); setManualData(null); }} onManualReading={(reading) => setManualData(reading)} />
+          <FeatureTabs activeTab={activeTab} onSelectTab={setActiveTab} />
+          <AppTabPanels key={`panel-${profileVer}`} activeTab={activeTab} conditions={conditions} profile={profile} domainProfile={domainProfile} routineItems={routineItems} onLaunchDemo={() => setMode('demo')} onFocusSearch={focusSearch} onProfileUpdated={() => setProfileVer((v) => v + 1)} />
+        </main>
+      </BentoShell>
       <AppFooter />
-      <BottomNav activeTab={activeTab} onSelectTab={setActiveTab} />
       <AppModals isTourOpen={isTourOpen} isProfileOpen={isProfileOpen} onCloseTour={() => setIsTourOpen(false)} onCloseProfile={() => setIsProfileOpen(false)} />
-    </div>
+    </>
   );
 }
 

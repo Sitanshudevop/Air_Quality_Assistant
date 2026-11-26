@@ -1,5 +1,6 @@
 // Atmospheric mixing factors card explaining dispersion dynamics in plain words.
 import type { ReactElement } from 'react';
+import { Thermometer, Droplets, Wind as WindIcon, Gauge } from 'lucide-react';
 import type { WeatherFactors } from '../../services/openMeteo.types.js';
 import { detectInversion, getWeatherSummary } from '../../services/forecast.js';
 
@@ -71,7 +72,7 @@ export function WeatherMixingFactors({
         </div>
         {isInversion && (
           <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
-            ⚠️ Inversion Active
+            Inversion Active
           </span>
         )}
       </div>
@@ -82,28 +83,28 @@ export function WeatherMixingFactors({
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
         <div className="p-3 rounded-2xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-800 flex items-center gap-2.5">
-          <span className="text-xl" aria-hidden="true">🌡️</span>
+          <Thermometer size={18} className="text-neutral-500 flex-shrink-0" aria-hidden="true" />
           <div>
             <div className="text-[11px] text-neutral-500 dark:text-neutral-400">Temperature</div>
             <div className="text-base font-bold text-neutral-900 dark:text-neutral-100">{temp}°C</div>
           </div>
         </div>
         <div className="p-3 rounded-2xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-800 flex items-center gap-2.5">
-          <span className="text-xl" aria-hidden="true">💧</span>
+          <Droplets size={18} className="text-neutral-500 flex-shrink-0" aria-hidden="true" />
           <div>
             <div className="text-[11px] text-neutral-500 dark:text-neutral-400">Humidity</div>
             <div className="text-base font-bold text-neutral-900 dark:text-neutral-100">{humidity}%</div>
           </div>
         </div>
         <div className="p-3 rounded-2xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-800 flex items-center gap-2.5">
-          <span className="text-xl" aria-hidden="true">💨</span>
+          <WindIcon size={18} className="text-neutral-500 flex-shrink-0" aria-hidden="true" />
           <div>
             <div className="text-[11px] text-neutral-500 dark:text-neutral-400">Wind Speed</div>
             <div className="text-base font-bold text-neutral-900 dark:text-neutral-100">{wind} m/s</div>
           </div>
         </div>
         <div className="p-3 rounded-2xl bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200/80 dark:border-neutral-800 flex items-center gap-2.5">
-          <span className="text-xl" aria-hidden="true">🧭</span>
+          <Gauge size={18} className="text-neutral-500 flex-shrink-0" aria-hidden="true" />
           <div>
             <div className="text-[11px] text-neutral-500 dark:text-neutral-400">Pressure</div>
             <div className="text-base font-bold text-neutral-900 dark:text-neutral-100">{pressure} hPa</div>

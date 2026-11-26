@@ -25,6 +25,15 @@ export default {
           DEFAULT: '#0f766e',
           dark: '#115e59',
         },
+        bento: {
+          canvas: '#F3F5FA',
+          lavender: '#E9E8FB',
+          ice: '#DCECFB',
+          blush: '#F6E1F0',
+          mint: '#DFF6EC',
+          ink: '#18181B',
+          muted: '#64748B',
+        },
         status: {
           good: '#16a34a',
           moderate: '#ca8a04',
@@ -41,6 +50,8 @@ export default {
       },
       fontFamily: {
         sans: [
+          'Plus Jakarta Sans',
+          'Inter',
           'system-ui',
           '-apple-system',
           'BlinkMacSystemFont',

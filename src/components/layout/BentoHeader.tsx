@@ -1,6 +1,6 @@
 // Multi-tier responsive Bento header: logo + greeting + mobile utilities + search + GPS + mode toggle.
 import type { FormEvent, ReactElement } from 'react';
-import { Search, X, LocateFixed, Loader2, SlidersHorizontal, Languages, Sun, Moon, Compass, UserCircle } from 'lucide-react';
+import { Search, X, LocateFixed, Loader2, SlidersHorizontal, Sun, Moon, Compass, UserCircle } from 'lucide-react';
 import type { OperatingMode } from '../../state/mode.js';
 import { useLanguage } from '../../state/language.js';
 import type { AqiCategory } from '../../domain/types.js';
@@ -20,7 +20,6 @@ export interface BentoHeaderProps {
   readonly onToggleManual?: () => void;
   readonly isDark?: boolean;
   readonly onToggleTheme?: () => void;
-  readonly onToggleLang?: () => void;
   readonly onOpenTour?: () => void;
   readonly onOpenProfile?: () => void;
 }
@@ -51,15 +50,10 @@ function GreetingText(props: { cityName?: string; category?: AqiCategory }): Rea
   );
 }
 
-function MobileUtilityCluster(props: Pick<BentoHeaderProps, 'isDark' | 'onToggleTheme' | 'onToggleLang' | 'onOpenTour' | 'onOpenProfile'>): ReactElement {
+function MobileUtilityCluster(props: Pick<BentoHeaderProps, 'isDark' | 'onToggleTheme' | 'onOpenTour' | 'onOpenProfile'>): ReactElement {
   const btnCls = 'md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-neutral-500 hover:text-bento-ink hover:bg-bento-canvas dark:hover:text-white dark:hover:bg-neutral-800 transition-colors';
   return (
     <div className="flex md:hidden items-center gap-0.5 shrink-0">
-      {props.onToggleLang && (
-        <button type="button" onClick={props.onToggleLang} aria-label="Switch language" className={btnCls}>
-          <Languages size={17} />
-        </button>
-      )}
       {props.onToggleTheme && (
         <button type="button" onClick={props.onToggleTheme} aria-label={props.isDark ? 'Switch to light theme' : 'Switch to dark theme'} className={btnCls}>
           {props.isDark ? <Sun size={17} /> : <Moon size={17} />}

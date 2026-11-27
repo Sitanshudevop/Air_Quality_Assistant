@@ -22,7 +22,7 @@ describe('Phase B Feature Parity Suite', () => {
     // Header & Global Controls
     expect(screen.getByRole('button', { name: /Current mode is/i })).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /Switch to (dark|light) theme/i }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('button', { name: /Switch language/i }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByRole('button', { name: /Switch language/i })).not.toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Tour' }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByRole('button', { name: 'Profile' }).length).toBeGreaterThanOrEqual(1);
 

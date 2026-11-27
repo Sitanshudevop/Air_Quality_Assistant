@@ -11,7 +11,6 @@ export interface BentoShellProps {
   readonly onSelectTab: (tab: FeatureTabId) => void;
   readonly isDark: boolean;
   readonly onToggleTheme: () => void;
-  readonly onToggleLang: () => void;
   readonly onOpenTour: () => void;
   readonly onOpenProfile: () => void;
   readonly headerProps: BentoHeaderProps;
@@ -25,7 +24,7 @@ export interface BentoShellProps {
  * @returns React element.
  */
 export function BentoShell({
-  activeTab, onSelectTab, isDark, onToggleTheme, onToggleLang,
+  activeTab, onSelectTab, isDark, onToggleTheme,
   onOpenTour, onOpenProfile, headerProps, children,
 }: BentoShellProps): ReactElement {
   return (
@@ -45,7 +44,6 @@ export function BentoShell({
             {...headerProps}
             isDark={isDark}
             onToggleTheme={onToggleTheme}
-            onToggleLang={onToggleLang}
             onOpenTour={onOpenTour}
             onOpenProfile={onOpenProfile}
           />

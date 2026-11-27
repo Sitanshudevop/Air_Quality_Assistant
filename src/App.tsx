@@ -1,7 +1,7 @@
 // Root application component integrating BentoShell, providers, tabs, and lazy views.
 import { lazy, Suspense, useEffect, useState, type ReactElement } from 'react';
 import { ModeProvider, useMode } from './state/ModeContext.js';
-import { LanguageProvider, useLanguage } from './state/language.js';
+import { LanguageProvider } from './state/language.js';
 import { resolveActiveConditions, resolveEffectiveProfile } from './state/activeConditions.js';
 import type { DemoCityId, DemoPersonaId } from './constants/demo/types.js';
 import { generateRoutine } from './domain/routine.js';
@@ -46,7 +46,6 @@ function AppModals(props: {
 function AppShell(): ReactElement {
   const initialLink = typeof window !== 'undefined' ? parseDeepLinkParams(window.location.search) : {};
   const { mode, toggleMode, isDemo, setMode } = useMode();
-  const { toggleLanguage } = useLanguage();
   const [isDark, setIsDark] = useState<boolean>(false);
   const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
@@ -83,7 +82,7 @@ function AppShell(): ReactElement {
       <DemoBanner isDemo={isDemo} />
       <BentoShell
         activeTab={activeTab} onSelectTab={setActiveTab} isDark={isDark} onToggleTheme={handleToggleTheme}
-        onToggleLang={toggleLanguage} onOpenTour={() => setIsTourOpen(true)} onOpenProfile={() => setIsProfileOpen(true)}
+        onOpenTour={() => setIsTourOpen(true)} onOpenProfile={() => setIsProfileOpen(true)}
         headerProps={{
           mode, onToggleMode: toggleMode, cityName: conditions.cityName, category: conditions.category,
           searchQuery: liveState.query, isLocating: liveState.isLocating, onSearchChange: liveState.onQueryChange,

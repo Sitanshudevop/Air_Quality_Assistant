@@ -2,7 +2,7 @@
 import type { ReactElement } from 'react';
 import {
   Home, Clock, Leaf, Scale, MessageCircle, Users,
-  Sun, Moon, Languages, Compass, UserCircle,
+  Sun, Moon, Compass, UserCircle,
 } from 'lucide-react';
 import type { FeatureTabId } from './FeatureTabs.js';
 import { FEATURE_TABS } from './FeatureTabs.js';
@@ -14,7 +14,6 @@ export interface BentoSidebarProps {
   readonly onSelectTab: (tab: FeatureTabId) => void;
   readonly isDark: boolean;
   readonly onToggleTheme: () => void;
-  readonly onToggleLang: () => void;
   readonly onOpenTour: () => void;
   readonly onOpenProfile: () => void;
 }
@@ -88,11 +87,11 @@ function UtilButton(props: { icon: ReactElement; label: string; ariaLabel: strin
 /**
  * Fixed-slot desktop sidebar that floats wider on hover or keyboard focus-visible without layout shift.
  *
- * @param props - Active tab, theme, language, and modal callbacks.
+ * @param props - Active tab, theme, and modal callbacks.
  * @returns React element.
  */
 export function BentoSidebar({
-  activeTab, onSelectTab, isDark, onToggleTheme, onToggleLang, onOpenTour, onOpenProfile,
+  activeTab, onSelectTab, isDark, onToggleTheme, onOpenTour, onOpenProfile,
 }: BentoSidebarProps): ReactElement {
   return (
     <div className="hidden md:block w-16 shrink-0 sticky top-4 h-[calc(100dvh-2rem)] z-40">
@@ -113,7 +112,6 @@ export function BentoSidebar({
         </div>
 
         <div className="flex flex-col gap-1">
-          <UtilButton icon={<Languages size={18} />} label="हिंदी / English" ariaLabel="Switch language" onClick={onToggleLang} />
           <UtilButton icon={isDark ? <Sun size={18} /> : <Moon size={18} />} label={isDark ? 'Light Mode' : 'Dark Mode'} ariaLabel={isDark ? 'Switch to light theme' : 'Switch to dark theme'} onClick={onToggleTheme} />
           <UtilButton icon={<Compass size={18} />} label="Guided Tour" ariaLabel="Tour" onClick={onOpenTour} />
           <UtilButton icon={<UserCircle size={18} />} label="Family Profile" ariaLabel="Profile" onClick={onOpenProfile} />

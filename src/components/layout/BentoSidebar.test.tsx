@@ -12,11 +12,12 @@ describe('BentoSidebar', () => {
         onSelectTab={onSelectTab}
         isDark={false}
         onToggleTheme={vi.fn()}
-        onToggleLang={vi.fn()}
         onOpenTour={vi.fn()}
         onOpenProfile={vi.fn()}
       />
     );
+
+    expect(screen.queryByRole('button', { name: /Switch language/i })).not.toBeInTheDocument();
 
     const aside = screen.getByLabelText('Sidebar navigation');
     expect(aside.className).toContain('has-[:focus-visible]:w-56');

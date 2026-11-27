@@ -36,7 +36,6 @@ export function BentoShell({
           onSelectTab={onSelectTab}
           isDark={isDark}
           onToggleTheme={onToggleTheme}
-          onToggleLang={onToggleLang}
           onOpenTour={onOpenTour}
           onOpenProfile={onOpenProfile}
         />

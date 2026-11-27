@@ -29,8 +29,8 @@ export function BentoShell({
   onOpenTour, onOpenProfile, headerProps, children,
 }: BentoShellProps): ReactElement {
   return (
-    <div className="min-h-dvh overflow-x-clip md:h-dvh md:overflow-hidden bg-[#F3F5FA] dark:bg-neutral-950 p-0 pb-24 md:p-4 md:pb-4 font-sans transition-colors">
-      <div className="max-w-[1600px] mx-auto flex items-stretch gap-4 min-w-0 md:h-full">
+    <div className="min-h-dvh bg-[#F3F5FA] dark:bg-neutral-950 p-0 pb-24 md:p-4 md:pb-4 font-sans transition-colors">
+      <div className="max-w-[1600px] mx-auto flex items-start gap-4 min-w-0">
         <BentoSidebar
           activeTab={activeTab}
           onSelectTab={onSelectTab}
@@ -41,7 +41,7 @@ export function BentoShell({
           onOpenProfile={onOpenProfile}
         />
 
-        <div className="flex-1 min-w-0 flex flex-col bg-white dark:bg-neutral-900 rounded-none md:rounded-3xl shadow-sm md:h-full md:overflow-hidden">
+        <div className="flex-1 min-w-0 flex flex-col bg-white dark:bg-neutral-900 rounded-none md:rounded-3xl shadow-sm">
           <BentoHeader
             {...headerProps}
             isDark={isDark}
@@ -50,7 +50,7 @@ export function BentoShell({
             onOpenTour={onOpenTour}
             onOpenProfile={onOpenProfile}
           />
-          <div className="flex-1 min-w-0 min-h-0 flex flex-col md:overflow-hidden px-3.5 sm:px-6 pb-4">
+          <div className="flex-1 min-w-0 flex flex-col px-3.5 sm:px-6 pb-6">
             {children}
           </div>
         </div>

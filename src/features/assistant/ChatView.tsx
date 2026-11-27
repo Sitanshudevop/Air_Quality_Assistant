@@ -93,21 +93,21 @@ export function ChatView({ aqi, category, cityName, pollutants, hourlyPoints, vu
   };
 
   return (
-    <section aria-labelledby="chat-heading" className="flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
-      <div className="shrink-0 space-y-2.5">
+    <section aria-labelledby="chat-heading" className="space-y-4">
+      <div className="space-y-2.5">
         <ChatHeader title={t('assistant.title')} disclaimer={t('disclaimer.medical')} isHindi={language === 'hi'} onClear={handleClear} />
         <div className="flex flex-wrap gap-2" aria-label="Prompt suggestions">
           {PROMPT_SUGGESTIONS.map((chip) => <Button key={chip} size="sm" variant="secondary" disabled={isLoading} onClick={() => void sendMessage(chip)}>{chip}</Button>)}
         </div>
       </div>
 
-      <div role="log" aria-live="polite" aria-relevant="additions" aria-busy={isLoading} className="flex-1 min-h-0 overflow-y-auto pr-2 py-3 flex flex-col space-y-3">
+      <div role="log" aria-live="polite" aria-relevant="additions" aria-busy={isLoading} className="py-3 flex flex-col space-y-3">
         {messages.length === 0 ? <p className="text-xs text-neutral-500 dark:text-neutral-400">Ask a question about today&apos;s air quality in {cityName} or choose a suggestion above.</p> : messages.map((m) => <ChatMessageBubble key={m.id} msg={m} isLoading={isLoading} onRetry={(p) => void sendMessage(p)} onSuggestion={(s) => void sendMessage(s)} />)}
         {isLoading && <p className="text-xs font-medium text-sky-700 dark:text-sky-300">Thinking...</p>}
         <div ref={endRef} />
       </div>
 
-      <div className="shrink-0 pt-3 border-t border-slate-100 dark:border-neutral-800 space-y-2">
+      <div className="sticky bottom-4 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm pt-3 pb-2 border-t border-slate-100 dark:border-neutral-800 space-y-2">
         {errorMsg && (
           <div role="alert" className="p-3 rounded-lg border border-rose-400 bg-rose-50 dark:bg-rose-950/50 text-xs text-rose-900 dark:text-rose-100 flex items-center justify-between gap-2">
             <span>{errorMsg}</span>

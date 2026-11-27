@@ -89,7 +89,7 @@ export function BentoSidebar({
   activeTab, onSelectTab, isDark, onToggleTheme, onToggleLang, onOpenTour, onOpenProfile,
 }: BentoSidebarProps): ReactElement {
   return (
-    <div className="hidden md:block w-16 shrink-0 h-full relative z-40">
+    <div className="hidden md:block w-16 shrink-0 sticky top-4 h-[calc(100dvh-2rem)] z-40">
       <aside
         aria-label="Sidebar navigation"
         className="group absolute inset-y-0 left-0 w-16 hover:w-56 bg-white dark:bg-neutral-900 rounded-3xl py-4 px-3 flex flex-col justify-between shadow-sm hover:shadow-xl border border-slate-100/80 dark:border-neutral-800 transition-all duration-200 ease-out overflow-hidden"

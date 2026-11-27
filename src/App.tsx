@@ -89,8 +89,8 @@ function AppShell(): ReactElement {
           onSearchSubmit: liveState.onSearchSubmit, onUseLocation: liveState.onGeo, onToggleManual: liveState.onToggleManual,
         }}
       >
-        <main id="main-content" tabIndex={-1} className="flex-1 min-h-0 flex flex-col gap-4 focus:outline-none">
-          <div className="shrink-0 space-y-3">
+        <main id="main-content" tabIndex={-1} className="flex flex-col gap-5 focus:outline-none">
+          <div className="space-y-3">
             <WelcomeRibbon onLaunchDemo={() => setMode('demo')} onOpenProfile={() => setIsProfileOpen(true)} onStartTour={() => setIsTourOpen(true)} />
             <LocationBar
               isDemo={isDemo} demoCityId={demoCityId} demoPersonaId={demoPersonaId}
@@ -107,7 +107,7 @@ function AppShell(): ReactElement {
             onProfileUpdated={() => setProfileVer((v) => v + 1)}
           />
         </main>
-        <AppFooter compact={activeTab === 'assistant'} />
+        <AppFooter />
       </BentoShell>
       <AppModals isTourOpen={isTourOpen} isProfileOpen={isProfileOpen} onCloseTour={() => setIsTourOpen(false)} onCloseProfile={() => setIsProfileOpen(false)} />
     </>

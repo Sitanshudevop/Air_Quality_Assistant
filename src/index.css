@@ -12,14 +12,15 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: #F3F5FA;
+  background-color: #F3F5FA;
   color: #111827;
   min-height: 100dvh;
+  overflow-x: clip;
 }
 
 .dark html,
 .dark body {
-  background: #0a0a0a;
+  background-color: #0a0a0a;
   color: #f9fafb;
 }
 

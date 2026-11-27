@@ -68,7 +68,7 @@ export function AppFooter({ className = '', compact = false }: AppFooterProps): 
   return (
     <footer
       role="contentinfo"
-      className={`shrink-0 max-w-[1600px] w-full mx-auto px-2 sm:px-4 mt-4 pt-4 pb-2 border-t border-neutral-200 dark:border-neutral-800 text-xs text-neutral-600 dark:text-neutral-300 space-y-2 ${className}`.trim()}
+      className={`max-w-[1600px] w-full mx-auto px-2 sm:px-4 mt-8 pt-6 pb-2 border-t border-neutral-200 dark:border-neutral-800 text-xs text-neutral-600 dark:text-neutral-300 space-y-2 ${className}`.trim()}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <AiStatusBadge aiStatus={aiStatus} isRetrying={isRetrying} onRetry={() => void handleRetry()} />

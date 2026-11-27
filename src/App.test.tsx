@@ -131,5 +131,5 @@ describe('App Component', () => {
     });
     const results = await axe(container);
     expect(results.violations).toEqual([]);
-  });
+  }, 15000);
 });

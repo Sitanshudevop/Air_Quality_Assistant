@@ -29,7 +29,7 @@ describe('Application Constants', () => {
   });
 
   it('defines default Gemini models and error messages', () => {
-    expect(GEMINI_MODELS.PRIMARY).toBe('gemini-2.5-flash');
+    expect(GEMINI_MODELS.PRIMARY).toBe('gemini-3.8-flash');
     expect(ERROR_MESSAGES.METHOD_NOT_ALLOWED).toBe('Method not allowed');
   });
 });

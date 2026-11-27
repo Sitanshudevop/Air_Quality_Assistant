@@ -6,6 +6,7 @@ import {
   geocodingSchema,
   normalizeLocation,
   parseGeocodingResults,
+  reverseGeocode,
   sanitizeQuery,
   searchLocations,
 } from './geocoding.js';
@@ -122,5 +123,23 @@ describe('Open-Meteo Geocoding Client', () => {
     const controller = new AbortController();
     controller.abort();
     await expect(searchLocations('Delhi', controller.signal)).rejects.toThrow();
+  });
+
+  it('reverse-geocodes via BigDataCloud, falls back to Nominatim, and then to rounded coordinates', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ city: 'Ranchi' }),
+    } as Response);
+    await expect(reverseGeocode(23.344, 85.309)).resolves.toBe('Ranchi');
+
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({ ok: false, status: 500 } as Response)
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ address: { town: 'Namkum' } }) } as Response);
+    await expect(reverseGeocode(23.344, 85.309)).resolves.toBe('Namkum');
+
+    vi.spyOn(globalThis, 'fetch')
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockRejectedValueOnce(new Error('offline'));
+    await expect(reverseGeocode(23.344, 85.309)).resolves.toBe('23.34, 85.31');
   });
 });

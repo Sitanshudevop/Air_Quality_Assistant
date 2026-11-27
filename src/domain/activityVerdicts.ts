@@ -2,27 +2,13 @@
 import type { VulnerabilityGroup } from './types.js';
 import type { HourlyAirQualityPoint } from '../services/openMeteo.types.js';
 import { evaluateAllActivityVerdicts, findSafeHour } from './activityVerdictRules.js';
+import type { ActivityVerdictItem } from './activityVerdicts.types.js';
 
-export type ActivityId =
-  | 'morning_walk'
-  | 'kids_playground'
-  | 'jogging_exercise'
-  | 'school_run'
-  | 'opening_windows'
-  | 'drying_laundry'
-  | 'two_wheeler_commute';
-
-export type ActivityVerdict = 'Go' | 'Wait' | 'Avoid';
-
-/** Activity verdict item with actionable safety recommendation. */
-export interface ActivityVerdictItem {
-  readonly id: ActivityId;
-  readonly title: string;
-  readonly verdict: ActivityVerdict;
-  readonly safeWindow?: string;
-  readonly reason: string;
-  readonly maskRecommendation?: string;
-}
+export type {
+  ActivityId,
+  ActivityVerdict,
+  ActivityVerdictItem,
+} from './activityVerdicts.types.js';
 
 /**
  * Evaluates Go / Wait / Avoid verdicts for 7 core lifestyle activities.

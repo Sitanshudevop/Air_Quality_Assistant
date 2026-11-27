@@ -1,6 +1,6 @@
 // Rule evaluation helpers for activity verdicts across outdoor and household routines.
 import type { HourlyAirQualityPoint } from '../services/openMeteo.types.js';
-import type { ActivityVerdictItem } from './activityVerdicts.js';
+import type { ActivityVerdictItem } from './activityVerdicts.types.js';
 
 /**
  * Scans hourly forecast points to find a lower-pollution time window.

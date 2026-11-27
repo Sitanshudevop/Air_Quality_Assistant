@@ -1,6 +1,12 @@
 // Customizable WhatsApp/RWA circular card with XSS sanitization, validation, AI draft, and copy.
 import { useState, type ReactElement } from 'react';
 import type { AqiCategory } from '../../domain/types.js';
+import type { DemoPersonaId } from '../../constants/demo/types.js';
+import {
+  buildDeepLinkUrl,
+  COMMUNITY_TEMPLATE_DEFAULTS,
+  type CommunityTemplateId,
+} from '../../utils/deepLink.js';
 import type { CommunityMessageResult } from '../../../shared/types.js';
 import { useAiTask } from '../../hooks/useAiTask.js';
 import { ProvenanceBadge } from '../../components/ui/ProvenanceBadge.js';
@@ -17,6 +23,8 @@ export interface CommunityNoticeCardProps {
   readonly cityName: string;
   readonly aqi: number;
   readonly category: AqiCategory;
+  readonly template?: CommunityTemplateId;
+  readonly persona?: DemoPersonaId;
 }
 
 async function copyTextWithFeedback(text: string): Promise<string> {
@@ -63,8 +71,9 @@ function NoticeInputs(props: {
  * @param props - Active city, AQI, and category.
  * @returns Interactive notice generator card element.
  */
-export function CommunityNoticeCard({ cityName, aqi, category }: CommunityNoticeCardProps): ReactElement {
-  const [societyInput, setSocietyInput] = useState<string>('Green Park RWA');
+export function CommunityNoticeCard({ cityName, aqi, category, template, persona }: CommunityNoticeCardProps): ReactElement {
+  const defaultSociety = template ? COMMUNITY_TEMPLATE_DEFAULTS[template] : 'Green Park RWA';
+  const [societyInput, setSocietyInput] = useState<string>(defaultSociety);
   const [phoneInput, setPhoneInput] = useState<string>('112');
   const [copyStatus, setCopyStatus] = useState<string>('');
 
@@ -103,9 +112,23 @@ export function CommunityNoticeCard({ cityName, aqi, category }: CommunityNotice
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-[11px] text-neutral-500 dark:text-neutral-400">{noticeText.length}/1000 characters</span>
-        <Button size="sm" variant="primary" onClick={() => void copyTextWithFeedback(noticeText).then(setCopyStatus)}>
-          Copy Notice to Clipboard
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              const shareUrl = typeof window !== 'undefined'
+                ? buildDeepLinkUrl(window.location.href, { tab: 'community', persona, template: template ?? 'rwa' })
+                : '';
+              if (shareUrl) void copyTextWithFeedback(shareUrl).then(() => setCopyStatus('Deep link copied to clipboard!'));
+            }}
+          >
+            Copy Link
+          </Button>
+          <Button size="sm" variant="primary" onClick={() => void copyTextWithFeedback(noticeText).then(setCopyStatus)}>
+            Copy Notice to Clipboard
+          </Button>
+        </div>
       </div>
 
       {copyStatus && <p role="status" aria-live="polite" className="text-xs font-medium text-sky-800 dark:text-sky-300">{copyStatus}</p>}

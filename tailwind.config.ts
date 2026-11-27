@@ -32,7 +32,7 @@ export default {
           blush: '#F6E1F0',
           mint: '#DFF6EC',
           ink: '#18181B',
-          muted: '#64748B',
+          muted: '#475569',
         },
         status: {
           good: '#16a34a',

@@ -2,6 +2,7 @@
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { App } from './App.js';
+import { ErrorBoundary } from './components/ui/ErrorBoundary.js';
 import './index.css';
 
 /**
@@ -14,7 +15,9 @@ export function mountApp(container: HTMLElement): ReactDOM.Root {
   const root = ReactDOM.createRoot(container);
   root.render(
     <StrictMode>
-      <App />
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
     </StrictMode>
   );
   return root;

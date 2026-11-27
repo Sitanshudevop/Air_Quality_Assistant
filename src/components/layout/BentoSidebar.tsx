@@ -38,7 +38,7 @@ const TAB_LABELS: Record<FeatureTabId, string> = {
 };
 
 const LABEL_CLS =
-  'text-sm font-medium whitespace-nowrap opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200';
+  'text-sm font-medium whitespace-nowrap opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-focus-within:opacity-100 group-focus-within:translate-x-0 transition-all duration-200';
 
 function NavItem(props: { tab: FeatureTabId; isActive: boolean; onSelect: () => void }): ReactElement {
   const iconCls = props.isActive
@@ -92,7 +92,7 @@ export function BentoSidebar({
     <div className="hidden md:block w-16 shrink-0 sticky top-4 h-[calc(100dvh-2rem)] z-40">
       <aside
         aria-label="Sidebar navigation"
-        className="group absolute inset-y-0 left-0 w-16 hover:w-56 bg-white dark:bg-neutral-900 rounded-3xl py-4 px-3 flex flex-col justify-between shadow-sm hover:shadow-xl border border-slate-100/80 dark:border-neutral-800 transition-all duration-200 ease-out overflow-hidden"
+        className="group absolute inset-y-0 left-0 w-16 hover:w-56 focus-within:w-56 bg-white dark:bg-neutral-900 rounded-3xl py-4 px-3 flex flex-col justify-between shadow-sm hover:shadow-xl focus-within:shadow-xl border border-slate-100/80 dark:border-neutral-800 transition-all duration-200 ease-out overflow-hidden"
       >
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-3 w-full mb-3">

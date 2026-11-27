@@ -4,6 +4,8 @@ import type { FeatureTabId } from './FeatureTabs.js';
 import type { ActiveConditions } from '../../state/activeConditions.js';
 import type { StoredProfile } from '../../services/profile.types.js';
 import type { RoutineItem, UserProfile } from '../../domain/types.js';
+import type { DemoPersonaId } from '../../constants/demo/types.js';
+import type { CommunityTemplateId } from '../../utils/deepLink.js';
 import { TodayDashboard } from '../../features/dashboard/TodayDashboard.js';
 import { HourlyOutlook } from '../../features/outlook/HourlyOutlook.js';
 import { PrintPlan } from '../../features/print/PrintPlan.js';
@@ -23,6 +25,8 @@ export interface AppTabPanelsProps {
   readonly profile: StoredProfile;
   readonly domainProfile: UserProfile;
   readonly routineItems: readonly RoutineItem[];
+  readonly demoPersonaId?: DemoPersonaId;
+  readonly communityTemplate?: CommunityTemplateId;
   readonly onLaunchDemo: () => void;
   readonly onFocusSearch: () => void;
   readonly onUseLocation?: () => void;
@@ -123,7 +127,13 @@ function CommunityPanel(p: AppTabPanelsProps): ReactElement {
     return (
       <div className="space-y-4">
         <TabHeader breadcrumbCurrent="Community Kit" title="Community Kit" subtitle="Posters, awareness templates, and local clean air initiatives" />
-        <CommunityKitView aqi={conditions.aqi} category={conditions.category} cityName={conditions.cityName ?? ''} />
+        <CommunityKitView
+          aqi={conditions.aqi}
+          category={conditions.category}
+          cityName={conditions.cityName ?? ''}
+          template={p.communityTemplate}
+          persona={p.demoPersonaId}
+        />
       </div>
     );
   }

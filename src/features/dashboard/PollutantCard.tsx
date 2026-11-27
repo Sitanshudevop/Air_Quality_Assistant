@@ -1,5 +1,5 @@
 // Criteria pollutant concentration card with progressive disclosure and visual bars.
-import { useState, type ReactElement } from 'react';
+import { memo, useState, type ReactElement } from 'react';
 
 /** Pollutant concentrations for criteria air pollutants. */
 export interface PollutantValues {
@@ -68,7 +68,7 @@ function PollutantItem(props: { meta: PollutantMeta; val?: number | null; showDe
  * @param props - Observed pollutant measurements and styling options.
  * @returns React component element.
  */
-export function PollutantCard({ values, className = '' }: PollutantCardProps): ReactElement {
+export const PollutantCard = memo(function PollutantCard({ values, className = '' }: PollutantCardProps): ReactElement {
   const [showDetails, setShowDetails] = useState<boolean>(false);
 
   return (
@@ -97,4 +97,4 @@ export function PollutantCard({ values, className = '' }: PollutantCardProps): R
       </div>
     </section>
   );
-}
+});

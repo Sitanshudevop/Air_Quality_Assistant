@@ -1,6 +1,8 @@
 // Community Smog Action Kit view with AQI-band checklists and WhatsApp notice generator.
 import type { ReactElement } from 'react';
 import type { AqiCategory } from '../../domain/types.js';
+import type { DemoPersonaId } from '../../constants/demo/types.js';
+import type { CommunityTemplateId } from '../../utils/deepLink.js';
 import { translateAqiCategory } from '../../i18n/hindi.js';
 import { useLanguage } from '../../state/language.js';
 import { COMMUNITY_ACTIONS_BY_BAND } from './communityData.js';
@@ -11,18 +13,22 @@ export interface CommunityKitViewProps {
   readonly aqi: number;
   readonly category: AqiCategory;
   readonly cityName: string;
+  readonly template?: CommunityTemplateId;
+  readonly persona?: DemoPersonaId;
 }
 
 /**
  * Displays RWA/school action checklist calibrated to current AQI band and WhatsApp circular builder.
  *
- * @param props - Active AQI, CPCB category, and city name.
+ * @param props - Active AQI, CPCB category, city name, and optional deep-link template/persona.
  * @returns Accessible Community Kit section element.
  */
 export function CommunityKitView({
   aqi,
   category,
   cityName,
+  template,
+  persona,
 }: CommunityKitViewProps): ReactElement {
   const { t, language } = useLanguage();
   const actions = COMMUNITY_ACTIONS_BY_BAND[category];
@@ -56,7 +62,7 @@ export function CommunityKitView({
         </ul>
       </div>
 
-      <CommunityNoticeCard cityName={cityName} aqi={aqi} category={category} />
+      <CommunityNoticeCard cityName={cityName} aqi={aqi} category={category} template={template} persona={persona} />
     </section>
   );
 }

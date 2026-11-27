@@ -5,6 +5,7 @@ import { GET, POST } from './ai.js';
 import type { ApiErrorResponse, AiResponse } from '../shared/types.js';
 import { defaultAiCache } from '../server/cache.js';
 import { defaultRateLimiter } from '../server/rate-limit.js';
+import { AppError } from '../src/utils/error.js';
 
 function mockGeminiJson(payload: unknown): Response {
   return {
@@ -184,6 +185,7 @@ describe('AI Proxy API Endpoint', () => {
     process.env.GEMINI_API_KEY = 'valid-key';
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce({ ok: false, status: 500 } as Response)
+      .mockResolvedValueOnce({ ok: false, status: 500 } as Response)
       .mockResolvedValueOnce(mockGeminiJson({ tips: ['Recovered from Gemini'], urgency: 'high' }));
 
     const body = JSON.stringify({ task: 'indoor-tips', context: { aqi: 300, city: 'Delhi', facts: [] } });
@@ -195,7 +197,7 @@ describe('AI Proxy API Endpoint', () => {
     // Retry should hit Gemini again instead of serving cached fallback
     const res2 = await POST(new Request('http://localhost/api/ai', { method: 'POST', body }));
     const json2 = (await res2.json()) as AiResponse;
-    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    expect(fetchSpy).toHaveBeenCalledTimes(3);
     expect(json2.provenance.source).toBe('gemini');
   });
 
@@ -265,5 +267,21 @@ describe('AI Proxy API Endpoint', () => {
     const raw = await res.text();
     expect(JSON.parse(raw)).toEqual({ error: 'Internal server error' });
     expect(raw).not.toContain('AIzaSy');
+  });
+
+  it('sanitizes unexpected non-500 upstream error messages before returning to client', async () => {
+    const brokenReq = {
+      headers: new Headers(),
+      body: null,
+      text: async () => {
+        throw new AppError('Upstream raw detail: secret_token_xyz', 400);
+      },
+    } as unknown as Request;
+
+    const res = await POST(brokenReq);
+    expect(res.status).toBe(400);
+    const raw = await res.text();
+    expect(JSON.parse(raw)).toEqual({ error: 'Invalid request payload' });
+    expect(raw).not.toContain('secret_token_xyz');
   });
 });

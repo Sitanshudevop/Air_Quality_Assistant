@@ -5,7 +5,7 @@ import {
   MAX_PAYLOAD_BYTES,
   ERROR_MESSAGES,
 } from '../src/constants/index.js';
-import { AppError, getErrorMessage, getErrorStatusCode } from '../src/utils/error.js';
+import { AppError, getErrorStatusCode } from '../src/utils/error.js';
 import { aiRequestSchema } from '../shared/schemas.js';
 import type { AiRequest, AiResponse } from '../shared/types.js';
 import { defaultAiCache } from '../server/cache.js';
@@ -137,6 +137,19 @@ async function processAiRequest(req: AiRequest, signal: AbortSignal): Promise<Ai
   return response;
 }
 
+const SAFE_ERROR_BY_STATUS: Readonly<Record<number, string>> = {
+  400: 'Invalid request payload',
+  413: ERROR_MESSAGES.PAYLOAD_TOO_LARGE,
+  429: ERROR_MESSAGES.RATE_LIMIT_EXCEEDED,
+  502: 'UPSTREAM_UNAVAILABLE',
+  503: ERROR_MESSAGES.SERVICE_UNAVAILABLE,
+  504: 'UPSTREAM_UNAVAILABLE',
+};
+
+function getSafeClientError(status: number): string {
+  return SAFE_ERROR_BY_STATUS[status] ?? 'Internal server error';
+}
+
 /**
  * Named POST handler for AI proxy requests.
  *
@@ -164,7 +177,7 @@ export async function POST(request: Request): Promise<Response> {
     return jsonResponse(data, 200);
   } catch (error) {
     const status = getErrorStatusCode(error, 500);
-    const safeError = status === 500 ? 'Internal server error' : getErrorMessage(error);
+    const safeError = getSafeClientError(status);
     logServerError('ai_request_error', { status, errorName: error instanceof Error ? error.name : 'Unknown' });
     return jsonResponse({ error: safeError }, status);
   }

@@ -36,14 +36,41 @@ function buildPollutantMap(p?: PollutantValues): Record<string, number> | undefi
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
-function buildContextFacts(opts: FetchChatReplyOptions): string[] {
-  const facts = [`Current AQI in ${opts.cityName} is ${Math.round(opts.aqi)} (${opts.category}).`];
+const pollutantFactsCache = new WeakMap<PollutantValues, readonly string[]>();
+const activityWindowsCache = new WeakMap<readonly HourlyAirQualityPoint[], string>();
+
+function getPollutantFactsMemo(pollutants?: PollutantValues): readonly string[] {
+  if (!pollutants) return [];
+  const cached = pollutantFactsCache.get(pollutants);
+  if (cached) return cached;
+  const facts: string[] = [];
   for (const [key, label] of POLLUTANT_LABELS) {
-    const val = opts.pollutants?.[key];
+    const val = pollutants[key];
     if (typeof val === 'number') facts.push(`${label}: ${Math.round(val)} ug/m3.`);
   }
-  const win = opts.hourlyPoints?.length ? findActivityWindows(opts.hourlyPoints) : null;
-  if (win) facts.push(`Best ventilation: ${win.best.hourLabel} (AQI ${win.best.aqi}). Peak inversion: ${win.worst.hourLabel} (AQI ${win.worst.aqi}).`);
+  pollutantFactsCache.set(pollutants, facts);
+  return facts;
+}
+
+function getWindowFactMemo(hourlyPoints?: readonly HourlyAirQualityPoint[]): string | null {
+  if (!hourlyPoints?.length) return null;
+  const cached = activityWindowsCache.get(hourlyPoints);
+  if (cached !== undefined) return cached || null;
+  const win = findActivityWindows(hourlyPoints);
+  if (!win) {
+    activityWindowsCache.set(hourlyPoints, '');
+    return null;
+  }
+  const fact = `Best ventilation: ${win.best.hourLabel} (AQI ${win.best.aqi}). Peak inversion: ${win.worst.hourLabel} (AQI ${win.worst.aqi}).`;
+  activityWindowsCache.set(hourlyPoints, fact);
+  return fact;
+}
+
+function buildContextFacts(opts: FetchChatReplyOptions): string[] {
+  const facts = [`Current AQI in ${opts.cityName} is ${Math.round(opts.aqi)} (${opts.category}).`];
+  facts.push(...getPollutantFactsMemo(opts.pollutants));
+  const winFact = getWindowFactMemo(opts.hourlyPoints);
+  if (winFact) facts.push(winFact);
   if (opts.vulnerability) facts.push(`Household profile: ${opts.vulnerability}.`);
   for (const m of (opts.history ?? []).slice(-4)) {
     facts.push(`Prior ${m.role}: ${m.text.slice(0, 200)}`);

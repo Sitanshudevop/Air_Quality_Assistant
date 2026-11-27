@@ -1,5 +1,5 @@
 // Compact city heading and data provenance metadata bar above the Bento KPI row.
-import type { ReactElement } from 'react';
+import { memo, type ReactElement } from 'react';
 import { Clock, Info } from 'lucide-react';
 
 /** Props for TodayDashboardMeta component. */
@@ -16,7 +16,7 @@ export interface TodayDashboardMetaProps {
  * @param props - City name, observation timestamp, source label, and estimate flag.
  * @returns React element.
  */
-export function TodayDashboardMeta({
+export const TodayDashboardMeta = memo(function TodayDashboardMeta({
   cityName = 'Selected Location',
   timestamp,
   sourceLabel,
@@ -47,4 +47,4 @@ export function TodayDashboardMeta({
       </div>
     </div>
   );
-}
+});

@@ -1,5 +1,5 @@
 // KPI summary row: Current AQI, Minimum AQI (best window), Peak Inversion AQI, Clean Air Window.
-import type { ReactElement } from 'react';
+import { memo, type ReactElement } from 'react';
 import { Wind, ArrowDownRight, AlertTriangle, Clock3 } from 'lucide-react';
 import type { AqiCategory } from '../../domain/types.js';
 import type { HourlyAirQualityPoint } from '../../services/openMeteo.types.js';
@@ -100,7 +100,7 @@ function CleanWindowCard({ points }: { points: readonly HourlyAirQualityPoint[] 
  * @param props - AQI data, category, dominant pollutant, and hourly series.
  * @returns React element.
  */
-export function KpiRow({ aqi, category, dominantPollutant, hourlyPoints = [] }: KpiRowProps): ReactElement {
+export const KpiRow = memo(function KpiRow({ aqi, category, dominantPollutant, hourlyPoints = [] }: KpiRowProps): ReactElement {
   const { min, peak } = findExtremes(hourlyPoints);
 
   return (
@@ -111,4 +111,4 @@ export function KpiRow({ aqi, category, dominantPollutant, hourlyPoints = [] }: 
       <CleanWindowCard points={hourlyPoints} />
     </div>
   );
-}
+});

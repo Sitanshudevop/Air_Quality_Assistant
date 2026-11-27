@@ -17,6 +17,7 @@ import { useLiveLocation } from './components/layout/useLiveLocation.js';
 import { AppTabPanels } from './components/layout/AppTabPanels.js';
 import { mapStoredProfileToDomain } from './features/routine/routineUtils.js';
 import { checkAiStatus } from './services/ai.js';
+import { parseDeepLinkParams } from './utils/deepLink.js';
 
 const GuidedTour = lazy(() => import('./features/onboarding/GuidedTour.js').then((m) => ({ default: m.GuidedTour })));
 const ProfileWizard = lazy(() => import('./features/onboarding/ProfileWizard.js').then((m) => ({ default: m.ProfileWizard })));
@@ -43,14 +44,15 @@ function AppModals(props: {
 }
 
 function AppShell(): ReactElement {
+  const initialLink = typeof window !== 'undefined' ? parseDeepLinkParams(window.location.search) : {};
   const { mode, toggleMode, isDemo, setMode } = useMode();
   const { toggleLanguage } = useLanguage();
   const [isDark, setIsDark] = useState<boolean>(false);
   const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<FeatureTabId>('today');
+  const [activeTab, setActiveTab] = useState<FeatureTabId>(initialLink.tab ?? 'today');
   const [demoCityId, setDemoCityId] = useState<DemoCityId>('delhi');
-  const [demoPersonaId, setDemoPersonaId] = useState<DemoPersonaId>('toddler_grandparent');
+  const [demoPersonaId, setDemoPersonaId] = useState<DemoPersonaId>(initialLink.persona ?? 'toddler_grandparent');
   const [liveData, setLiveData] = useState<{ aq: AirQualityData; label: string } | null>(null);
   const [liveForecast, setLiveForecast] = useState<ForecastData | null>(null);
   const [manualData, setManualData] = useState<ManualAirQualityData | null>(null);
@@ -98,6 +100,7 @@ function AppShell(): ReactElement {
           <AppTabPanels
             key={`panel-${profileVer}`} activeTab={activeTab} conditions={conditions} profile={profile}
             domainProfile={domainProfile} routineItems={routineItems}
+            demoPersonaId={demoPersonaId} communityTemplate={initialLink.template}
             onLaunchDemo={() => setMode('demo')} onFocusSearch={focusSearch}
             onUseLocation={liveState.onGeo} onManualReading={liveState.onToggleManual}
             onProfileUpdated={() => setProfileVer((v) => v + 1)}

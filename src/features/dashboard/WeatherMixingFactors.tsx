@@ -1,5 +1,5 @@
 // Atmospheric mixing factors card explaining dispersion dynamics in plain words.
-import type { ReactElement } from 'react';
+import { memo, type ReactElement } from 'react';
 import { Thermometer, Droplets, Wind as WindIcon, Gauge } from 'lucide-react';
 import type { WeatherFactors } from '../../services/openMeteo.types.js';
 import { detectInversion, getWeatherSummary } from '../../services/forecast.js';
@@ -40,7 +40,7 @@ function isValidWeather(f?: Partial<WeatherFactors> | null): f is Partial<Weathe
  * @param props - Atmospheric indicators, origin label, and optional styling.
  * @returns React component element or null when factors are absent.
  */
-export function WeatherMixingFactors({
+export const WeatherMixingFactors = memo(function WeatherMixingFactors({
   factors,
   origin,
   sourceLabel,
@@ -113,4 +113,4 @@ export function WeatherMixingFactors({
       </div>
     </section>
   );
-}
+});

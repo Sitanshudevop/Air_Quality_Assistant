@@ -1,5 +1,5 @@
 // Side-by-side benchmark comparison against WHO 2021 and Indian NAAQS standards.
-import type { ReactElement } from 'react';
+import { memo, type ReactElement } from 'react';
 import {
   INDIAN_NAAQS_24H,
   WHO_2021_24H,
@@ -61,7 +61,7 @@ function BenchmarkRow({ label, observed, whoLimit, naaqsLimit }: BenchmarkRowPro
  * @param props - Observed pollutant measurements.
  * @returns React component element.
  */
-export function BenchmarkComparison({ values, className = '' }: BenchmarkComparisonProps): ReactElement {
+export const BenchmarkComparison = memo(function BenchmarkComparison({ values, className = '' }: BenchmarkComparisonProps): ReactElement {
   return (
     <section
       aria-label="Health and Regulatory Benchmarks"
@@ -99,4 +99,4 @@ export function BenchmarkComparison({ values, className = '' }: BenchmarkCompari
       </details>
     </section>
   );
-}
+});

@@ -49,11 +49,11 @@ describe('ImpactView & ComparisonCard', () => {
     expect((await axe(container)).violations).toHaveLength(0);
   });
 
-  it('handles transport mode select change, omitted healthAdvice, and chaos pm25/distance values', async () => {
+  it('handles transport mode select change, omitted healthAdvice, highlights list, and chaos pm25/distance values', async () => {
     vi.spyOn(aiService, 'getAiResponse').mockResolvedValueOnce({
       task: 'explain-impact',
-      result: { explanation: 'Walk raises inhalation rate.' },
-      provenance: { source: 'rules', model: 'rules-v1', cached: false },
+      result: { explanation: 'Metro cuts exposure.', highlights: ['Option B: 0.18 ug dose (-99.2%)', 'Saves 170g CO2e'], healthAdvice: 'Wear N95 outdoors.' },
+      provenance: { source: 'gemini', model: 'gemini-3.5-flash-lite', cached: false },
     });
     const user = userEvent.setup();
     render(<ImpactView aqi={0} pm25={Number.NaN} cityName="Delhi" />);
@@ -62,7 +62,8 @@ describe('ImpactView & ComparisonCard', () => {
     expect(screen.getByText(/Option A: Walking/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Explain with AI/i }));
-    await waitFor(() => expect(screen.getByText('Walk raises inhalation rate.')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Metro cuts exposure.')).toBeInTheDocument());
+    expect(screen.getByText('Option B: 0.18 ug dose (-99.2%)')).toBeInTheDocument();
 
     expect(clampDistanceKm(Number.NaN)).toBe(0);
     expect(clampDistanceKm(Number.POSITIVE_INFINITY)).toBe(0);

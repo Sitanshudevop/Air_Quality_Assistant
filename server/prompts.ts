@@ -36,18 +36,19 @@ const PROMPT_REGISTRY: Record<AllowedTask, TaskPromptConfig> = {
     },
   },
   'explain-impact': {
-    systemInstruction: `${BASE_GUARDRAILS} Compare the baseline and alternative options concisely using only the provided numbers (dose ug, % reduction, and g CO2e), explain why the cleaner option lowers exposure, and give brief non-medical protective advice.`,
+    systemInstruction: `${BASE_GUARDRAILS} Put a crisp 1-sentence bottom-line summary in explanation, 2-3 short scannable comparison bullets (using only provided numbers: dose ug, % reduction, g CO2e) in highlights, and 1 brief non-medical protective tip in healthAdvice.`,
     responseSchema: {
       type: 'OBJECT',
       properties: {
         explanation: { type: 'STRING' },
+        highlights: { type: 'ARRAY', items: { type: 'STRING' } },
         healthAdvice: { type: 'STRING' },
       },
-      required: ['explanation', 'healthAdvice'],
+      required: ['explanation', 'highlights', 'healthAdvice'],
     },
   },
   chat: {
-    systemInstruction: `${BASE_GUARDRAILS} Directly answer the specific question in UNTRUSTED_USER_TEXT in 2-4 practical sentences (e.g., compare commute options for commute questions, evaluate opening windows now vs best window for ventilation questions, advise on masks for mask questions). Ground with context facts without repeating the whole AQI summary verbatim unless asked, and suggest up to 3 topic-relevant next steps.`,
+    systemInstruction: `${BASE_GUARDRAILS} Directly answer the specific question in UNTRUSTED_USER_TEXT. Format reply for quick reading: start with 1 crisp direct-answer sentence, then a newline and 2-3 short "- " bullet points for options, timing, or next steps. Never use HTML or markdown headings, do not repeat the whole AQI summary unless asked, and suggest up to 3 topic-relevant next steps.`,
     responseSchema: {
       type: 'OBJECT',
       properties: {

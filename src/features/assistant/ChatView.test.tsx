@@ -123,4 +123,30 @@ describe('ChatView & chatUtils', () => {
     expect(capturedSignal?.aborted).toBe(true);
     expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
   });
+
+  it('renders structured multiline bullet replies as list items without executing HTML', async () => {
+    vi.spyOn(aiService, 'getAiResponse').mockResolvedValueOnce({
+      task: 'chat',
+      result: {
+        reply:
+          'Bottom line: use Metro with N95 today.\n- Keep windows closed until 14:00.\n- Wear an N95 mask outdoors and avoid <script>alert(1)</script> traffic roads.',
+      },
+      provenance: { source: 'gemini', model: 'gemini-3.5-flash-lite', cached: false },
+    });
+    const user = userEvent.setup();
+    render(<ChatView aqi={149} category="Moderate" cityName="Ranchi" />);
+
+    const input = screen.getByLabelText(/Ask the Saans air quality assistant/i);
+    await user.type(input, 'How should I commute?');
+    await user.click(screen.getByRole('button', { name: 'Send' }));
+
+    await waitFor(() =>
+      expect(screen.getByText('Bottom line: use Metro with N95 today.')).toBeInTheDocument(),
+    );
+    const items = screen.getAllByRole('listitem');
+    expect(items).toHaveLength(2);
+    expect(items[0]).toHaveTextContent('Keep windows closed until 14:00.');
+    expect(items[1]).toHaveTextContent('<script>alert(1)</script>');
+    expect(document.querySelector('script')).toBeNull();
+  });
 });

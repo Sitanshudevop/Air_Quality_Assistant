@@ -59,6 +59,7 @@ export const narratePlanOutputSchema = z.object({
 /** Output schema for explain-impact task. */
 export const explainImpactOutputSchema = z.object({
   explanation: z.string().min(1),
+  highlights: z.array(z.string().min(1)).max(4).optional(),
   healthAdvice: z.string().min(1),
 });
 

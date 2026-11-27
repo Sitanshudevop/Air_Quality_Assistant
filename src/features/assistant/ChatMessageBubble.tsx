@@ -1,4 +1,4 @@
-// Chat message bubble component displaying message text, provenance, and suggestions.
+// Chat message bubble component displaying structured plain-text replies, provenance, and suggestions.
 import type { ReactElement } from 'react';
 import { ProvenanceBadge } from '../../components/ui/ProvenanceBadge.js';
 import type { ChatMessage } from './chatUtils.js';
@@ -11,8 +11,38 @@ export interface ChatMessageBubbleProps {
   readonly onSuggestion: (chip: string) => void;
 }
 
+function StructuredMessageBody({ text }: { text: string }): ReactElement {
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  if (lines.length <= 1) {
+    return <p className="whitespace-pre-wrap break-words leading-relaxed">{text}</p>;
+  }
+
+  const bullets: string[] = [];
+  const paragraphs: string[] = [];
+  for (const line of lines) {
+    const bulletMatch = line.match(/^(?:[-•*]|\d+\.)\s+(.+)$/);
+    if (bulletMatch?.[1]) bullets.push(bulletMatch[1]);
+    else paragraphs.push(line);
+  }
+
+  return (
+    <div className="space-y-2 leading-relaxed break-words">
+      {paragraphs.map((p, i) => (
+        <p key={`p-${i}`} className={i === 0 ? 'font-medium' : ''}>{p}</p>
+      ))}
+      {bullets.length > 0 && (
+        <ul className="list-disc pl-4 space-y-1 text-[13px] text-slate-700 dark:text-neutral-200">
+          {bullets.map((b, i) => (
+            <li key={`b-${i}`}>{b}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 /**
- * Renders one user or assistant chat message with safety styling and provenance badge.
+ * Renders one user or assistant chat message with scannable layout, safety styling, and provenance badge.
  *
  * @param props - Message record, loading state, retry handler, and suggestion chip callback.
  * @returns Message bubble element.
@@ -32,7 +62,7 @@ export function ChatMessageBubble({
 
   return (
     <div className={`space-y-2 ${cardCls}`}>
-      <p className="whitespace-pre-wrap break-words">{msg.text}</p>
+      {isUser ? <p className="whitespace-pre-wrap break-words">{msg.text}</p> : <StructuredMessageBody text={msg.text} />}
       {!isUser && msg.provenance && (
         <ProvenanceBadge
           provenance={msg.provenance}

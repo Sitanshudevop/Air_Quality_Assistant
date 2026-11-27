@@ -67,8 +67,21 @@ function ImpactAiBox(props: {
           </Button>
         </div>
       </div>
-      <p className="text-xs text-neutral-800 dark:text-neutral-200">{props.data?.explanation ?? props.summary}</p>
-      {props.data?.healthAdvice && <p className="text-xs text-neutral-600 dark:text-neutral-400">{props.data.healthAdvice}</p>}
+      <p className="text-xs font-medium text-neutral-900 dark:text-neutral-100 leading-relaxed">
+        {props.data?.explanation ?? props.summary}
+      </p>
+      {props.data?.highlights && props.data.highlights.length > 0 && (
+        <ul className="list-disc list-inside space-y-1 text-xs text-neutral-700 dark:text-neutral-300">
+          {props.data.highlights.map((h) => (
+            <li key={h}>{h}</li>
+          ))}
+        </ul>
+      )}
+      {props.data?.healthAdvice && (
+        <p className="pt-1.5 border-t border-sky-200/70 dark:border-sky-800/50 text-xs font-medium text-sky-900 dark:text-sky-200">
+          {props.data.healthAdvice}
+        </p>
+      )}
     </div>
   );
 }

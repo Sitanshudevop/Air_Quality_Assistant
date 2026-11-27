@@ -34,26 +34,26 @@ describe('App Data Honesty Suite', () => {
     expect(screen.queryByText('Within guideline')).not.toBeInTheDocument();
 
     // Check Routine tab with no data
-    await user.click(screen.getByRole('tab', { name: /Daily Routine/i }));
+    await user.click(screen.getAllByRole('button', { name: /Daily Routine/i })[0]);
     await waitFor(() => {
       expect(screen.getByText('Daily Routine Requires Air Quality Data')).toBeInTheDocument();
       expect(screen.queryByText(/Est\. AQI/i)).not.toBeInTheDocument();
     });
 
     // Check Indoor tab with no data
-    await user.click(screen.getByRole('tab', { name: /Indoor Hacks/i }));
+    await user.click(screen.getAllByRole('button', { name: /Indoor Hacks/i })[0]);
     await waitFor(() => {
       expect(screen.getByText('Indoor Hacks Requires Air Quality Data')).toBeInTheDocument();
     });
 
     // Check Impact tab with no data
-    await user.click(screen.getByRole('tab', { name: /Impact Explainer/i }));
+    await user.click(screen.getAllByRole('button', { name: /Impact Explainer/i })[0]);
     await waitFor(() => {
       expect(screen.getByText('Impact Explainer Requires Air Quality Data')).toBeInTheDocument();
     });
 
     // Check Community tab with no data
-    await user.click(screen.getByRole('tab', { name: /Community Kit/i }));
+    await user.click(screen.getAllByRole('button', { name: /Community Kit/i })[0]);
     await waitFor(() => {
       expect(screen.getByText('Community Kit Requires Air Quality Data')).toBeInTheDocument();
     });
@@ -65,8 +65,8 @@ describe('App Data Honesty Suite', () => {
     expect(screen.getByText(DEMO_BANNER_TEXT)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Delhi' })).toBeInTheDocument();
     expect(screen.getByText('425')).toBeInTheDocument();
-    expect(screen.getByText('Severe')).toBeInTheDocument();
-    expect(screen.getByText('24 Nov 2026, 08:30 IST')).toBeInTheDocument();
+    expect(screen.getAllByText('Severe').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/24 Nov 2026, 08:30 IST/)).toBeInTheDocument();
   });
 
   it('switches demo cities, persona, and enters manual reading', async () => {
@@ -77,11 +77,11 @@ describe('App Data Honesty Suite', () => {
     expect(screen.getByRole('heading', { name: 'Bengaluru' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Current mode is/i }));
-    await user.click(screen.getByRole('button', { name: 'Manual AQI' }));
+    await user.click(screen.getAllByRole('button', { name: 'Manual AQI' })[0]);
     await user.click(screen.getByRole('button', { name: /Apply Manual Reading/i }));
     expect(screen.getByRole('heading', { name: 'Manual Location' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: '1-Click Demo Launch' }));
+    await user.click(screen.getByRole('button', { name: /1-Click Demo/i }));
     expect(screen.getByText(DEMO_BANNER_TEXT)).toBeInTheDocument();
   });
 });

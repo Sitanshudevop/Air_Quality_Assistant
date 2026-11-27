@@ -105,7 +105,7 @@ describe('Gemini Client', () => {
       userText: 'Status?',
     });
     expect(provenance.source).toBe('gemini');
-    expect(provenance.model).toBe('gemini-1.5-flash');
+    expect(provenance.model).toBe('gemini-2.0-flash');
     expect(result).toEqual(fakeResult);
   });
 

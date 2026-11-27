@@ -72,7 +72,7 @@ export function WeatherMixingFactors({
         </div>
         {isInversion && (
           <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
-            Inversion Active
+            ⚠️ Inversion Active
           </span>
         )}
       </div>

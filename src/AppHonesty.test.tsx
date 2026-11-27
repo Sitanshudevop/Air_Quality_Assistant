@@ -81,7 +81,7 @@ describe('App Data Honesty Suite', () => {
     await user.click(screen.getByRole('button', { name: /Apply Manual Reading/i }));
     expect(screen.getByRole('heading', { name: 'Manual Location' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /1-Click Demo/i }));
+    await user.click(screen.getByRole('button', { name: /Current mode is/i }));
     expect(screen.getByText(DEMO_BANNER_TEXT)).toBeInTheDocument();
   });
 });

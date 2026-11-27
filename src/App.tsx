@@ -15,7 +15,6 @@ import type { FeatureTabId } from './components/layout/FeatureTabs.js';
 import { LocationBar } from './components/layout/LocationBar.js';
 import { useLiveLocation } from './components/layout/useLiveLocation.js';
 import { AppTabPanels } from './components/layout/AppTabPanels.js';
-import { WelcomeRibbon } from './features/onboarding/WelcomeRibbon.js';
 import { mapStoredProfileToDomain } from './features/routine/routineUtils.js';
 import { checkAiStatus } from './services/ai.js';
 
@@ -90,15 +89,12 @@ function AppShell(): ReactElement {
         }}
       >
         <main id="main-content" tabIndex={-1} className="flex flex-col gap-5 focus:outline-none">
-          <div className="space-y-3">
-            <WelcomeRibbon onLaunchDemo={() => setMode('demo')} onOpenProfile={() => setIsProfileOpen(true)} onStartTour={() => setIsTourOpen(true)} />
-            <LocationBar
-              isDemo={isDemo} demoCityId={demoCityId} demoPersonaId={demoPersonaId}
-              onSelectDemoCity={setDemoCityId} onSelectDemoPersona={setDemoPersonaId}
-              onLiveData={(aq, fc, label) => { setLiveData({ aq, label }); setLiveForecast(fc); setManualData(null); }}
-              onManualReading={(reading) => setManualData(reading)} liveState={liveState}
-            />
-          </div>
+          <LocationBar
+            isDemo={isDemo} demoCityId={demoCityId} demoPersonaId={demoPersonaId}
+            onSelectDemoCity={setDemoCityId} onSelectDemoPersona={setDemoPersonaId}
+            onLiveData={(aq, fc, label) => { setLiveData({ aq, label }); setLiveForecast(fc); setManualData(null); }}
+            onManualReading={(reading) => setManualData(reading)} liveState={liveState}
+          />
           <AppTabPanels
             key={`panel-${profileVer}`} activeTab={activeTab} conditions={conditions} profile={profile}
             domainProfile={domainProfile} routineItems={routineItems}

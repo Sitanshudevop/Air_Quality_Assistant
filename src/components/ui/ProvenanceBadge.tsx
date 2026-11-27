@@ -1,5 +1,6 @@
 // Accessible AI provenance status badge with live announcements and retry control.
 import type { ReactElement } from 'react';
+import { RefreshCw } from 'lucide-react';
 import type { Provenance } from '../../../shared/types.js';
 
 /** Props for ProvenanceBadge component. */
@@ -54,9 +55,10 @@ export function ProvenanceBadge({
           onClick={onRetry}
           disabled={isRetrying}
           aria-busy={isRetrying}
-          className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-md border border-neutral-400 bg-white text-neutral-900 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-sky-600 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-neutral-800 dark:text-neutral-100 dark:border-neutral-600 dark:hover:bg-neutral-700"
+          className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white px-3 py-1 text-xs font-medium shadow-xs transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
         >
-          {isRetrying ? 'Retrying...' : 'Retry'}
+          <RefreshCw className={`w-3 h-3 ${isRetrying ? 'animate-spin' : ''}`} aria-hidden="true" />
+          <span>{isRetrying ? 'Retrying...' : 'Retry'}</span>
         </button>
       )}
     </div>

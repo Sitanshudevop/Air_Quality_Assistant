@@ -1,5 +1,6 @@
 // Accessible application footer with citations, health disclaimers, and AI status.
 import { useEffect, useState, type ReactElement } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { checkAiStatus } from '../../services/ai.js';
 import { getAiCallStatus, subscribeAiCallStatus, type LastAiStatus } from '../../services/aiStatus.js';
 
@@ -25,10 +26,11 @@ function AiStatusBadge(props: { aiStatus: LastAiStatus; isRetrying: boolean; onR
           type="button"
           onClick={props.onRetry}
           disabled={props.isRetrying}
-          className="text-xs underline text-sky-700 dark:text-sky-400 hover:opacity-80 focus:outline-none focus:ring-1 focus:ring-sky-500 rounded px-1"
+          className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white px-3 py-1 text-xs font-medium shadow-xs transition-all active:scale-95 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
           aria-label="Retry AI service connection"
         >
-          {props.isRetrying ? 'retrying...' : 'retry'}
+          <RefreshCw className={`w-3 h-3 ${props.isRetrying ? 'animate-spin' : ''}`} aria-hidden="true" />
+          <span>{props.isRetrying ? 'Retrying...' : 'Retry AI'}</span>
         </button>
       )}
     </div>

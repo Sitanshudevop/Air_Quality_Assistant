@@ -28,7 +28,13 @@ function ChatHeader(props: { title: string; disclaimer: string; isHindi: boolean
         <h2 id="chat-heading" lang={props.isHindi ? 'hi' : undefined} className="text-lg font-bold">{props.title}</h2>
         <p className="text-xs text-neutral-600 dark:text-neutral-400">{props.disclaimer}</p>
       </div>
-      <Button size="sm" variant="outline" onClick={props.onClear}>Clear Chat</Button>
+      <button
+        type="button"
+        onClick={props.onClear}
+        className="rounded-full bg-slate-100 hover:bg-slate-200/80 text-slate-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-neutral-200 border-0 px-3.5 py-1.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-slate-900/15"
+      >
+        Clear Chat
+      </button>
     </div>
   );
 }

@@ -26,11 +26,6 @@ describe('Phase B Feature Parity Suite', () => {
     expect(screen.getAllByRole('button', { name: 'Tour' }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByRole('button', { name: 'Profile' }).length).toBeGreaterThanOrEqual(1);
 
-    // Welcome actions
-    expect(screen.getByRole('button', { name: '1-Click Demo' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Set Up Profile' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Guided Tour' })).toBeInTheDocument();
-
     // Navigation Sidebar / BottomNav Links
     expect(screen.getAllByRole('button', { name: /Today/i }).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole('button', { name: 'Daily Routine' })).toBeInTheDocument();

@@ -12,8 +12,8 @@ export const AQI_THRESHOLDS = {
 
 /** API execution deadline and timeout constants in milliseconds. */
 export const API_TIMEOUTS = {
-  UPSTREAM_TIMEOUT_MS: 4500,
-  OVERALL_DEADLINE_MS: 8000,
+  UPSTREAM_TIMEOUT_MS: 7500,
+  OVERALL_DEADLINE_MS: 9000,
   CLIENT_TIMEOUT_MS: 12000,
   OPEN_METEO_TIMEOUT_MS: 6000,
 } as const;
@@ -33,8 +33,8 @@ export const RATE_LIMIT_CONFIG = {
 
 /** Gemini model identifiers. */
 export const GEMINI_MODELS = {
-  PRIMARY: 'gemini-3.8-flash',
-  FALLBACK: 'gemini-3.5-flash-lite',
+  PRIMARY: 'gemini-3.5-flash-lite',
+  FALLBACK: 'gemini-3.8-flash',
 } as const;
 
 /** Maximum allowed payload size in bytes (64 KB). */

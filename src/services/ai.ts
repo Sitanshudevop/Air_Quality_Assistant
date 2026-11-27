@@ -120,6 +120,12 @@ function describeProxyStatus(status: number): string {
   return `Live AI temporarily unavailable (HTTP ${status})`;
 }
 
+function describeProxyError(err: unknown): string {
+  const raw = err instanceof Error ? err.message : 'Network error';
+  const isAbort = (err instanceof Error && err.name === 'AbortError') || /abort/i.test(raw);
+  return isAbort ? 'Live AI timed out — click Retry to try again' : raw;
+}
+
 async function requestProxyAi(input: GetAiResponseInput, context: TaskContext, start: number): Promise<AiResponse> {
   const { controller, cleanup } = createTimeoutController(input.signal);
   try {
@@ -144,8 +150,7 @@ async function requestProxyAi(input: GetAiResponseInput, context: TaskContext, s
     return parsed.data;
   } catch (err) {
     setAiCallStatus('rules');
-    const reason = err instanceof Error ? err.message : 'Network error';
-    return buildClientFallback({ task: input.task, context, startMs: start, userText: input.userText, reason });
+    return buildClientFallback({ task: input.task, context, startMs: start, userText: input.userText, reason: describeProxyError(err) });
   } finally {
     cleanup();
   }

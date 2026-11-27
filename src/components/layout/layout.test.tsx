@@ -1,6 +1,6 @@
 // Component unit and accessibility tests for layout elements.
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { AppHeader } from './AppHeader.js';

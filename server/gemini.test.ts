@@ -56,7 +56,7 @@ describe('Gemini Client', () => {
     };
     const { result, provenance } = await executeAiTask(req);
     expect(provenance.source).toBe('gemini');
-    expect(provenance.model).toBe('gemini-3.5-flash-lite');
+    expect(provenance.model).toBe('gemini-3.1-flash-lite');
     expect(result).toEqual(fakeResult);
 
     const body = JSON.parse(String(fetchSpy.mock.calls[0][1]?.body));
@@ -105,7 +105,7 @@ describe('Gemini Client', () => {
       userText: 'Status?',
     });
     expect(provenance.source).toBe('gemini');
-    expect(provenance.model).toBe('gemini-3.8-flash');
+    expect(provenance.model).toBe('gemini-3.5-flash-lite');
     expect(result).toEqual(fakeResult);
   });
 

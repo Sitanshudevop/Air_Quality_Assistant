@@ -93,7 +93,7 @@ describe('Client AI Service', () => {
     );
 
     const promise = getAiResponse({ task: 'chat' });
-    await vi.advanceTimersByTimeAsync(25000);
+    await vi.advanceTimersByTimeAsync(12000);
     const res = await promise;
     expect(res.provenance.source).toBe('rules');
   });

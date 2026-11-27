@@ -73,6 +73,39 @@ function matchConfidentialityReply(): SmartChatReply {
   };
 }
 
+function matchDailyTipsReply(city: string, aqi: number, cat: string, facts: readonly string[]): SmartChatReply {
+  const extra = facts.find((f) => /Best|Peak/i.test(f));
+  const windowNote = extra ? ` ${extra}` : '';
+  const advice =
+    aqi > 200
+      ? 'Keep windows sealed, run a HEPA/Corsi-Rosenthal purifier indoors, avoid morning outdoor exercise, and wear a fitted N95 mask if stepping out.'
+      : 'Limit heavy roadside exertion during rush hours and ventilate briefly during cleaner midday hours.';
+  return {
+    reply: `Today in ${city} (AQI ${aqi}, ${cat}): ${advice}${windowNote}`,
+    suggestedActions: ['Best time to open windows?', 'Is N95 mask needed?', 'View Daily Routine'],
+  };
+}
+
+function matchTopicReply(p: { q: string; city: string; aqi: number; cat: string; facts: readonly string[] }): SmartChatReply | null {
+  const { q, city, aqi, cat, facts } = p;
+  if (/(commute|travel|bike|scooter|two-wheeler|metro|bus|walk|jog|run|exercise|outdoor|go\s+out|going\s+out|outside|step\s+out|leave\s+home)/i.test(q)) {
+    return matchCommuteReply(city, aqi, cat);
+  }
+  if (/(child|kid|school|elder|senior|grandparent|asthma|pregnan|baby|toddler)/i.test(q)) {
+    return matchFamilyReply(city, aqi, cat);
+  }
+  if (/(window|ventilat|indoor|purifier|hepa|room|fan|cook|ac)/i.test(q)) {
+    return matchVentilationReply(city, aqi, cat);
+  }
+  if (/(mask|n95|n99|ffp2|kn95)/i.test(q)) {
+    return matchMaskReply(city, aqi, cat);
+  }
+  if (/(tip|tips|advice|suggest|today|plan|routine|precaution|safe)/i.test(q)) {
+    return matchDailyTipsReply(city, aqi, cat, facts);
+  }
+  return null;
+}
+
 /**
  * Generates an intent-aware, grounded chat reply using live AQI and user question keywords.
  *
@@ -93,18 +126,8 @@ export function buildSmartChatFallback(opts: {
     return matchConfidentialityReply();
   }
   if (isHindiQuery(userText)) return buildHindiReply(city, aqi, cat);
-  if (/(commute|travel|bike|scooter|two-wheeler|metro|bus|walk|jog|run|exercise|outdoor)/i.test(q)) {
-    return matchCommuteReply(city, aqi, cat);
-  }
-  if (/(child|kid|school|elder|senior|grandparent|asthma|pregnan|baby|toddler)/i.test(q)) {
-    return matchFamilyReply(city, aqi, cat);
-  }
-  if (/(window|ventilat|indoor|purifier|hepa|room|fan|cook|ac)/i.test(q)) {
-    return matchVentilationReply(city, aqi, cat);
-  }
-  if (/(mask|n95|n99|ffp2|kn95)/i.test(q)) {
-    return matchMaskReply(city, aqi, cat);
-  }
+  const matched = matchTopicReply({ q, city, aqi, cat, facts });
+  if (matched) return matched;
 
   const vent = getVentilationRecommendation(aqi);
   const extra = facts.find((f) => /Best|Peak|PM2\.5/i.test(f));

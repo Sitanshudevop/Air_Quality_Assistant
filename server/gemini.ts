@@ -62,15 +62,20 @@ async function callModel(model: string, req: AiRequest, signal: AbortSignal, str
   });
 }
 
-/** Calls primary model and switches to secondary fallback model on 404 or 429. */
+/** Calls primary model (4.5s cap) and switches to secondary fallback model on error, timeout, 404, 429, or 5xx. */
 async function fetchWithFallback(req: AiRequest, signal: AbortSignal, stricter: boolean): Promise<{ res: Response; model: string }> {
   const primary = process.env.GEMINI_MODEL ?? GEMINI_MODELS.PRIMARY;
   const fallback = process.env.GEMINI_FALLBACK_MODEL ?? GEMINI_MODELS.FALLBACK;
-  const first = await callModel(primary, req, signal, stricter);
-  if (first.status === 404 || first.status === 429 || first.status >= 500) {
-    return { res: await callModel(fallback, req, signal, stricter), model: fallback };
+  try {
+    const primarySignal = AbortSignal.any([signal, AbortSignal.timeout(4500)]);
+    const first = await callModel(primary, req, primarySignal, stricter);
+    if (first.status !== 404 && first.status !== 429 && first.status < 500) {
+      return { res: first, model: primary };
+    }
+  } catch {
+    if (signal.aborted) throw new AppError('Upstream timeout', 504);
   }
-  return { res: first, model: primary };
+  return { res: await callModel(fallback, req, signal, stricter), model: fallback };
 }
 
 /** Parses candidate output, validates Zod schema, and verifies numeric grounding. */

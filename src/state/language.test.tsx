@@ -70,5 +70,8 @@ describe('Language State & Provider', () => {
     );
     await user.click(screen.getByRole('button', { name: 'SetHindi' }));
     expect(screen.getByTestId('lang')).toHaveTextContent('hi');
+    expect(document.documentElement.lang).toBe('hi');
+    await user.click(screen.getByRole('button', { name: 'Toggle' }));
+    expect(document.documentElement.lang).toBe('en');
   });
 });

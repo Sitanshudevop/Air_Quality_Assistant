@@ -33,7 +33,7 @@ export function WelcomeModal({
       onClose={onClose}
       triggerRef={triggerRef}
       title="Welcome to Saans (सांस)"
-      description="Science-backed winter smog guidance for North Indian households."
+      description="Science-backed urban winter smog guidance for households and communities."
     >
       <div className="space-y-4">
         <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">

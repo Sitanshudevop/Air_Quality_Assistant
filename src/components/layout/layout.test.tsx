@@ -113,9 +113,7 @@ describe('Layout Components', () => {
       await user.click(screen.getByRole('button', { name: 'Routine' }));
       expect(onSelectTab).toHaveBeenCalledWith('routine');
 
-      const img = container.querySelector('img');
-      expect(img).not.toBeNull();
-      if (img) fireEvent.error(img);
+      expect(container.querySelector('img')).toBeNull();
       expect(container.querySelector('svg[viewBox="0 0 64 64"]')).toBeInTheDocument();
     });
   });

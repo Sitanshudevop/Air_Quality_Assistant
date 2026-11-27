@@ -1,7 +1,7 @@
 // Integration and unit tests for AI proxy API endpoint, bounded reading, safety, and caching.
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { GET, POST } from './ai.js';
+import { GET, OPTIONS, POST } from './ai.js';
 import type { ApiErrorResponse, AiResponse } from '../shared/types.js';
 import { defaultAiCache } from '../server/cache.js';
 import { defaultRateLimiter } from '../server/rate-limit.js';
@@ -31,11 +31,12 @@ describe('AI Proxy API Endpoint', () => {
     process.env = originalEnv;
   });
 
-  it('rejects GET requests with 405 Method Not Allowed', async () => {
-    const res = await GET();
-    expect(res.status).toBe(405);
-    expect(res.headers.get('Allow')).toBe('POST');
-    expect(res.headers.get('Cache-Control')).toBe('no-store');
+  it('rejects GET and OPTIONS requests with 405 Method Not Allowed', async () => {
+    for (const res of [await GET(), await OPTIONS()]) {
+      expect(res.status).toBe(405);
+      expect(res.headers.get('Allow')).toBe('POST');
+      expect(res.headers.get('Cache-Control')).toBe('no-store');
+    }
   });
 
   it('rejects oversized payloads via header or streaming body without Content-Length with 413', async () => {
@@ -271,13 +272,9 @@ describe('AI Proxy API Endpoint', () => {
 
   it('sanitizes unexpected non-500 upstream error messages before returning to client', async () => {
     const brokenReq = {
-      headers: new Headers(),
-      body: null,
-      text: async () => {
-        throw new AppError('Upstream raw detail: secret_token_xyz', 400);
-      },
+      headers: new Headers(), body: null,
+      text: async () => { throw new AppError('Upstream raw detail: secret_token_xyz', 400); },
     } as unknown as Request;
-
     const res = await POST(brokenReq);
     expect(res.status).toBe(400);
     const raw = await res.text();

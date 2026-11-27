@@ -10,6 +10,7 @@ import {
   CHART_WIDTH,
   CHART_HEIGHT,
 } from './outlookUtils.js';
+import { buildSmoothCurvePath, buildSmoothAreaPath, categoryPillClass } from './chartSpline.js';
 
 function makeMockPoint(hour: number, aqi: number): HourlyAirQualityPoint {
   const pad = hour < 10 ? `0${hour}` : `${hour}`;
@@ -76,5 +77,27 @@ describe('outlookUtils', () => {
     const coords = computeSvgCoordinates(points);
     expect(coords).toHaveLength(10);
     expect(coords[0]?.y).toBe(coords[9]?.y);
+  });
+
+  it('builds smooth spline/area paths and resolves all categoryPillClass tiers', () => {
+    expect(buildSmoothCurvePath([])).toBe('');
+    expect(buildSmoothAreaPath([], 100)).toBe('');
+    const single = [{ x: 10, y: 20, aqi: 100, category: 'Moderate', timeLabel: '08:00' }];
+    expect(buildSmoothCurvePath(single)).toBe('M 10,20');
+
+    const multi = [
+      { x: 10, y: 20, aqi: 100, category: 'Moderate', timeLabel: '08:00' },
+      { x: 50, y: 40, aqi: 200, category: 'Poor', timeLabel: '10:00' },
+      { x: 90, y: 10, aqi: 50, category: 'Good', timeLabel: '12:00' },
+    ];
+    expect(buildSmoothCurvePath(multi)).toContain('C ');
+    expect(buildSmoothAreaPath(multi, 100)).toContain('L 90,100 L 10,100 Z');
+
+    expect(categoryPillClass('Good')).toContain('emerald');
+    expect(categoryPillClass('Satisfactory')).toContain('emerald');
+    expect(categoryPillClass('Moderate')).toContain('amber');
+    expect(categoryPillClass('Poor')).toContain('orange');
+    expect(categoryPillClass('Very Poor')).toContain('rose');
+    expect(categoryPillClass('Severe')).toContain('rose');
   });
 });

@@ -23,8 +23,10 @@ describe('BentoSidebar', () => {
     expect(aside.className).toContain('focus-within:shadow-xl');
 
     const communityBtn = screen.getByRole('button', { name: 'Community Kit' });
-    const labelSpan = communityBtn.querySelectorAll('span')[1];
-    expect(labelSpan?.className).toContain('group-focus-within:opacity-100');
+    const spans = communityBtn.querySelectorAll('span');
+    expect(spans[0]?.className).toContain('min-w-[44px]');
+    expect(spans[0]?.className).toContain('min-h-[44px]');
+    expect(spans[1]?.className).toContain('group-focus-within:opacity-100');
 
     fireEvent.click(communityBtn);
     expect(onSelectTab).toHaveBeenCalledWith('community');

@@ -33,6 +33,9 @@ export function getLanguage(): Language {
 export function setLanguage(lang: Language): void {
   currentLanguage = lang === 'hi' ? 'hi' : 'en';
   saveLanguagePreference(currentLanguage);
+  if (typeof document !== 'undefined') {
+    document.documentElement.lang = currentLanguage;
+  }
   for (const listener of listeners) {
     try {
       listener(currentLanguage);
@@ -62,6 +65,9 @@ export function LanguageProvider({ children, initialLanguage }: LanguageProvider
 
   useEffect(() => {
     currentLanguage = language;
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = language;
+    }
     const onChange: LanguageListener = (next) => setLocalLang(next);
     listeners.add(onChange);
     return () => {

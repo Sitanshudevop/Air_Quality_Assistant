@@ -93,4 +93,12 @@ describe('Mode, Language, Tour Chaos & Full clearProfile() Purge', () => {
     clearForecastCache();
     clearGeocodingCache();
   });
+
+  it('logs and recovers safely if storage removal throws in clearAllAppStorage', async () => {
+    const { clearAllAppStorage } = await import('./storageReset.js');
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+      throw new Error('Storage locked');
+    });
+    expect(() => clearAllAppStorage()).not.toThrow();
+  });
 });

@@ -110,6 +110,13 @@ export async function GET(): Promise<Response> {
   return jsonResponse({ error: ERROR_MESSAGES.METHOD_NOT_ALLOWED }, 405, { Allow: 'POST' });
 }
 
+/**
+ * Named OPTIONS handler rejecting preflight/non-POST calls with 405 Method Not Allowed.
+ *
+ * @returns HTTP 405 JSON Response.
+ */
+export async function OPTIONS(): Promise<Response> { return GET(); }
+
 /** Processes safety triage, cache lookup, and upstream AI execution. */
 async function processAiRequest(req: AiRequest, signal: AbortSignal): Promise<AiResponse> {
   const triage = triageSafety(req.userText);
@@ -138,17 +145,12 @@ async function processAiRequest(req: AiRequest, signal: AbortSignal): Promise<Ai
 }
 
 const SAFE_ERROR_BY_STATUS: Readonly<Record<number, string>> = {
-  400: 'Invalid request payload',
-  413: ERROR_MESSAGES.PAYLOAD_TOO_LARGE,
-  429: ERROR_MESSAGES.RATE_LIMIT_EXCEEDED,
-  502: 'UPSTREAM_UNAVAILABLE',
-  503: ERROR_MESSAGES.SERVICE_UNAVAILABLE,
-  504: 'UPSTREAM_UNAVAILABLE',
+  400: 'Invalid request payload', 413: ERROR_MESSAGES.PAYLOAD_TOO_LARGE,
+  429: ERROR_MESSAGES.RATE_LIMIT_EXCEEDED, 502: 'UPSTREAM_UNAVAILABLE',
+  503: ERROR_MESSAGES.SERVICE_UNAVAILABLE, 504: 'UPSTREAM_UNAVAILABLE',
 };
 
-function getSafeClientError(status: number): string {
-  return SAFE_ERROR_BY_STATUS[status] ?? 'Internal server error';
-}
+function getSafeClientError(status: number): string { return SAFE_ERROR_BY_STATUS[status] ?? 'Internal server error'; }
 
 /**
  * Named POST handler for AI proxy requests.

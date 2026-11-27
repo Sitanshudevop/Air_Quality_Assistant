@@ -32,7 +32,7 @@ export function WelcomeCard({
           Welcome to Saans (सांस)
         </h2>
         <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-          Personalized, science-backed guidance to protect your household during North Indian winter
+          Personalized, science-backed guidance to protect your household during urban winter
           smog. Grounded CPCB AQI estimates, weather mixing alerts, and actionable low-emission
           routines.
         </p>

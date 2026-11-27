@@ -54,7 +54,7 @@ function NavItem(props: { tab: FeatureTabId; isActive: boolean; onSelect: () => 
       title={TAB_LABELS[props.tab]}
       className="group/btn flex items-center gap-3 w-full rounded-2xl text-left hover:bg-slate-100/80 dark:hover:bg-neutral-800/60 transition-colors focus:outline-none focus:ring-2 focus:ring-bento-ink/30"
     >
-      <span className={`w-10 h-10 shrink-0 flex items-center justify-center rounded-2xl transition-colors ${iconCls}`}>
+      <span className={`w-11 h-11 min-w-[44px] min-h-[44px] shrink-0 flex items-center justify-center rounded-2xl transition-colors ${iconCls}`}>
         {TAB_ICONS[props.tab]}
       </span>
       <span className={`${LABEL_CLS} ${props.isActive ? 'font-bold text-bento-ink dark:text-white' : 'text-slate-700 dark:text-neutral-300'}`}>
@@ -73,7 +73,7 @@ function UtilButton(props: { icon: ReactElement; label: string; ariaLabel: strin
       title={props.label}
       className="flex items-center gap-3 w-full rounded-2xl text-left text-neutral-500 hover:text-bento-ink hover:bg-slate-100/80 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800/60 transition-colors focus:outline-none focus:ring-2 focus:ring-bento-ink/30"
     >
-      <span className="w-10 h-10 shrink-0 flex items-center justify-center rounded-2xl">{props.icon}</span>
+      <span className="w-11 h-11 min-w-[44px] min-h-[44px] shrink-0 flex items-center justify-center rounded-2xl">{props.icon}</span>
       <span className={LABEL_CLS}>{props.label}</span>
     </button>
   );

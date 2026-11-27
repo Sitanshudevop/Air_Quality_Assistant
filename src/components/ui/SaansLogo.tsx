@@ -1,12 +1,12 @@
-// Minimalist flowing S + leaf Saans emblem with cropped PNG asset and crisp inline SVG fallback.
-import { useState, type ReactElement } from 'react';
+// Minimalist flowing S + leaf Saans emblem rendered as a crisp, zero-network inline SVG.
+import type { ReactElement } from 'react';
 
 /** Props for SaansLogo component. */
 export interface SaansLogoProps {
   readonly className?: string;
 }
 
-/** Inline SVG fallback matching the mint-green to ocean-teal flowing S + leaf emblem. */
+/** Inline SVG matching the mint-green to ocean-teal flowing S + leaf emblem. */
 export function SaansLogoSvg(): ReactElement {
   return (
     <svg viewBox="0 0 64 64" className="w-full h-full" aria-hidden="true">
@@ -31,29 +31,18 @@ export function SaansLogoSvg(): ReactElement {
 }
 
 /**
- * Renders the circular Saans S + leaf brand emblem with an inline SVG fallback.
+ * Renders the circular Saans S + leaf brand emblem inline without network image requests.
  *
  * @param props - Optional wrapper styling.
  * @returns Circular logo element.
  */
 export function SaansLogo({ className = '' }: SaansLogoProps): ReactElement {
-  const [imgError, setImgError] = useState<boolean>(false);
-
   return (
     <div
       aria-hidden="true"
       className={`w-11 h-11 rounded-full overflow-hidden shadow-sm bg-white flex items-center justify-center shrink-0 ${className}`.trim()}
     >
-      {imgError ? (
-        <SaansLogoSvg />
-      ) : (
-        <img
-          src="/saans-logo.png"
-          alt=""
-          onError={() => setImgError(true)}
-          className="w-full h-full object-cover scale-110"
-        />
-      )}
+      <SaansLogoSvg />
     </div>
   );
 }

@@ -155,7 +155,9 @@ describe('Gemini Client', () => {
 
   it('falls back to rule-based generation on upstream 500 or empty candidates', async () => {
     process.env.GEMINI_API_KEY = 'test-key';
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({ ok: false, status: 500 } as Response);
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce({ ok: false, status: 500 } as Response)
+      .mockResolvedValueOnce({ ok: false, status: 500 } as Response);
     const r1 = await executeAiTask({ task: 'indoor-tips', context: { aqi: 320, city: 'Delhi', facts: [] } });
     expect(r1.provenance.source).toBe('rules');
 

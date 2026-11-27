@@ -1,6 +1,7 @@
 // Helper building rich grounded chat context and executing assistant replies.
 import { getAiResponse } from '../../services/ai.js';
 import type { AqiCategory, VulnerabilityGroup } from '../../domain/types.js';
+import { getVentilationRecommendation } from '../../domain/indoor.js';
 import type { HourlyAirQualityPoint } from '../../services/openMeteo.types.js';
 import type { PollutantValues } from '../dashboard/PollutantCard.js';
 import { findActivityWindows } from '../outlook/outlookUtils.js';
@@ -67,7 +68,15 @@ function getWindowFactMemo(hourlyPoints?: readonly HourlyAirQualityPoint[]): str
 }
 
 function buildContextFacts(opts: FetchChatReplyOptions): string[] {
-  const facts = [`Current AQI in ${opts.cityName} is ${Math.round(opts.aqi)} (${opts.category}).`];
+  const safeAqi = Math.round(opts.aqi);
+  const vent = getVentilationRecommendation(safeAqi);
+  const facts = [
+    `Current AQI in ${opts.cityName} is ${safeAqi} (${opts.category}).`,
+    `Ventilation guidance now: ${vent.advice}`,
+    safeAqi > 100
+      ? 'Commute guidance: closed-window Metro or AC car on recirculation cuts traffic particulate exposure compared to open two-wheelers or roadside walking; wear a fitted N95/FFP2 mask outdoors.'
+      : 'Commute guidance: standard transit is lower risk; use an N95 mask on high-traffic roads or two-wheelers.',
+  ];
   facts.push(...getPollutantFactsMemo(opts.pollutants));
   const winFact = getWindowFactMemo(opts.hourlyPoints);
   if (winFact) facts.push(winFact);

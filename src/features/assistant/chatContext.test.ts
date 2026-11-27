@@ -47,5 +47,7 @@ describe('chatContext memoization', () => {
     const secondFacts = spy.mock.calls[1]?.[0]?.context?.facts ?? [];
     expect(secondFacts.some((f) => f.includes('PM2.5: 180'))).toBe(true);
     expect(secondFacts.some((f) => f.includes('Best ventilation'))).toBe(true);
+    expect(secondFacts.some((f) => f.includes('Commute guidance:'))).toBe(true);
+    expect(secondFacts.some((f) => f.includes('Ventilation guidance now:'))).toBe(true);
   });
 });

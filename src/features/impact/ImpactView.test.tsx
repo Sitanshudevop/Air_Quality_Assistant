@@ -5,7 +5,8 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import * as aiService from '../../services/ai.js';
 import { ImpactView } from './ImpactView.js';
-import { clampDistanceKm } from './impactUtils.js';
+import { buildImpactFacts, clampDistanceKm, evaluateImpactScenarios } from './impactUtils.js';
+import { verifyNumericGrounding } from '../../../server/grounding.js';
 
 describe('ImpactView & ComparisonCard', () => {
   beforeEach(() => {
@@ -66,5 +67,23 @@ describe('ImpactView & ComparisonCard', () => {
     expect(clampDistanceKm(Number.NaN)).toBe(0);
     expect(clampDistanceKm(Number.POSITIVE_INFINITY)).toBe(0);
     expect(document.body.textContent).not.toContain('NaN');
+  });
+
+  it('builds grounding-compatible impact facts with positive % reductions and CO2e savings', () => {
+    const results = evaluateImpactScenarios({
+      baseline: { id: 'b', label: 'Current', mode: 'two_wheeler_petrol', maskType: 'none' },
+      options: [{ id: 'o2', label: 'Option B', mode: 'metro', maskType: 'n95' }],
+      distanceKm: 10,
+      pm25: 66,
+    });
+    const facts = buildImpactFacts(results, 66);
+    const base = results[0];
+    const opt = results[1];
+    expect(
+      verifyNumericGrounding({
+        text: `Metro with N95 reduces dose by ${Math.abs(opt.relativeDoseChangePct)}% (${opt.inhaledDoseUg} ug vs ${base.inhaledDoseUg} ug) and saves ${Math.abs(opt.co2eDeltaGrams)}g CO2e (${opt.co2eGrams}g vs ${base.co2eGrams}g).`,
+        facts,
+      })
+    ).toBe(true);
   });
 });

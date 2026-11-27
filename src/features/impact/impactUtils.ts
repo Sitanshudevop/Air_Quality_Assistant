@@ -95,8 +95,10 @@ export function buildImpactFacts(
 ): string[] {
   const facts = [`Ambient PM2.5 concentration is ${Math.round(pm25)} ug/m3.`];
   for (const r of results) {
+    const doseVerb = r.relativeDoseChangePct <= 0 ? 'reduction' : 'increase';
+    const co2Verb = r.co2eDeltaGrams <= 0 ? 'saved' : 'added';
     facts.push(
-      `${r.title}: ${r.inhaledDoseUg} ug dose (${r.relativeDoseChangePct}% vs baseline), CO2e delta ${r.co2eDeltaGrams}g.`
+      `${r.title}: ${r.inhaledDoseUg} ug dose (${r.relativeDoseChangePct}% change, ${Math.abs(r.relativeDoseChangePct)}% ${doseVerb}), CO2e ${r.co2eGrams}g (${r.co2eDeltaGrams}g delta, ${Math.abs(r.co2eDeltaGrams)}g ${co2Verb}).`
     );
   }
   return facts.slice(0, 20);

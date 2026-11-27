@@ -38,7 +38,7 @@ const TAB_LABELS: Record<FeatureTabId, string> = {
 };
 
 const LABEL_CLS =
-  'text-sm font-medium whitespace-nowrap opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-focus-within:opacity-100 group-focus-within:translate-x-0 transition-all duration-200';
+  'text-sm font-medium whitespace-nowrap opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-has-[:focus-visible]:opacity-100 group-has-[:focus-visible]:translate-x-0 transition-all duration-200';
 
 function NavItem(props: { tab: FeatureTabId; isActive: boolean; onSelect: () => void }): ReactElement {
   const iconCls = props.isActive
@@ -48,11 +48,14 @@ function NavItem(props: { tab: FeatureTabId; isActive: boolean; onSelect: () => 
   return (
     <button
       type="button"
-      onClick={props.onSelect}
+      onClick={(e) => {
+        if (e.detail > 0) e.currentTarget.blur();
+        props.onSelect();
+      }}
       aria-current={props.isActive ? 'page' : undefined}
       aria-label={TAB_LABELS[props.tab]}
       title={TAB_LABELS[props.tab]}
-      className="group/btn flex items-center gap-3 w-full rounded-2xl text-left hover:bg-slate-100/80 dark:hover:bg-neutral-800/60 transition-colors focus:outline-none focus:ring-2 focus:ring-bento-ink/30"
+      className="group/btn flex items-center gap-3 w-full rounded-2xl text-left hover:bg-slate-100/80 dark:hover:bg-neutral-800/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20"
     >
       <span className={`w-11 h-11 min-w-[44px] min-h-[44px] shrink-0 flex items-center justify-center rounded-2xl transition-colors ${iconCls}`}>
         {TAB_ICONS[props.tab]}
@@ -68,10 +71,13 @@ function UtilButton(props: { icon: ReactElement; label: string; ariaLabel: strin
   return (
     <button
       type="button"
-      onClick={props.onClick}
+      onClick={(e) => {
+        if (e.detail > 0) e.currentTarget.blur();
+        props.onClick();
+      }}
       aria-label={props.ariaLabel}
       title={props.label}
-      className="flex items-center gap-3 w-full rounded-2xl text-left text-neutral-500 hover:text-bento-ink hover:bg-slate-100/80 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800/60 transition-colors focus:outline-none focus:ring-2 focus:ring-bento-ink/30"
+      className="flex items-center gap-3 w-full rounded-2xl text-left text-neutral-500 hover:text-bento-ink hover:bg-slate-100/80 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20"
     >
       <span className="w-11 h-11 min-w-[44px] min-h-[44px] shrink-0 flex items-center justify-center rounded-2xl">{props.icon}</span>
       <span className={LABEL_CLS}>{props.label}</span>
@@ -80,7 +86,7 @@ function UtilButton(props: { icon: ReactElement; label: string; ariaLabel: strin
 }
 
 /**
- * Fixed-slot desktop sidebar that floats wider on hover to reveal navigation and utility labels.
+ * Fixed-slot desktop sidebar that floats wider on hover or keyboard focus-visible without layout shift.
  *
  * @param props - Active tab, theme, language, and modal callbacks.
  * @returns React element.
@@ -92,7 +98,7 @@ export function BentoSidebar({
     <div className="hidden md:block w-16 shrink-0 sticky top-4 h-[calc(100dvh-2rem)] z-40">
       <aside
         aria-label="Sidebar navigation"
-        className="group absolute inset-y-0 left-0 w-16 hover:w-56 focus-within:w-56 bg-white dark:bg-neutral-900 rounded-3xl py-4 px-3 flex flex-col justify-between shadow-sm hover:shadow-xl focus-within:shadow-xl border border-slate-100/80 dark:border-neutral-800 transition-all duration-200 ease-out overflow-hidden"
+        className="group absolute inset-y-0 left-0 w-16 hover:w-56 has-[:focus-visible]:w-56 bg-white dark:bg-neutral-900 rounded-3xl py-4 px-3 flex flex-col justify-between shadow-sm hover:shadow-xl has-[:focus-visible]:shadow-xl border border-slate-100/80 dark:border-neutral-800 transition-all duration-200 ease-out overflow-hidden"
       >
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-3 w-full mb-3">

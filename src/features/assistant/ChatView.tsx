@@ -93,27 +93,33 @@ export function ChatView({ aqi, category, cityName, pollutants, hourlyPoints, vu
   };
 
   return (
-    <section aria-labelledby="chat-heading" className="space-y-4">
-      <ChatHeader title={t('assistant.title')} disclaimer={t('disclaimer.medical')} isHindi={language === 'hi'} onClear={handleClear} />
-      <div className="flex flex-wrap gap-2" aria-label="Prompt suggestions">
-        {PROMPT_SUGGESTIONS.map((chip) => <Button key={chip} size="sm" variant="secondary" disabled={isLoading} onClick={() => void sendMessage(chip)}>{chip}</Button>)}
+    <section aria-labelledby="chat-heading" className="flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
+      <div className="shrink-0 space-y-2.5">
+        <ChatHeader title={t('assistant.title')} disclaimer={t('disclaimer.medical')} isHindi={language === 'hi'} onClear={handleClear} />
+        <div className="flex flex-wrap gap-2" aria-label="Prompt suggestions">
+          {PROMPT_SUGGESTIONS.map((chip) => <Button key={chip} size="sm" variant="secondary" disabled={isLoading} onClick={() => void sendMessage(chip)}>{chip}</Button>)}
+        </div>
       </div>
-      <div role="log" aria-live="polite" aria-relevant="additions" aria-busy={isLoading} className="p-4 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 min-h-[220px] max-h-[420px] overflow-y-auto space-y-3">
+
+      <div role="log" aria-live="polite" aria-relevant="additions" aria-busy={isLoading} className="flex-1 min-h-0 overflow-y-auto pr-2 py-3 flex flex-col space-y-3">
         {messages.length === 0 ? <p className="text-xs text-neutral-500 dark:text-neutral-400">Ask a question about today&apos;s air quality in {cityName} or choose a suggestion above.</p> : messages.map((m) => <ChatMessageBubble key={m.id} msg={m} isLoading={isLoading} onRetry={(p) => void sendMessage(p)} onSuggestion={(s) => void sendMessage(s)} />)}
         {isLoading && <p className="text-xs font-medium text-sky-700 dark:text-sky-300">Thinking...</p>}
         <div ref={endRef} />
       </div>
-      {errorMsg && (
-        <div role="alert" className="p-3 rounded-lg border border-rose-400 bg-rose-50 dark:bg-rose-950/50 text-xs text-rose-900 dark:text-rose-100 flex items-center justify-between gap-2">
-          <span>{errorMsg}</span>
-          {failedPrompt && <Button size="sm" variant="outline" onClick={() => void sendMessage(failedPrompt)}>Retry</Button>}
-        </div>
-      )}
-      <form onSubmit={(e: FormEvent<HTMLFormElement>) => { e.preventDefault(); void sendMessage(input); }} className="flex flex-col sm:flex-row gap-2">
-        <label htmlFor="chat-input" className="sr-only">Ask the Saans air quality assistant</label>
-        <input id="chat-input" type="text" maxLength={1000} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about ventilation, masks, or outdoor safety..." className="flex-1 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
-        <Button type="submit" variant="primary" disabled={isLoading || !input.trim()}>{isLoading ? 'Sending...' : 'Send'}</Button>
-      </form>
+
+      <div className="shrink-0 pt-3 border-t border-slate-100 dark:border-neutral-800 space-y-2">
+        {errorMsg && (
+          <div role="alert" className="p-3 rounded-lg border border-rose-400 bg-rose-50 dark:bg-rose-950/50 text-xs text-rose-900 dark:text-rose-100 flex items-center justify-between gap-2">
+            <span>{errorMsg}</span>
+            {failedPrompt && <Button size="sm" variant="outline" onClick={() => void sendMessage(failedPrompt)}>Retry</Button>}
+          </div>
+        )}
+        <form onSubmit={(e: FormEvent<HTMLFormElement>) => { e.preventDefault(); void sendMessage(input); }} className="flex flex-col sm:flex-row gap-2">
+          <label htmlFor="chat-input" className="sr-only">Ask the Saans air quality assistant</label>
+          <input id="chat-input" type="text" maxLength={1000} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about ventilation, masks, or outdoor safety..." className="flex-1 rounded-full border border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800 px-4 py-2.5 text-sm focus:bg-white dark:focus:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-slate-900/15" />
+          <Button type="submit" variant="primary" disabled={isLoading || !input.trim()}>{isLoading ? 'Sending...' : 'Send'}</Button>
+        </form>
+      </div>
     </section>
   );
 }

@@ -103,8 +103,10 @@ function ImpactPanel(p: AppTabPanelsProps): ReactElement {
 
 function ChatPanel(p: AppTabPanelsProps): ReactElement {
   return (
-    <div className="space-y-4">
-      <TabHeader breadcrumbCurrent="Assistant" title="AI Air Quality Assistant" subtitle="Ask questions on air pollution, health protection, and emergency precautions" />
+    <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
+      <div className="shrink-0">
+        <TabHeader breadcrumbCurrent="Assistant" title="AI Air Quality Assistant" subtitle="Ask questions on air pollution, health protection, and emergency precautions" />
+      </div>
       <ChatView
         aqi={p.conditions.aqi ?? 0}
         category={p.conditions.category ?? 'Moderate'}
@@ -147,8 +149,11 @@ const TAB_VIEWS: Record<FeatureTabId, (p: AppTabPanelsProps) => ReactElement> = 
  */
 export function AppTabPanels(props: AppTabPanelsProps): ReactElement {
   const View = TAB_VIEWS[props.activeTab] ?? TodayPanel;
+  const panelCls = props.activeTab === 'assistant'
+    ? 'flex-1 min-h-0 flex flex-col overflow-hidden'
+    : 'flex-1 min-h-0 overflow-y-auto pr-1 space-y-5';
   return (
-    <div id={`tabpanel-${props.activeTab}`} role="tabpanel" aria-labelledby={`tab-${props.activeTab}`} className="space-y-6">
+    <div id={`tabpanel-${props.activeTab}`} role="tabpanel" aria-labelledby={`tab-${props.activeTab}`} className={panelCls}>
       <Suspense fallback={<p className="p-4 text-xs">Loading section...</p>}>
         <View {...props} />
       </Suspense>

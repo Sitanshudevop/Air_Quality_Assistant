@@ -25,13 +25,13 @@ export function ChatMessageBubble({
 }: ChatMessageBubbleProps): ReactElement {
   const isUser = msg.role === 'user';
   const cardCls = isUser
-    ? 'bg-sky-700 text-white ml-auto max-w-[88%] sm:max-w-[75%]'
+    ? 'self-end w-fit max-w-[75%] rounded-2xl rounded-br-sm bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-2.5 text-sm shadow-sm'
     : msg.isSafetyCard
-      ? 'bg-rose-50 text-rose-950 border-2 border-rose-400 dark:bg-rose-950/60 dark:text-rose-100 dark:border-rose-700 max-w-[88%] sm:max-w-[75%]'
-      : 'bg-neutral-100 text-neutral-900 border border-neutral-300 dark:bg-neutral-800 dark:text-neutral-100 dark:border-neutral-700 max-w-[88%] sm:max-w-[75%]';
+      ? 'self-start w-full max-w-[85%] rounded-2xl bg-rose-50 text-rose-950 border-2 border-rose-400 dark:bg-rose-950/60 dark:text-rose-100 dark:border-rose-700 p-4 text-sm'
+      : 'self-start w-full max-w-[85%] rounded-2xl bg-[#F3F5FA] dark:bg-neutral-800 p-4 text-sm text-slate-800 dark:text-neutral-100';
 
   return (
-    <div className={`p-3 rounded-xl text-xs space-y-2 ${cardCls}`}>
+    <div className={`space-y-2 ${cardCls}`}>
       <p className="whitespace-pre-wrap break-words">{msg.text}</p>
       {!isUser && msg.provenance && (
         <ProvenanceBadge

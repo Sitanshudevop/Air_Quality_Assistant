@@ -89,14 +89,16 @@ function AppShell(): ReactElement {
           onSearchSubmit: liveState.onSearchSubmit, onUseLocation: liveState.onGeo, onToggleManual: liveState.onToggleManual,
         }}
       >
-        <main id="main-content" tabIndex={-1} className="space-y-5 focus:outline-none">
-          <WelcomeRibbon onLaunchDemo={() => setMode('demo')} onOpenProfile={() => setIsProfileOpen(true)} onStartTour={() => setIsTourOpen(true)} />
-          <LocationBar
-            isDemo={isDemo} demoCityId={demoCityId} demoPersonaId={demoPersonaId}
-            onSelectDemoCity={setDemoCityId} onSelectDemoPersona={setDemoPersonaId}
-            onLiveData={(aq, fc, label) => { setLiveData({ aq, label }); setLiveForecast(fc); setManualData(null); }}
-            onManualReading={(reading) => setManualData(reading)} liveState={liveState}
-          />
+        <main id="main-content" tabIndex={-1} className="flex-1 min-h-0 flex flex-col gap-4 focus:outline-none">
+          <div className="shrink-0 space-y-3">
+            <WelcomeRibbon onLaunchDemo={() => setMode('demo')} onOpenProfile={() => setIsProfileOpen(true)} onStartTour={() => setIsTourOpen(true)} />
+            <LocationBar
+              isDemo={isDemo} demoCityId={demoCityId} demoPersonaId={demoPersonaId}
+              onSelectDemoCity={setDemoCityId} onSelectDemoPersona={setDemoPersonaId}
+              onLiveData={(aq, fc, label) => { setLiveData({ aq, label }); setLiveForecast(fc); setManualData(null); }}
+              onManualReading={(reading) => setManualData(reading)} liveState={liveState}
+            />
+          </div>
           <AppTabPanels
             key={`panel-${profileVer}`} activeTab={activeTab} conditions={conditions} profile={profile}
             domainProfile={domainProfile} routineItems={routineItems}
@@ -105,7 +107,7 @@ function AppShell(): ReactElement {
             onProfileUpdated={() => setProfileVer((v) => v + 1)}
           />
         </main>
-        <AppFooter />
+        <AppFooter compact={activeTab === 'assistant'} />
       </BentoShell>
       <AppModals isTourOpen={isTourOpen} isProfileOpen={isProfileOpen} onCloseTour={() => setIsTourOpen(false)} onCloseProfile={() => setIsProfileOpen(false)} />
     </>

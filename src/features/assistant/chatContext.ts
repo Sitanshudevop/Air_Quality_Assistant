@@ -45,9 +45,10 @@ function buildContextFacts(opts: FetchChatReplyOptions): string[] {
   const win = opts.hourlyPoints?.length ? findActivityWindows(opts.hourlyPoints) : null;
   if (win) facts.push(`Best ventilation: ${win.best.hourLabel} (AQI ${win.best.aqi}). Peak inversion: ${win.worst.hourLabel} (AQI ${win.worst.aqi}).`);
   if (opts.vulnerability) facts.push(`Household profile: ${opts.vulnerability}.`);
-  const recent = (opts.history ?? []).slice(-4).map((m) => `${m.role}: ${m.text.slice(0, 120)}`);
-  if (recent.length > 0) facts.push(`Recent chat: ${recent.join(' | ')}`);
-  return facts;
+  for (const m of (opts.history ?? []).slice(-4)) {
+    facts.push(`Prior ${m.role}: ${m.text.slice(0, 200)}`);
+  }
+  return facts.slice(0, 20);
 }
 
 /**
@@ -58,12 +59,13 @@ function buildContextFacts(opts: FetchChatReplyOptions): string[] {
  */
 export async function fetchChatReply(opts: FetchChatReplyOptions): Promise<ChatMessage> {
   const { aqi, category, cityName, userText, signal } = opts;
+  const safeCity = cityName.trim() || 'Selected Location';
   const res = await getAiResponse({
     task: 'chat',
     context: {
-      aqi: Math.round(aqi),
-      city: cityName,
-      facts: buildContextFacts(opts),
+      aqi: Math.min(1000, Math.max(0, Math.round(aqi))),
+      city: safeCity.slice(0, 100),
+      facts: buildContextFacts({ ...opts, cityName: safeCity }),
       pollutants: buildPollutantMap(opts.pollutants),
       userPreferences: opts.vulnerability ? { vulnerability: opts.vulnerability } : undefined,
     },

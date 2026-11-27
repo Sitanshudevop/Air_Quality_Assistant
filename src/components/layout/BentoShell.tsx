@@ -29,7 +29,7 @@ export function BentoShell({
   onOpenTour, onOpenProfile, headerProps, children,
 }: BentoShellProps): ReactElement {
   return (
-    <div className="min-h-dvh overflow-x-clip md:h-dvh md:overflow-hidden bg-bento-canvas dark:bg-neutral-950 p-0 md:p-4 pb-24 md:pb-4 font-sans transition-colors">
+    <div className="min-h-dvh overflow-x-clip md:h-dvh md:overflow-hidden bg-[#F3F5FA] dark:bg-neutral-950 p-0 pb-24 md:p-4 md:pb-4 font-sans transition-colors">
       <div className="max-w-[1600px] mx-auto flex items-stretch gap-4 min-w-0 md:h-full">
         <BentoSidebar
           activeTab={activeTab}
@@ -50,7 +50,7 @@ export function BentoShell({
             onOpenTour={onOpenTour}
             onOpenProfile={onOpenProfile}
           />
-          <div className="flex-1 min-w-0 md:overflow-y-auto px-3.5 sm:px-6 pb-6">
+          <div className="flex-1 min-w-0 min-h-0 flex flex-col md:overflow-hidden px-3.5 sm:px-6 pb-4">
             {children}
           </div>
         </div>

@@ -113,6 +113,13 @@ export async function checkAiStatus(signal?: AbortSignal): Promise<AiStatusRespo
   }
 }
 
+function describeProxyStatus(status: number): string {
+  if (status === 504 || status === 408) return 'Live AI timed out — click Retry to try again';
+  if (status === 429) return 'Live AI is busy (rate limit) — try Retry shortly';
+  if (status === 400) return 'Request format rejected — try a shorter message';
+  return `Live AI temporarily unavailable (HTTP ${status})`;
+}
+
 async function requestProxyAi(input: GetAiResponseInput, context: TaskContext, start: number): Promise<AiResponse> {
   const { controller, cleanup } = createTimeoutController(input.signal);
   try {
@@ -124,7 +131,7 @@ async function requestProxyAi(input: GetAiResponseInput, context: TaskContext, s
     });
     if (!res.ok) {
       setAiCallStatus('rules');
-      return buildClientFallback({ task: input.task, context, startMs: start, userText: input.userText, reason: `API proxy HTTP ${res.status}` });
+      return buildClientFallback({ task: input.task, context, startMs: start, userText: input.userText, reason: describeProxyStatus(res.status) });
     }
     const parsed = aiResponseSchema.safeParse(await res.json());
     if (!parsed.success) {

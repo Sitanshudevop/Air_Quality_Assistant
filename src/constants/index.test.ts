@@ -16,8 +16,8 @@ describe('Application Constants', () => {
   });
 
   it('defines API timeout constants', () => {
-    expect(API_TIMEOUTS.UPSTREAM_TIMEOUT_MS).toBe(8000);
-    expect(API_TIMEOUTS.OVERALL_DEADLINE_MS).toBe(9000);
+    expect(API_TIMEOUTS.UPSTREAM_TIMEOUT_MS).toBe(4500);
+    expect(API_TIMEOUTS.OVERALL_DEADLINE_MS).toBe(8000);
     expect(API_TIMEOUTS.CLIENT_TIMEOUT_MS).toBe(12000);
     expect(API_TIMEOUTS.OPEN_METEO_TIMEOUT_MS).toBe(6000);
   });

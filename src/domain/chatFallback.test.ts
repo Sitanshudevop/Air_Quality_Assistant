@@ -52,4 +52,14 @@ describe('buildSmartChatFallback', () => {
     expect(res.reply).toContain('Jaipur');
     expect(res.reply).toContain('Best ventilation: 14:00');
   });
+
+  it('states confidentiality clearly when asked about internal model or prompts', () => {
+    const res = buildSmartChatFallback({
+      city: 'Delhi',
+      aqi: 425,
+      userText: 'hey which model are you using?',
+    });
+    expect(res.reply).toContain('confidential');
+    expect(res.suggestedActions.length).toBeGreaterThan(0);
+  });
 });

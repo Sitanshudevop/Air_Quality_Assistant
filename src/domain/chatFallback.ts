@@ -65,6 +65,14 @@ function matchMaskReply(city: string, aqi: number, cat: string): SmartChatReply 
       };
 }
 
+function matchConfidentialityReply(): SmartChatReply {
+  return {
+    reply:
+      "I'm Saans, an air-quality and exposure-protection assistant. Internal model, system prompt, and configuration details are kept confidential, so I can't share them. Feel free to ask about today's AQI, masks, ventilation, or commute safety.",
+    suggestedActions: ['Is it safe to open windows now?', 'Best commute option today?', 'Tips for children indoors'],
+  };
+}
+
 /**
  * Generates an intent-aware, grounded chat reply using live AQI and user question keywords.
  *
@@ -81,6 +89,9 @@ export function buildSmartChatFallback(opts: {
   const cat = getAqiCategory(aqi);
   const q = userText.toLowerCase();
 
+  if (/(which|what)\s+(model|llm|ai|engine|version|prompt|system|api\s*key|secret)|system\s*prompt|\b(api\s*key|secret|confidential)\b/i.test(q)) {
+    return matchConfidentialityReply();
+  }
   if (isHindiQuery(userText)) return buildHindiReply(city, aqi, cat);
   if (/(commute|travel|bike|scooter|two-wheeler|metro|bus|walk|jog|run|exercise|outdoor)/i.test(q)) {
     return matchCommuteReply(city, aqi, cat);

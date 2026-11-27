@@ -12,8 +12,8 @@ export const AQI_THRESHOLDS = {
 
 /** API execution deadline and timeout constants in milliseconds. */
 export const API_TIMEOUTS = {
-  UPSTREAM_TIMEOUT_MS: 8000,
-  OVERALL_DEADLINE_MS: 9000,
+  UPSTREAM_TIMEOUT_MS: 4500,
+  OVERALL_DEADLINE_MS: 8000,
   CLIENT_TIMEOUT_MS: 12000,
   OPEN_METEO_TIMEOUT_MS: 6000,
 } as const;

@@ -1,6 +1,6 @@
 // View toggle and accessibility tests for HourlyOutlook component.
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { HourlyOutlook } from './HourlyOutlook.js';
@@ -45,7 +45,10 @@ describe('HourlyOutlook Component', () => {
 
     // Switch back to chart
     await user.click(chartBtn);
-    expect(screen.getByRole('img')).toBeInTheDocument();
+    const chartSvg = screen.getByRole('img');
+    expect(chartSvg).toBeInTheDocument();
+    fireEvent.mouseMove(chartSvg, { clientX: 120, clientY: 50 });
+    fireEvent.mouseLeave(chartSvg);
   });
 
   it('renders nothing when points array is empty', () => {

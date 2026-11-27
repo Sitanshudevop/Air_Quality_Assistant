@@ -21,6 +21,10 @@ describe('deepLink utility', () => {
     });
   });
 
+  it('returns empty object for empty search string', () => {
+    expect(parseDeepLinkParams('')).toEqual({});
+  });
+
   it('builds a clean shareable deep-link URL with only allowlisted params', () => {
     const url = buildDeepLinkUrl('https://saans.app/?foo=bar', {
       tab: 'community',
@@ -28,5 +32,6 @@ describe('deepLink utility', () => {
       template: 'clinic',
     });
     expect(url).toBe('https://saans.app/?tab=community&persona=toddler_grandparent&template=clinic');
+    expect(buildDeepLinkUrl('https://saans.app/?foo=bar', {})).toBe('https://saans.app/');
   });
 });

@@ -43,4 +43,22 @@ describe('ErrorBoundary', () => {
     fireEvent.click(screen.getByRole('button', { name: /Reload Saans/i }));
     expect(onReset).toHaveBeenCalledTimes(1);
   });
+
+  it('falls back to window.location.reload when onReset is not provided', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const reloadSpy = vi.fn();
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, reload: reloadSpy },
+      configurable: true,
+    });
+
+    render(
+      <ErrorBoundary>
+        <BrokenChild shouldThrow />
+      </ErrorBoundary>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Reload Saans/i }));
+    expect(reloadSpy).toHaveBeenCalledTimes(1);
+  });
 });

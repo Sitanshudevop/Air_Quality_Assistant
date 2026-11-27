@@ -58,4 +58,25 @@ describe('CommunityKitView & Notice Sanitization', () => {
     await waitFor(() => expect(screen.getByText(/Clipboard blocked/i)).toBeInTheDocument());
     expect((await axe(container)).violations).toHaveLength(0);
   });
+
+  it('pre-populates society name from deep-link template and copies shareable deep link', async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+
+    render(
+      <CommunityKitView
+        aqi={380}
+        category="Very Poor"
+        cityName="Delhi"
+        template="school"
+        persona="school_rwa"
+      />
+    );
+
+    expect(screen.getByLabelText(/Society \/ School Name/i)).toHaveValue('Delhi Public School');
+    await user.click(screen.getByRole('button', { name: /Copy Link/i }));
+    await waitFor(() => expect(screen.getByText(/Deep link copied to clipboard!/i)).toBeInTheDocument());
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining('tab=community&persona=school_rwa&template=school'));
+  });
 });

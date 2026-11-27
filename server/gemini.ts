@@ -67,7 +67,7 @@ async function fetchWithFallback(req: AiRequest, signal: AbortSignal, stricter: 
   const primary = process.env.GEMINI_MODEL ?? GEMINI_MODELS.PRIMARY;
   const fallback = process.env.GEMINI_FALLBACK_MODEL ?? GEMINI_MODELS.FALLBACK;
   const first = await callModel(primary, req, signal, stricter);
-  if (first.status === 404 || first.status === 429) {
+  if (first.status === 404 || first.status === 429 || first.status >= 500) {
     return { res: await callModel(fallback, req, signal, stricter), model: fallback };
   }
   return { res: first, model: primary };

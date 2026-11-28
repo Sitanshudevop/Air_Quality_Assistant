@@ -82,7 +82,7 @@ export function ComparisonCard({
           aria-expanded={open}
           aria-controls={drawerId}
           onClick={() => setOpen((prev) => !prev)}
-          className="text-xs font-semibold text-sky-700 dark:text-sky-400 underline focus:outline-none focus:ring-2 focus:ring-sky-500 rounded px-1 py-0.5"
+          className="text-xs font-semibold min-h-[44px] sm:min-h-0 inline-flex items-center text-sky-700 dark:text-sky-400 underline focus:outline-none focus:ring-2 focus:ring-sky-500 rounded px-1 py-0.5"
         >
           {open ? 'Hide Breakdown' : 'Explainability Breakdown'}
         </button>

@@ -2,7 +2,6 @@
 import type { ReactElement } from 'react';
 import { Home, Clock, Leaf, Scale, MessageCircle, Users } from 'lucide-react';
 import type { FeatureTabId } from './FeatureTabs.js';
-import { useLanguage } from '../../state/language.js';
 
 /** Props for BottomNav component. */
 export interface BottomNavProps {
@@ -33,8 +32,6 @@ const NAV_ITEMS: readonly BottomNavMeta[] = [
  * @returns React component element visible on < 768px screens.
  */
 export function BottomNav({ activeTab, onSelectTab, className = '' }: BottomNavProps): ReactElement {
-  const { language } = useLanguage();
-
   return (
     <nav
       aria-label="Mobile Bottom Navigation"
@@ -50,7 +47,6 @@ export function BottomNav({ activeTab, onSelectTab, className = '' }: BottomNavP
               onClick={() => onSelectTab(item.id)}
               aria-current={isActive ? 'page' : undefined}
               aria-label={item.label}
-              lang={language === 'hi' ? 'hi' : undefined}
               className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] py-1 px-1 rounded-xl text-[10px] font-medium transition-colors ${
                 isActive
                   ? 'text-bento-ink dark:text-white font-bold'

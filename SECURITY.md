@@ -5,7 +5,11 @@ This document summarizes the R4 security controls enforced by Saans across hosti
 ## 1. Content Security Policy (CSP) Parity
 
 - **HTTP Header (`vercel.json`)**:
-  `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://air-quality-api.open-meteo.com https://api.open-meteo.com https://geocoding-api.open-meteo.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';`
+  `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://fonts.googleapis.com https://air-quality-api.open-meteo.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://api.bigdatacloud.net https://nominatim.openstreetmap.org; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';`
+- **Active External Hosts**:
+  - `air-quality-api.open-meteo.com`, `api.open-meteo.com`, `geocoding-api.open-meteo.com` — live AQI, hourly dispersion weather, and city lookup.
+  - `api.bigdatacloud.net`, `nominatim.openstreetmap.org` — reverse-geocoding for 2-decimal rounded browser coordinates when *"Use My Location"* is triggered.
+  - `fonts.googleapis.com`, `fonts.gstatic.com` — Plus Jakarta Sans font stylesheet and font binaries.
 - **HTML `<meta>` (`index.html`)**:
   Enforces the exact same directives as `vercel.json`, excluding `frame-ancestors 'none'` (which is valid only in HTTP response headers).
 - No `'unsafe-eval'`, no script `'unsafe-inline'`, and no client-side `generativelanguage.googleapis.com` origin are permitted.
@@ -34,7 +38,7 @@ This document summarizes the R4 security controls enforced by Saans across hosti
 
 - **Input bounds**: Text/tel inputs enforce `maxLength` (`100` for city/society, `20` for emergency phone, `1000` for assistant prompts) matching sanitizer and Zod schema limits.
 - **Zod-validated storage**: Persisted browser state in `localStorage` and `sessionStorage` (`profile.ts`, `chatUtils.ts`, `manualReading.ts`, `cache.ts`) is validated via Zod schemas (`safeParse`). Corrupted or schema-invalid payloads are safely purged and fall back to defaults without throwing.
-- **External links & privacy**: External `target="_blank"` links include `rel="noopener noreferrer"`. Coordinates sent to Open-Meteo or stored in cache keys are rounded to 2 decimal places (~1.1 km), and `AppFooter` states the in-browser privacy guarantee.
+- **External links & privacy**: External `target="_blank"` links include `rel="noopener noreferrer"`. Coordinates sent to Open-Meteo, `api.bigdatacloud.net`, or `nominatim.openstreetmap.org` (or stored in cache keys) are rounded to 2 decimal places (~1.1 km), and `AppFooter` states the in-browser privacy guarantee.
 
 ## 5. Dependency Audit & npm `overrides` Status
 

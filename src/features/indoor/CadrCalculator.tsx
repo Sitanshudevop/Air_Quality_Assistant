@@ -9,7 +9,7 @@ export interface CadrCalculatorProps {
 }
 
 const inputCls =
-  'w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-sm text-neutral-900 dark:text-neutral-50 focus:outline-none focus:ring-2 focus:ring-sky-500';
+  'w-full min-h-[44px] sm:min-h-[38px] rounded-md border border-slate-400 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-sm text-neutral-900 dark:text-neutral-50 focus:outline-none focus:ring-2 focus:ring-sky-500';
 
 /**
  * Computes required Clean Air Delivery Rate (CFM and m3/hr) for a room at target ACH.

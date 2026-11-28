@@ -59,10 +59,10 @@ export function registerTier3ApplicationCombinations(options = {}) {
   // Test 3.11: Live AQ Failure (F7) x Manual Entry Fallback (F11) -> Today Dashboard (F16)
   // -------------------------------------------------------------------------
   it('Test 3.11: Live AQ Failure (F7) x Manual Entry Fallback (F11) -> Today Dashboard (F16)', async (t) => {
-    const fallbackMod = await loadModuleSafe('src/services/fallback.ts');
+    const fallbackMod = await loadModuleSafe('src/services/manualReading.ts');
 
     if (!fallbackMod || !fallbackMod.createManualReading) {
-      t.skip('Pending implementation of src/services/fallback.ts in M2');
+      t.skip('Pending implementation of src/services/manualReading.ts in M2');
       return;
     }
 
@@ -130,17 +130,12 @@ export function registerTier3ApplicationCombinations(options = {}) {
   });
 
   // -------------------------------------------------------------------------
-  // Test 3.15: Hindi Localization (F29) x Community Smog Action Kit (F28)
+  // Test 3.15: Hindi Query Fallback (F29) x Community Smog Action Kit (F28)
   // -------------------------------------------------------------------------
-  it('Test 3.15: Hindi Localization (F29) x Community Smog Action Kit (F28)', async (t) => {
-    const hindiMod = await loadModuleSafe('src/i18n/hindi.ts');
-
-    if (!hindiMod || !hindiMod.AQI_CATEGORIES_HI) {
-      t.skip('Pending implementation of src/i18n/hindi.ts in M5');
-      return;
-    }
-
-    assert.strictEqual(hindiMod.AQI_CATEGORIES_HI.Severe, 'गंभीर');
+  it('Test 3.15: Hindi Query Fallback (F29) x Grounded Commute Context (F26)', async () => {
+    const fallbackMod = await loadModuleSafe('src/domain/chatFallback.ts');
+    const reply = fallbackMod.buildSmartChatFallback({ city: 'Delhi', aqi: 420, userText: 'आज की हवा कैसी है?' });
+    assert.ok(reply.reply.includes('420'));
   });
 
   // -------------------------------------------------------------------------

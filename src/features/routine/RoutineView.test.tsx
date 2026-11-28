@@ -46,6 +46,30 @@ describe('RoutineView & RoutineUtils', () => {
     expect(screen.getByText(/Gemini live/i)).toBeInTheDocument();
   });
 
+  it('passes household userPreferences to narrate-plan AI task context', async () => {
+    const spy = vi.spyOn(aiService, 'getAiResponse').mockResolvedValueOnce({
+      task: 'narrate-plan',
+      result: { narrative: 'Plan for child.', recommendations: ['Stay inside'] },
+      provenance: { source: 'gemini', model: 'gemini-3.5-flash-lite', cached: false },
+    });
+    render(
+      <RoutineView
+        aqi={310}
+        category="Very Poor"
+        cityName="Delhi"
+        profile={{ vulnerabilities: ['child'], commuteMode: 'metro', hasPurifier: true, cookingFuel: 'induction' }}
+      />
+    );
+    await userEvent.click(screen.getByRole('button', { name: /AI Narrate Plan/i }));
+    await waitFor(() => expect(spy).toHaveBeenCalled());
+    expect(spy.mock.calls[0]?.[0]?.context?.userPreferences).toEqual({
+      vulnerability: 'child',
+      commuteMode: 'metro',
+      hasPurifier: true,
+      cookingFuel: 'induction',
+    });
+  });
+
   it('handles empty routine override gracefully and passes axe audit', async () => {
     const { container } = render(
       <RoutineView aqi={45} category="Good" cityName="Bengaluru" itemsOverride={[]} />

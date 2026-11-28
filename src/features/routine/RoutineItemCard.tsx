@@ -34,7 +34,7 @@ export function RoutineItemCard({ item, category }: RoutineItemCardProps): React
           <span className="text-xs font-bold uppercase tracking-wide text-sky-800 dark:text-sky-300">
             {meta.label}
           </span>
-          <span className="text-xs text-neutral-500 dark:text-neutral-400">{meta.window}</span>
+          <span className="text-xs text-neutral-600 dark:text-neutral-400">{meta.window}</span>
           {locked && (
             <span className="px-2 py-0.5 text-[11px] font-semibold rounded-full border border-purple-400 bg-purple-50 text-purple-900 dark:bg-purple-950 dark:text-purple-200 dark:border-purple-700">
               Outdoor Locked (Severe)
@@ -64,7 +64,7 @@ export function RoutineItemCard({ item, category }: RoutineItemCardProps): React
           aria-expanded={open}
           aria-controls={drawerId}
           onClick={() => setOpen((prev) => !prev)}
-          className="text-xs font-semibold text-sky-700 dark:text-sky-400 underline focus:outline-none focus:ring-2 focus:ring-sky-500 rounded px-1.5 py-0.5"
+          className="text-xs font-semibold min-h-[44px] sm:min-h-0 inline-flex items-center text-sky-700 dark:text-sky-400 underline focus:outline-none focus:ring-2 focus:ring-sky-500 rounded px-2 py-0.5"
         >
           {open ? 'Hide Why & Facts' : 'Why & Facts'}
         </button>
@@ -83,7 +83,7 @@ export function RoutineItemCard({ item, category }: RoutineItemCardProps): React
               <li key={fact}>{fact}</li>
             ))}
           </ul>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+          <p className="text-[11px] text-neutral-600 dark:text-neutral-400">
             Codes: {item.reasonCodes.join(', ')}
           </p>
         </div>

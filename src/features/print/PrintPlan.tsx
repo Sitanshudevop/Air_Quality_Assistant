@@ -69,7 +69,7 @@ export function PrintPlan({
             href="https://cpcb.nic.in"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline text-sky-700 dark:text-sky-400"
+            className="inline-flex items-center min-h-[44px] sm:min-h-0 underline text-sky-700 dark:text-sky-400"
           >
             CPCB India NAAQS
           </a>{' '}
@@ -78,7 +78,7 @@ export function PrintPlan({
             href="https://www.who.int/publications/i/item/9789240034228"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline text-sky-700 dark:text-sky-400"
+            className="inline-flex items-center min-h-[44px] sm:min-h-0 underline text-sky-700 dark:text-sky-400"
           >
             WHO 2021 Air Quality Guidelines
           </a>

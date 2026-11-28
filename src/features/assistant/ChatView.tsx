@@ -3,7 +3,6 @@ import { useEffect, useRef, useState, type FormEvent, type ReactElement } from '
 import type { AqiCategory, VulnerabilityGroup } from '../../domain/types.js';
 import type { HourlyAirQualityPoint } from '../../services/openMeteo.types.js';
 import type { PollutantValues } from '../dashboard/PollutantCard.js';
-import { useLanguage } from '../../state/language.js';
 import { getErrorMessage } from '../../utils/error.js';
 import { logError } from '../../utils/logger.js';
 import { Button } from '../../components/ui/Button.js';
@@ -21,17 +20,17 @@ export interface ChatViewProps {
   readonly vulnerability?: VulnerabilityGroup;
 }
 
-function ChatHeader(props: { title: string; disclaimer: string; isHindi: boolean; onClear: () => void }): ReactElement {
+function ChatHeader(props: { title: string; disclaimer: string; onClear: () => void }): ReactElement {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
       <div>
-        <h2 id="chat-heading" lang={props.isHindi ? 'hi' : undefined} className="text-lg font-bold">{props.title}</h2>
-        <p className="text-xs text-neutral-600 dark:text-neutral-400">{props.disclaimer}</p>
+        <h2 id="chat-heading" className="text-lg font-bold">{props.title}</h2>
+        <p className="text-xs text-neutral-600 dark:text-neutral-300">{props.disclaimer}</p>
       </div>
       <button
         type="button"
         onClick={props.onClear}
-        className="rounded-full bg-slate-100 hover:bg-slate-200/80 text-slate-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-neutral-200 border-0 px-3.5 py-1.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-slate-900/15"
+        className="rounded-full border border-slate-400 dark:border-neutral-600 bg-slate-100 hover:bg-slate-200/80 text-slate-800 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-neutral-200 px-3.5 py-1.5 min-h-[44px] sm:min-h-[32px] text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-slate-900/15"
       >
         Clear Chat
       </button>
@@ -46,7 +45,6 @@ function ChatHeader(props: { title: string; disclaimer: string; isHindi: boolean
  * @returns Accessible chat section element.
  */
 export function ChatView({ aqi, category, cityName, pollutants, hourlyPoints, vulnerability }: ChatViewProps): ReactElement {
-  const { t, language } = useLanguage();
   const [messages, setMessages] = useState<ChatMessage[]>(() => loadChatHistory());
   const [input, setInput] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -101,7 +99,7 @@ export function ChatView({ aqi, category, cityName, pollutants, hourlyPoints, vu
   return (
     <section aria-labelledby="chat-heading" className="space-y-4">
       <div className="space-y-2.5">
-        <ChatHeader title={t('assistant.title')} disclaimer={t('disclaimer.medical')} isHindi={language === 'hi'} onClear={handleClear} />
+        <ChatHeader title="Grounded Air Quality Assistant" disclaimer="Informational exposure guidance only. Not medical advice." onClear={handleClear} />
         <div className="flex flex-wrap gap-2" aria-label="Prompt suggestions">
           {PROMPT_SUGGESTIONS.map((chip) => <Button key={chip} size="sm" variant="secondary" disabled={isLoading} onClick={() => void sendMessage(chip)}>{chip}</Button>)}
         </div>
@@ -122,7 +120,7 @@ export function ChatView({ aqi, category, cityName, pollutants, hourlyPoints, vu
         )}
         <form onSubmit={(e: FormEvent<HTMLFormElement>) => { e.preventDefault(); void sendMessage(input); }} className="flex flex-col sm:flex-row gap-2">
           <label htmlFor="chat-input" className="sr-only">Ask the Saans air quality assistant</label>
-          <input id="chat-input" type="text" maxLength={1000} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about ventilation, masks, or outdoor safety..." className="flex-1 rounded-full border border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800 px-4 py-2.5 text-sm focus:bg-white dark:focus:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-slate-900/15" />
+          <input id="chat-input" type="text" maxLength={1000} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about ventilation, masks, or outdoor safety..." className="flex-1 min-h-[44px] rounded-full border border-slate-400 dark:border-neutral-600 bg-slate-50 dark:bg-neutral-800 px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-600 dark:placeholder:text-neutral-300 focus:bg-white dark:focus:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-slate-900/15" />
           <Button type="submit" variant="primary" disabled={isLoading || !input.trim()}>{isLoading ? 'Sending...' : 'Send'}</Button>
         </form>
       </div>

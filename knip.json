@@ -1,11 +1,8 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "entry": [
-    "src/**/*.{ts,tsx}!",
-    "api/**/*.{ts,test.ts}!",
-    "server/**/*.{ts,test.ts}!",
-    "shared/**/*.{ts,test.ts}!",
-    "scripts/**/*.{mjs,test.ts}!"
+    "api/**/*.ts!",
+    "scripts/**/*.mjs!"
   ],
   "project": [
     "src/**/*.{ts,tsx}!",
@@ -24,7 +21,6 @@
     "vite"
   ],
   "rules": {
-    "types": "off",
-    "exports": "off"
+    "types": "off"
   }
 }

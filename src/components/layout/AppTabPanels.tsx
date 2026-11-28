@@ -80,12 +80,12 @@ function RoutinePanel(p: AppTabPanelsProps): ReactElement {
 }
 
 function IndoorPanel(p: AppTabPanelsProps): ReactElement {
-  const { conditions, onLaunchDemo, onFocusSearch } = p;
+  const { conditions, profile, onLaunchDemo, onFocusSearch } = p;
   if (conditions.status === 'ready' && conditions.aqi !== undefined) {
     return (
       <div className="space-y-4">
         <TabHeader breadcrumbCurrent="Indoor Hacks" title="Indoor Hacks" subtitle="CADR calculations, room ventilation locks, and low-cost purification" />
-        <IndoorView aqi={conditions.aqi} cityName={conditions.cityName ?? ''} />
+        <IndoorView aqi={conditions.aqi} cityName={conditions.cityName ?? ''} profile={profile} />
       </div>
     );
   }

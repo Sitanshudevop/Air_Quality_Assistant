@@ -49,12 +49,12 @@ function CurrentAqiCard({ aqi, category, dominantPollutant, hourlyPoints }: KpiR
   return (
     <div className={`${aqiBg(category)} rounded-3xl p-5 flex flex-col gap-2`}>
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-bento-ink/60 uppercase tracking-wide">Current AQI</span>
-        <Wind size={16} className="text-bento-ink/40" aria-hidden="true" />
+        <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Current AQI</span>
+        <Wind size={16} className="text-slate-700" aria-hidden="true" />
       </div>
       <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-bento-ink" aria-label={`AQI ${aqi ?? '—'}`}>{aqi ?? '—'}</p>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs font-bold text-bento-ink/75">{category ?? 'No data'}</span>
+        <span className="text-xs font-bold text-bento-ink">{category ?? 'No data'}</span>
         {dominantPollutant && <span className="text-[11px] font-semibold bg-bento-ink text-white px-2 py-0.5 rounded-full">{dominantPollutant}</span>}
       </div>
       <MiniSparkline points={hourlyPoints ?? []} />
@@ -66,11 +66,11 @@ function RangeCard(props: { title: string; value: string; subtitle: string; bg: 
   return (
     <div className={`${props.bg} rounded-3xl p-5 flex flex-col gap-2`}>
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-bento-ink/60 uppercase tracking-wide">{props.title}</span>
+        <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">{props.title}</span>
         {props.icon}
       </div>
       <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-bento-ink">{props.value}</p>
-      <span className="text-xs text-bento-muted font-medium break-words">{props.subtitle}</span>
+      <span className="text-xs text-slate-700 font-medium break-words">{props.subtitle}</span>
     </div>
   );
 }
@@ -80,11 +80,11 @@ function CleanWindowCard({ points }: { points: readonly HourlyAirQualityPoint[] 
   return (
     <div className="bg-bento-ice rounded-3xl p-5 flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-bento-ink/60 uppercase tracking-wide">Clean Air Window</span>
-        <Clock3 size={16} className="text-bento-ink/40" aria-hidden="true" />
+        <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Clean Air Window</span>
+        <Clock3 size={16} className="text-slate-700" aria-hidden="true" />
       </div>
       <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-bento-ink">{clean ? `${clean.cleanHoursCount}` : '—'}</p>
-      <span className="text-xs text-bento-muted font-medium">{clean ? `of ${clean.totalHours} hrs below 100 AQI` : 'Load forecast for clean hours'}</span>
+      <span className="text-xs text-slate-700 font-medium">{clean ? `of ${clean.totalHours} hrs below 100 AQI` : 'Load forecast for clean hours'}</span>
       {clean && (
         <div className="w-full bg-white/60 h-1.5 rounded-full overflow-hidden">
           <div className="bg-bento-ink h-full rounded-full" style={{ width: `${clean.percentage}%` }} />

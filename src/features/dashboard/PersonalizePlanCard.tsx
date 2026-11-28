@@ -12,7 +12,7 @@ export interface PersonalizePlanCardProps {
 type SegmentTab = 'household' | 'travel' | 'home';
 
 const selectCls =
-  'w-full rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-xs text-neutral-900 dark:text-neutral-50 focus:outline-none focus:ring-2 focus:ring-teal-600';
+  'w-full min-h-[44px] sm:min-h-[36px] rounded-xl border border-slate-400 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-xs text-neutral-900 dark:text-neutral-50 focus:outline-none focus:ring-2 focus:ring-teal-600';
 
 function HouseholdFields(props: { vuln: string; onChange: (v: string) => void }): ReactElement {
   return (
@@ -89,7 +89,7 @@ export function PersonalizePlanCard({ onProfileUpdated, className = '' }: Person
           <h3 id="personalize-plan-heading" className="text-base font-bold text-neutral-900 dark:text-neutral-100">
             Personalize your plan
           </h3>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+          <p className="text-xs text-slate-600 dark:text-neutral-400">
             Calibrate exposure calculations, routine diurnal locks, and room hacks
           </p>
         </div>
@@ -102,7 +102,7 @@ export function PersonalizePlanCard({ onProfileUpdated, className = '' }: Person
               role="radio"
               aria-checked={segment === seg}
               onClick={() => setSegment(seg)}
-              className={`px-3 py-1 font-semibold rounded-full capitalize transition-colors ${
+              className={`px-3 py-1 min-h-[44px] sm:min-h-0 font-semibold rounded-full capitalize transition-colors ${
                 segment === seg
                   ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 shadow-sm'
                   : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
@@ -135,7 +135,7 @@ export function PersonalizePlanCard({ onProfileUpdated, className = '' }: Person
         <button
           type="button"
           onClick={handleSave}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 font-semibold text-xs hover:bg-neutral-800 dark:hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-teal-600 transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] sm:min-h-0 rounded-full bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 font-semibold text-xs hover:bg-neutral-800 dark:hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-teal-600 transition-colors shadow-sm"
         >
           <span>Update my plan</span>
           <span aria-hidden="true">➔</span>

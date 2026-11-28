@@ -37,8 +37,8 @@ flowchart TD
     end
 
     subgraph UpstreamAI["Google Gemini API"]
-        GeminiPrimary["gemini-2.5-flash (Primary)"]
-        GeminiFallback["gemini-1.5-flash (Secondary 404/429 Fallback)"]
+        GeminiPrimary["gemini-3.5-flash-lite (Primary)"]
+        GeminiFallback["gemini-3.1-flash-lite (Secondary 404/429/Timeout Fallback)"]
     end
 
     UI --> Tabs

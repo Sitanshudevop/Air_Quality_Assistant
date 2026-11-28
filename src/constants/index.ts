@@ -46,7 +46,6 @@ export const APP_LOCAL_STORAGE_KEYS = [
   'saans_chat_history_v1',
   'saans_tour_completed',
   'saans_operating_mode',
-  'saans_language_pref',
 ] as const;
 
 /** Standard error messages returned by API. */

@@ -11,6 +11,7 @@ import type { AiRequest, AiResponse } from '../shared/types.js';
 import { defaultAiCache } from '../server/cache.js';
 import { defaultRateLimiter } from '../server/rate-limit.js';
 import { executeAiTask } from '../server/gemini.js';
+import { sanitizeControlChars } from '../server/prompts.js';
 import { triageSafety, buildSafetyTaskResult } from '../server/safety.js';
 import { logServerInfo, logServerError } from '../server/logger.js';
 
@@ -119,28 +120,28 @@ export async function OPTIONS(): Promise<Response> { return GET(); }
 
 /** Processes safety triage, cache lookup, and upstream AI execution. */
 async function processAiRequest(req: AiRequest, signal: AbortSignal): Promise<AiResponse> {
-  const triage = triageSafety(req.userText);
-  const cacheKey = buildCacheKey(req);
+  const cleanFacts = req.context.facts.map(sanitizeControlChars).filter(Boolean);
+  const cleanReq: AiRequest = { ...req, context: { ...req.context, facts: cleanFacts } };
+  const userTriage = triageSafety(cleanReq.userText);
+  const factsTriage = cleanFacts.length > 0 ? triageSafety(cleanFacts.join(' ')) : null;
+  const triage = userTriage.isBlocked ? userTriage : (factsTriage?.isInjection ? factsTriage : userTriage);
+  const cacheKey = buildCacheKey(cleanReq);
   const cached = defaultAiCache.get(cacheKey) as AiResponse | null;
-  if (cached) {
-    return { ...cached, provenance: { ...cached.provenance, cached: true } };
-  }
+  if (cached) return { ...cached, provenance: { ...cached.provenance, cached: true } };
 
   if (triage.isBlocked) {
     const safeResponse: AiResponse = {
-      task: req.task,
-      result: buildSafetyTaskResult(req.task, triage, req.context),
+      task: cleanReq.task,
+      result: buildSafetyTaskResult(cleanReq.task, triage, cleanReq.context),
       provenance: { source: 'rules', model: 'rules-v1', cached: false, latencyMs: 0 },
     };
     defaultAiCache.set(cacheKey, safeResponse);
     return safeResponse;
   }
 
-  const { result, provenance, cacheable } = await executeAiTask(req, signal);
-  const response: AiResponse = { task: req.task, result, provenance };
-  if (provenance.source === 'gemini' || cacheable === true) {
-    defaultAiCache.set(cacheKey, response);
-  }
+  const { result, provenance, cacheable } = await executeAiTask(cleanReq, signal);
+  const response: AiResponse = { task: cleanReq.task, result, provenance };
+  if (provenance.source === 'gemini' || cacheable === true) defaultAiCache.set(cacheKey, response);
   return response;
 }
 

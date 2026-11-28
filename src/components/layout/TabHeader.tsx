@@ -7,7 +7,6 @@ export interface TabHeaderProps {
   readonly title: string;
   readonly subtitle: string;
   readonly actions?: ReactElement;
-  readonly isHindi?: boolean;
   readonly className?: string;
 }
 
@@ -22,21 +21,20 @@ export function TabHeader({
   title,
   subtitle,
   actions,
-  isHindi = false,
   className = '',
 }: TabHeaderProps): ReactElement {
   return (
     <div className={`space-y-2 pb-2 border-b border-neutral-200/80 dark:border-neutral-800 ${className}`.trim()}>
-      <nav aria-label="Breadcrumb" className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
+      <nav aria-label="Breadcrumb" className="text-xs text-neutral-600 dark:text-neutral-400 font-medium">
         <span>Home</span> <span className="mx-1">/</span> <span className="text-neutral-900 dark:text-neutral-100 font-semibold">{breadcrumbCurrent}</span>
       </nav>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 lang={isHindi ? 'hi' : undefined} className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">
+          <h2 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">
             {title}
           </h2>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+          <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
             {subtitle}
           </p>
         </div>

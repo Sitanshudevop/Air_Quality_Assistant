@@ -8,7 +8,7 @@ import { logError } from '../utils/logger.js';
 const MANUAL_READING_KEY = 'saans_manual_reading';
 
 /** Zod schema validating persisted manual AQI reading in sessionStorage. */
-export const manualReadingSchema = z.object({
+const manualReadingSchema = z.object({
   aqi: z.number().finite().min(0).max(500),
   pm25: z.number().finite().min(0),
   category: z.enum(['Good', 'Satisfactory', 'Moderate', 'Poor', 'Very Poor', 'Severe']),

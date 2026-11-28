@@ -4,7 +4,7 @@ import type { HourlyAirQualityPoint } from '../../services/openMeteo.types.js';
 export const CHART_WIDTH = 800;
 export const CHART_HEIGHT = 240;
 export const PADDING = { left: 45, right: 20, top: 20, bottom: 30 };
-export const MAX_AQI = 500;
+const MAX_AQI = 500;
 
 /** Computed SVG coordinates for an hourly forecast point. */
 export interface SvgPoint {

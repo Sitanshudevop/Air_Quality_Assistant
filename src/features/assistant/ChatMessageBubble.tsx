@@ -77,7 +77,7 @@ export function ChatMessageBubble({
               key={act}
               type="button"
               onClick={() => onSuggestion(act)}
-              className="px-2 py-0.5 rounded-full text-[11px] border border-sky-400 bg-white text-sky-900 hover:bg-sky-50 dark:bg-neutral-900 dark:text-sky-200 dark:border-sky-700"
+              className="px-3 py-1.5 min-h-[44px] sm:min-h-0 rounded-full text-[11px] border border-sky-500 bg-white text-sky-900 hover:bg-sky-50 dark:bg-neutral-900 dark:text-sky-200 dark:border-sky-600"
             >
               {act}
             </button>

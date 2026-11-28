@@ -47,7 +47,7 @@ export function HourlyOutlook({ points = [], className = '' }: HourlyOutlookProp
             type="button"
             aria-pressed={view === 'chart'}
             onClick={() => setView('chart')}
-            className={`px-3.5 py-1 rounded-full text-xs font-semibold transition-colors ${view === 'chart' ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-ink' : 'text-bento-muted hover:text-bento-ink'}`}
+            className={`px-3.5 py-1 min-h-[44px] sm:min-h-0 rounded-full text-xs font-semibold transition-colors ${view === 'chart' ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-ink' : 'text-slate-700 dark:text-neutral-300 hover:text-bento-ink dark:hover:text-white'}`}
           >
             Chart View
           </button>
@@ -55,7 +55,7 @@ export function HourlyOutlook({ points = [], className = '' }: HourlyOutlookProp
             type="button"
             aria-pressed={view === 'table'}
             onClick={() => setView('table')}
-            className={`px-3.5 py-1 rounded-full text-xs font-semibold transition-colors ${view === 'table' ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-ink' : 'text-bento-muted hover:text-bento-ink'}`}
+            className={`px-3.5 py-1 min-h-[44px] sm:min-h-0 rounded-full text-xs font-semibold transition-colors ${view === 'table' ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-ink' : 'text-slate-700 dark:text-neutral-300 hover:text-bento-ink dark:hover:text-white'}`}
           >
             Table View
           </button>

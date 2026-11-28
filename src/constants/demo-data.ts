@@ -7,10 +7,6 @@ export {
   DEMO_PERSONAS,
   getPersona,
 } from './demo/personas.js';
-export {
-  deepFreeze,
-  generateDiurnalHourly,
-} from './demo/generator.js';
 export type {
   DemoCityId,
   DemoPersonaId,

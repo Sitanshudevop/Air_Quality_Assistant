@@ -112,9 +112,9 @@ export function BentoSidebar({
         </div>
 
         <div className="flex flex-col gap-1">
-          <UtilButton icon={isDark ? <Sun size={18} /> : <Moon size={18} />} label={isDark ? 'Light Mode' : 'Dark Mode'} ariaLabel={isDark ? 'Switch to light theme' : 'Switch to dark theme'} onClick={onToggleTheme} />
-          <UtilButton icon={<Compass size={18} />} label="Guided Tour" ariaLabel="Tour" onClick={onOpenTour} />
-          <UtilButton icon={<UserCircle size={18} />} label="Family Profile" ariaLabel="Profile" onClick={onOpenProfile} />
+          <UtilButton icon={isDark ? <Sun size={18} /> : <Moon size={18} />} label={isDark ? 'Light Mode' : 'Dark Mode'} ariaLabel={isDark ? 'Light Mode — Switch to light theme' : 'Dark Mode — Switch to dark theme'} onClick={onToggleTheme} />
+          <UtilButton icon={<Compass size={18} />} label="Guided Tour" ariaLabel="Guided Tour" onClick={onOpenTour} />
+          <UtilButton icon={<UserCircle size={18} />} label="Family Profile" ariaLabel="Family Profile" onClick={onOpenProfile} />
         </div>
       </aside>
     </div>

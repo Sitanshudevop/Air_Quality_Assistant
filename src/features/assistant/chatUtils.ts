@@ -6,7 +6,7 @@ import { getErrorMessage } from '../../utils/error.js';
 import { logError } from '../../utils/logger.js';
 
 /** Zod schema validating a persisted chat message entry. */
-export const chatMessageSchema = z.object({
+const chatMessageSchema = z.object({
   id: z.string().min(1).max(64),
   role: z.enum(['user', 'assistant']),
   text: z.string().min(1).max(4000),
@@ -17,7 +17,7 @@ export const chatMessageSchema = z.object({
 });
 
 /** Zod schema validating bounded chat history array in localStorage. */
-export const chatHistorySchema = z.array(chatMessageSchema).max(30);
+const chatHistorySchema = z.array(chatMessageSchema).max(30);
 
 /** Single chat message entry stored and rendered in ChatView. */
 export interface ChatMessage {

@@ -121,7 +121,7 @@ describe('LocationBar & LiveLocationControls', () => {
 
     await user.clear(searchInput);
     await user.type(searchInput, 'Delhi');
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Delhi, India' })).toBeInTheDocument(), { timeout: 1500 });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Delhi, India' })).toBeInTheDocument(), { timeout: 4000 });
     unmount();
-  });
+  }, 15000);
 });

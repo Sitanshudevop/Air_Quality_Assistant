@@ -178,9 +178,3 @@ export function createCache<T>(options?: CacheOptions): CacheInstance<T> {
     },
   };
 }
-
-/** Global default cache instance for air quality data. */
-export const defaultAirQualityCache = createCache<unknown>({
-  ttlMs: DEFAULT_TTL_MS,
-  prefix: DEFAULT_PREFIX,
-});

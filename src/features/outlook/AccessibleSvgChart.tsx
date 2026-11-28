@@ -1,5 +1,5 @@
 // Pure inline accessible SVG smooth area chart with interactive floating hover tooltip.
-import { useState, type ReactElement } from 'react';
+import { memo, useMemo, useState, type ReactElement } from 'react';
 import type { HourlyAirQualityPoint } from '../../services/openMeteo.types.js';
 import {
   CHART_WIDTH,
@@ -64,15 +64,20 @@ function WindowHighlights({ coords, baseY }: { coords: readonly SvgPoint[]; base
  * @param props - Hourly forecast data points and optional styling.
  * @returns React component element.
  */
-export function AccessibleSvgChart({ points, className = '' }: AccessibleSvgChartProps): ReactElement {
+export const AccessibleSvgChart = memo(function AccessibleSvgChart({ points, className = '' }: AccessibleSvgChartProps): ReactElement {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
-  const coords = computeSvgCoordinates(points);
-  const curvePath = buildSmoothCurvePath(coords);
   const baseY = CHART_HEIGHT - PADDING.bottom;
-  const areaPath = buildSmoothAreaPath(coords, baseY);
-  const step = Math.max(1, Math.floor(coords.length / 5));
-  const summary = getOutlookSummary(points);
-  const colW = coords.length > 1 ? (CHART_WIDTH - PADDING.left - PADDING.right) / coords.length : 24;
+  const { coords, curvePath, areaPath, summary, colW, step } = useMemo(() => {
+    const c = computeSvgCoordinates(points);
+    return {
+      coords: c,
+      curvePath: buildSmoothCurvePath(c),
+      areaPath: buildSmoothAreaPath(c, baseY),
+      summary: getOutlookSummary(points),
+      colW: c.length > 1 ? (CHART_WIDTH - PADDING.left - PADDING.right) / c.length : 24,
+      step: Math.max(1, Math.floor(c.length / 5)),
+    };
+  }, [points, baseY]);
   const activePt = hoverIdx !== null ? coords[hoverIdx] : undefined;
 
   return (
@@ -137,4 +142,4 @@ export function AccessibleSvgChart({ points, className = '' }: AccessibleSvgChar
       </svg>
     </div>
   );
-}
+});

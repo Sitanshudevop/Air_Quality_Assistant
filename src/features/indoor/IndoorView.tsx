@@ -2,8 +2,9 @@
 import { useMemo, useState, type KeyboardEvent, type ReactElement } from 'react';
 import { getIndoorRecommendations } from '../../domain/indoor.js';
 import type { IndoorTipsResult, Provenance } from '../../../shared/types.js';
+import type { StoredProfile } from '../../services/profile.types.js';
 import { useAiTask } from '../../hooks/useAiTask.js';
-import { useLanguage } from '../../state/language.js';
+import { mapStoredProfileToDomain } from '../routine/routineUtils.js';
 import { ProvenanceBadge } from '../../components/ui/ProvenanceBadge.js';
 import { Button } from '../../components/ui/Button.js';
 import { CadrCalculator } from './CadrCalculator.js';
@@ -16,6 +17,7 @@ import { VentilationTimer } from './VentilationTimer.js';
 export interface IndoorViewProps {
   readonly aqi: number;
   readonly cityName: string;
+  readonly profile?: Partial<StoredProfile>;
 }
 
 function getNextTabId(key: string, idx: number): IndoorRoomTabId | null {
@@ -57,16 +59,48 @@ function IndoorAiTipsCard(props: {
   );
 }
 
+function IndoorRoomTabs(props: {
+  activeRoomId: IndoorRoomTabId;
+  onSelect: (id: IndoorRoomTabId) => void;
+  onKeyDown: (e: KeyboardEvent<HTMLButtonElement>, idx: number) => void;
+}): ReactElement {
+  return (
+    <div role="tablist" aria-label="Room selector" className="flex flex-wrap gap-2">
+      {INDOOR_ROOM_TABS.map((tab, idx) => {
+        const selected = tab.id === props.activeRoomId;
+        return (
+          <button
+            key={tab.id}
+            id={`indoor-tab-${tab.id}`}
+            role="tab"
+            type="button"
+            aria-selected={selected}
+            aria-controls={`indoor-panel-${tab.id}`}
+            tabIndex={selected ? 0 : -1}
+            onClick={() => props.onSelect(tab.id)}
+            onKeyDown={(e) => props.onKeyDown(e, idx)}
+            className={`px-3 py-1.5 min-h-[44px] sm:min-h-0 text-xs font-semibold rounded-md border focus:outline-none focus:ring-2 focus:ring-sky-500 ${
+              selected ? 'bg-sky-700 text-white border-sky-700 dark:bg-sky-500 dark:text-neutral-950' : 'bg-white text-neutral-800 border-slate-400 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-600'
+            }`}
+          >
+            {tab.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 /**
  * Room-specific indoor air protection suite with interactive CADR, timer, DIY guide, and AI tips.
  *
  * @param props - Current outdoor AQI and city name.
  * @returns Accessible Indoor Hacks section element.
  */
-export function IndoorView({ aqi, cityName }: IndoorViewProps): ReactElement {
-  const { t, language } = useLanguage();
+export function IndoorView({ aqi, cityName, profile }: IndoorViewProps): ReactElement {
   const [activeTab, setActiveTab] = useState<IndoorRoomTabId>('living');
   const activeRoom = INDOOR_ROOM_TABS.find((tab) => tab.id === activeTab) ?? INDOOR_ROOM_TABS[0];
+  const domainProfile = useMemo(() => mapStoredProfileToDomain(profile), [profile]);
 
   const recs = useMemo(
     () =>
@@ -85,6 +119,11 @@ export function IndoorView({ aqi, cityName }: IndoorViewProps): ReactElement {
       aqi: Math.round(aqi),
       city: cityName,
       facts: [`Room: ${activeRoom.label}`, `CADR: ${recs.cadrRequiredCfm} CFM`, recs.ventilation.advice],
+      userPreferences: {
+        vulnerability: domainProfile.vulnerability,
+        hasPurifier: domainProfile.hasPurifier,
+        cookingFuel: domainProfile.cookingFuel,
+      },
     },
   });
 
@@ -100,33 +139,11 @@ export function IndoorView({ aqi, cityName }: IndoorViewProps): ReactElement {
 
   return (
     <section aria-labelledby="indoor-heading" className="space-y-4">
-      <h2 id="indoor-heading" lang={language === 'hi' ? 'hi' : undefined} className="text-lg font-bold">
-        {t('indoor.title')}
+      <h2 id="indoor-heading" className="text-lg font-bold">
+        Indoor Air Quality Hacks
       </h2>
 
-      <div role="tablist" aria-label="Room selector" className="flex flex-wrap gap-2">
-        {INDOOR_ROOM_TABS.map((tab, idx) => {
-          const selected = tab.id === activeRoom.id;
-          return (
-            <button
-              key={tab.id}
-              id={`indoor-tab-${tab.id}`}
-              role="tab"
-              type="button"
-              aria-selected={selected}
-              aria-controls={`indoor-panel-${tab.id}`}
-              tabIndex={selected ? 0 : -1}
-              onClick={() => setActiveTab(tab.id)}
-              onKeyDown={(e) => handleKeyDown(e, idx)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md border focus:outline-none focus:ring-2 focus:ring-sky-500 ${
-                selected ? 'bg-sky-700 text-white border-sky-700 dark:bg-sky-500 dark:text-neutral-950' : 'bg-white text-neutral-800 border-neutral-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700'
-              }`}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+      <IndoorRoomTabs activeRoomId={activeRoom.id} onSelect={setActiveTab} onKeyDown={handleKeyDown} />
 
       <div id={`indoor-panel-${activeRoom.id}`} role="tabpanel" aria-labelledby={`indoor-tab-${activeRoom.id}`} className="p-4 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 space-y-3">
         <p className="text-xs text-neutral-600 dark:text-neutral-400">{activeRoom.note}</p>

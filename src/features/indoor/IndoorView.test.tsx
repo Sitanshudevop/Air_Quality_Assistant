@@ -53,6 +53,28 @@ describe('IndoorView & Subcomponents', () => {
     expect(sourceLink).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
+  it('passes household userPreferences to indoor-tips AI task context', async () => {
+    const spy = vi.spyOn(aiService, 'getAiResponse').mockResolvedValueOnce({
+      task: 'indoor-tips',
+      result: { tips: ['Seal kitchen gaps'], urgency: 'high' },
+      provenance: { source: 'gemini', model: 'gemini-3.5-flash-lite', cached: false },
+    });
+    render(
+      <IndoorView
+        aqi={280}
+        cityName="Delhi"
+        profile={{ vulnerabilities: ['elderly'], hasPurifier: false, cookingFuel: 'biomass' }}
+      />
+    );
+    await userEvent.click(screen.getByRole('button', { name: /Get AI Tips/i }));
+    await waitFor(() => expect(spy).toHaveBeenCalled());
+    expect(spy.mock.calls[0]?.[0]?.context?.userPreferences).toEqual({
+      vulnerability: 'elderly',
+      hasPurifier: false,
+      cookingFuel: 'biomass',
+    });
+  });
+
   it('counts down ventilation timer to expiration and passes axe audit', async () => {
     vi.useFakeTimers();
     const { container } = render(<IndoorView aqi={250} cityName="Lucknow" />);

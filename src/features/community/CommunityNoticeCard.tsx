@@ -50,11 +50,11 @@ function NoticeInputs(props: {
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
       <div>
         <label htmlFor="community-society" className="block font-semibold mb-1">Society / School Name</label>
-        <input id="community-society" type="text" maxLength={100} value={props.society} onChange={(e) => props.onSociety(e.target.value)} className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-xs" />
+        <input id="community-society" type="text" maxLength={100} value={props.society} onChange={(e) => props.onSociety(e.target.value)} className="w-full min-h-[44px] sm:min-h-[36px] rounded-md border border-slate-400 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-xs" />
       </div>
       <div>
         <label htmlFor="community-phone" className="block font-semibold mb-1">Emergency Contact Phone</label>
-        <input id="community-phone" type="tel" maxLength={20} value={props.phone} onChange={(e) => props.onPhone(e.target.value)} aria-invalid={!props.phoneValid} className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-xs" />
+        <input id="community-phone" type="tel" maxLength={20} value={props.phone} onChange={(e) => props.onPhone(e.target.value)} aria-invalid={!props.phoneValid} className="w-full min-h-[44px] sm:min-h-[36px] rounded-md border border-slate-400 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-xs" />
         {!props.phoneValid && (
           <p role="alert" className="text-[11px] text-rose-700 dark:text-rose-300 mt-1">
             Enter a valid 6–20 digit phone number (using 112 fallback).
@@ -111,7 +111,7 @@ export function CommunityNoticeCard({ cityName, aqi, category, template, persona
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-[11px] text-neutral-500 dark:text-neutral-400">{noticeText.length}/1000 characters</span>
+        <span className="text-[11px] text-neutral-600 dark:text-neutral-400">{noticeText.length}/1000 characters</span>
         <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"

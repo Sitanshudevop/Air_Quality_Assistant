@@ -483,8 +483,8 @@ describe('Tier 2: Boundary & Corner Cases (M0 Scaffolding F1-F7 & Application Fe
         const data = await res.json();
         assert.strictEqual(
           data.error,
-          'Upstream timeout',
-          'HTTP 504 response body must match error: "Upstream timeout"'
+          'UPSTREAM_UNAVAILABLE',
+          'HTTP 504 response body must match error: "UPSTREAM_UNAVAILABLE"'
         );
       } finally {
         if (origBaseUrl === undefined) delete process.env.GEMINI_BASE_URL;

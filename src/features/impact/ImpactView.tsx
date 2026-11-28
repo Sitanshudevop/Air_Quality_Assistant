@@ -3,7 +3,6 @@ import { useMemo, useState, type ReactElement } from 'react';
 import type { MaskType, TransportMode, VulnerabilityGroup } from '../../domain/types.js';
 import type { ExplainImpactResult, Provenance } from '../../../shared/types.js';
 import { useAiTask } from '../../hooks/useAiTask.js';
-import { useLanguage } from '../../state/language.js';
 import { ProvenanceBadge } from '../../components/ui/ProvenanceBadge.js';
 import { Button } from '../../components/ui/Button.js';
 import { ComparisonCard } from './ComparisonCard.js';
@@ -24,7 +23,7 @@ export interface ImpactViewProps {
 }
 
 const selectCls =
-  'w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-xs text-neutral-900 dark:text-neutral-50 focus:outline-none focus:ring-2 focus:ring-sky-500';
+  'w-full rounded-md border border-slate-400 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2.5 py-1.5 min-h-[44px] sm:min-h-[36px] text-xs text-neutral-900 dark:text-neutral-50 focus:outline-none focus:ring-2 focus:ring-sky-500';
 
 function ScenarioSelector(props: {
   idPrefix: string;
@@ -93,7 +92,6 @@ function ImpactAiBox(props: {
  * @returns Accessible Impact Explainer section element.
  */
 export function ImpactView({ aqi, pm25, cityName, vulnerability }: ImpactViewProps): ReactElement {
-  const { t, language } = useLanguage();
   const [distanceKm, setDistanceKm] = useState<number>(10);
   const [baseMode, setBaseMode] = useState<TransportMode>('two_wheeler_petrol');
   const [baseMask, setBaseMask] = useState<MaskType>('none');
@@ -125,10 +123,10 @@ export function ImpactView({ aqi, pm25, cityName, vulnerability }: ImpactViewPro
   return (
     <section aria-labelledby="impact-heading" className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="impact-heading" lang={language === 'hi' ? 'hi' : undefined} className="text-lg font-bold">{t('impact.title')}</h2>
+        <h2 id="impact-heading" className="text-lg font-bold">What If I Choose...?</h2>
         <div className="flex items-center gap-2 text-xs">
           <label htmlFor="impact-distance" className="font-semibold">Distance (km)</label>
-          <input id="impact-distance" type="number" min={0} max={200} value={clampDistanceKm(distanceKm)} onChange={(e) => setDistanceKm(clampDistanceKm(Number(e.target.value)))} className="w-20 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2 py-1 text-xs" />
+          <input id="impact-distance" type="number" min={0} max={200} value={clampDistanceKm(distanceKm)} onChange={(e) => setDistanceKm(clampDistanceKm(Number(e.target.value)))} className="w-20 min-h-[44px] sm:min-h-[32px] rounded-md border border-slate-400 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2 py-1 text-xs" />
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

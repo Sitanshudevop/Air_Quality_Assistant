@@ -54,7 +54,7 @@ function PollutantItem(props: { meta: PollutantMeta; val?: number | null; showDe
         <div className="bg-bento-ink dark:bg-white h-full rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
       </div>
       {showDetails && (
-        <p className="text-[10px] text-neutral-500 dark:text-neutral-400 pt-0.5">
+        <p className="text-[10px] text-neutral-600 dark:text-neutral-400 pt-0.5">
           Standard ref: {meta.maxRef} {meta.unit}
         </p>
       )}
@@ -84,7 +84,7 @@ export const PollutantCard = memo(function PollutantCard({ values, className = '
           type="button"
           aria-expanded={showDetails}
           onClick={() => setShowDetails((prev) => !prev)}
-          className="text-xs text-teal-800 dark:text-teal-400 hover:underline font-semibold focus:outline-none focus:ring-1 focus:ring-teal-600 rounded"
+          className="text-xs min-h-[44px] sm:min-h-0 px-2 inline-flex items-center text-teal-800 dark:text-teal-400 hover:underline font-semibold focus:outline-none focus:ring-1 focus:ring-teal-600 rounded"
         >
           {showDetails ? 'Hide details' : 'Show details'}
         </button>

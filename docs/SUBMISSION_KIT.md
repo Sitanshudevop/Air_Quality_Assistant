@@ -43,7 +43,7 @@ To ensure total transparency, scientific accuracy, and compliance with the compe
 ---
 
 ### [00:00 - 00:15] Hook & Problem Context
-- **Visual**: Open the live application at [http://localhost:5173](http://localhost:5173). Show the calm hero header: *"Saans (सांस) — Urban Air Quality Assistant"*. Switch theme toggle to Dark Mode and show the red *"Severe Smog (AQI 425)"* banner.
+- **Visual**: Open the live application at [https://vaayu-eight.vercel.app/](https://vaayu-eight.vercel.app/). Show the calm hero header: *"Saans (सांस) — Urban Air Quality Assistant"*. Switch theme toggle to Dark Mode and show the red *"Severe Smog (AQI 425)"* banner.
 - **Voiceover**: 
   > *"Every winter across North India, millions of families wake up to toxic smog. But generic air apps only show scary numbers without telling families what to actually do. Meet Saans — an intelligent, production-grade assistant built from scratch for Google PromptWars Virtual Challenge 6."*
 

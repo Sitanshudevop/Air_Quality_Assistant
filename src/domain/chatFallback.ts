@@ -9,7 +9,7 @@ export interface SmartChatReply {
 }
 
 function isHindiQuery(text: string): boolean {
-  return /[\u0900-\u097F]/.test(text) || /\b(aaj|hawa|kaise|kaisi|bachhe|mask|bahar)\b/i.test(text);
+  return /[\u0900-\u097F]/.test(text) || /\b(aaj|hawa|kaise|kaisi|bachhe|bahar)\b/i.test(text);
 }
 
 function buildHindiReply(city: string, aqi: number, category: string): SmartChatReply {

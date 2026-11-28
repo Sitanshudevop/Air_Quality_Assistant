@@ -48,6 +48,7 @@ describe('chatContext memoization', () => {
     expect(secondFacts.some((f) => f.includes('PM2.5: 180'))).toBe(true);
     expect(secondFacts.some((f) => f.includes('Best ventilation'))).toBe(true);
     expect(secondFacts.some((f) => f.includes('Commute guidance:'))).toBe(true);
+    expect(secondFacts.some((f) => f.includes('Commute PM2.5 impact') && f.includes('Metro with N95 cuts inhaled dose by'))).toBe(true);
     expect(secondFacts.some((f) => f.includes('Ventilation guidance now:'))).toBe(true);
   });
 });

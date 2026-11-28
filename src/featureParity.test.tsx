@@ -23,8 +23,8 @@ describe('Phase B Feature Parity Suite', () => {
     expect(screen.getByRole('button', { name: /Current mode is/i })).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /Switch to (dark|light) theme/i }).length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByRole('button', { name: /Switch language/i })).not.toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Tour' }).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('button', { name: 'Profile' }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole('button', { name: 'Guided Tour' }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole('button', { name: 'Family Profile' }).length).toBeGreaterThanOrEqual(1);
 
     // Navigation Sidebar / BottomNav Links
     expect(screen.getAllByRole('button', { name: /Today/i }).length).toBeGreaterThanOrEqual(1);

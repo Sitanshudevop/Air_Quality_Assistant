@@ -1,81 +1,147 @@
-// Unit tests for useLiveLocation debounced search, geolocation, manual AQI, and abort cleanup.
-import type { FormEvent } from 'react';
-import { describe, it, expect, vi, afterEach } from 'vitest';
+// Unit tests covering all state transitions and branch paths in useLiveLocation hook.
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+import type { FormEvent } from 'react';
+import * as geocoding from '../../services/geocoding.js';
+import * as airQuality from '../../services/airQuality.js';
+import * as forecast from '../../services/forecast.js';
+import * as geolocation from '../../services/geolocation.js';
 import { useLiveLocation } from './useLiveLocation.js';
-import * as geoService from '../../services/geolocation.js';
-import * as aqService from '../../services/airQuality.js';
-import * as fcService from '../../services/forecast.js';
 
 describe('useLiveLocation', () => {
-  afterEach(() => {
+  beforeEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('handles empty query reset, search submit, geolocation success/denial, and manual submit', async () => {
-    const onLiveData = vi.fn();
-    const onManualReading = vi.fn();
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('handles query changes, whitespace clearing, debounced search, and unmount cleanup', async () => {
+    vi.useFakeTimers();
+    const searchSpy = vi.spyOn(geocoding, 'searchLocations').mockResolvedValue([
+      { id: 1, name: 'Delhi', latitude: 28.61, longitude: 77.21, displayName: 'Delhi, India' },
+    ]);
+
     const onSwitchToLive = vi.fn();
-
-    vi.spyOn(geoService, 'getCurrentPosition')
-      .mockResolvedValueOnce({ lat: 28.61, lon: 77.21 })
-      .mockRejectedValueOnce({ error: 'PERMISSION_DENIED', message: 'Denied' });
-    vi.spyOn(aqService, 'fetchAirQuality').mockResolvedValueOnce({
-      latitude: 28.61,
-      longitude: 77.21,
-      currentAqi: 250,
-      currentCategory: 'Very Poor',
-      dominantPollutant: 'PM2.5',
-      isEstimate: true,
-      pollutants: { pm2_5: 150, pm10: 210, no2: 40, so2: 10, co: 1.2, o3: 30 },
-      hourly: [],
-      source: 'open-meteo',
-      fetchedAt: '2026-11-27T10:00',
-    });
-    vi.spyOn(fcService, 'fetchForecast').mockResolvedValueOnce({
-      latitude: 28.61,
-      longitude: 77.21,
-      current: {
-        temperature: 18,
-        humidity: 70,
-        windSpeed: 1.2,
-        surfacePressure: 1012,
-        stagnationRisk: 'high',
-        isInversion: true,
-        summary: 'Calm stagnant air',
-      },
-      hourly: [],
-      fetchedAt: '2026-11-27T10:00',
-    });
-
-    const { result } = renderHook(() =>
-      useLiveLocation({ onLiveData, onManualReading, onSwitchToLive })
+    const { result, unmount } = renderHook(() =>
+      useLiveLocation({
+        onLiveData: vi.fn(),
+        onManualReading: vi.fn(),
+        onSwitchToLive,
+      })
     );
 
+    // Blank search submit does not trigger search or switch mode
+    act(() => {
+      result.current.onSearchSubmit();
+    });
+    expect(onSwitchToLive).not.toHaveBeenCalled();
+
+    // Debounced search fires after 300ms
+    act(() => {
+      result.current.onQueryChange('Delhi');
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(350);
+    });
+    expect(searchSpy).toHaveBeenCalledWith('Delhi', expect.any(AbortSignal));
+    expect(result.current.results).toHaveLength(1);
+
+    // Clearing to whitespace resets results cleanly
     act(() => {
       result.current.onQueryChange('   ');
     });
     expect(result.current.results).toEqual([]);
 
+    // Non-empty submit switches mode and triggers immediate search
+    act(() => {
+      result.current.onQueryChange('Kanpur');
+    });
     await act(async () => {
-      result.current.onGeo();
+      result.current.onSearchSubmit();
     });
     expect(onSwitchToLive).toHaveBeenCalled();
 
-    await act(async () => {
-      result.current.onGeo();
-    });
-    expect(result.current.statusMsg).toBeTruthy();
+    unmount();
+  });
 
+  it('handles manual toggle, manual submit fallback city, and manual error states', () => {
+    const onManualReading = vi.fn();
+    const { result } = renderHook(() =>
+      useLiveLocation({
+        onLiveData: vi.fn(),
+        onManualReading,
+      })
+    );
+
+    expect(result.current.showManual).toBe(false);
     act(() => {
       result.current.onToggleManual();
+      result.current.onChangeManualAqi('245');
     });
     expect(result.current.showManual).toBe(true);
 
+    const preventDefault = vi.fn();
     act(() => {
-      result.current.onChangeManualAqi('210');
-      result.current.onManualSubmit({ preventDefault: vi.fn() } as unknown as FormEvent);
+      result.current.onManualSubmit({ preventDefault } as unknown as FormEvent);
     });
-    expect(onManualReading).toHaveBeenCalled();
+    expect(preventDefault).toHaveBeenCalledTimes(1);
+    expect(onManualReading).toHaveBeenCalledWith(expect.objectContaining({ aqi: 245, cityName: 'Manual Location' }));
+    expect(result.current.statusMsg).toContain('AQI 245');
+  });
+
+  it('handles geolocation success, geolocation error, and location selection', async () => {
+    const mockAq = {
+      latitude: 28.61,
+      longitude: 77.21,
+      currentAqi: 220,
+      currentCategory: 'Poor' as const,
+      dominantPollutant: 'PM2.5' as const,
+      isEstimate: true as const,
+      pollutants: { pm2_5: 95 },
+      hourly: [],
+      source: 'Open-Meteo CAMS' as const,
+      fetchedAt: '2026-11-28T00:00:00Z',
+    };
+
+    vi.spyOn(geolocation, 'getCurrentPosition')
+      .mockResolvedValueOnce({ lat: 28.61, lon: 77.21 })
+      .mockRejectedValueOnce({ error: 'POSITION_UNAVAILABLE', message: 'GPS unavailable' });
+    vi.spyOn(geocoding, 'reverseGeocode').mockResolvedValueOnce('Delhi NCR');
+    vi.spyOn(airQuality, 'fetchAirQuality').mockResolvedValue(mockAq);
+    vi.spyOn(forecast, 'fetchForecast').mockRejectedValue(new Error('Forecast down'));
+
+    const onLiveData = vi.fn();
+    const { result } = renderHook(() =>
+      useLiveLocation({
+        onLiveData,
+        onManualReading: vi.fn(),
+        onSwitchToLive: vi.fn(),
+      })
+    );
+
+    await act(async () => {
+      result.current.onGeo();
+    });
+    expect(result.current.isLocating).toBe(false);
+    expect(onLiveData).toHaveBeenCalledWith(mockAq, null, 'Delhi NCR');
+
+    await act(async () => {
+      result.current.onSelectLocation({
+        id: 2,
+        name: 'Lucknow',
+        latitude: 26.85,
+        longitude: 80.95,
+        displayName: 'Lucknow, UP',
+      });
+    });
+    expect(onLiveData).toHaveBeenCalledWith(mockAq, null, 'Lucknow, UP');
+
+    await act(async () => {
+      result.current.onGeo();
+    });
+    expect(result.current.isLocating).toBe(false);
+    expect(result.current.statusMsg.length).toBeGreaterThan(0);
   });
 });

@@ -108,7 +108,7 @@ To prevent hallucinations and guarantee safety, AI is strictly purpose-limited:
 
 ## 6. Scientific Data Sources and Citations
 
-All domain coefficients and physical standards are cited in [docs/DATA_AND_ASSUMPTIONS.md](file:///c:/promptwars/Urban%20Air%20Quality%20Assistant/docs/DATA_AND_ASSUMPTIONS.md):
+All domain coefficients and physical standards are cited in [docs/DATA_AND_ASSUMPTIONS.md](./docs/DATA_AND_ASSUMPTIONS.md):
 - **Central Pollution Control Board (CPCB) India**: *National Air Quality Index (NAQI) Standards and Breakpoint Specifications (2014)*.
 - **World Health Organization (WHO)**: *Global Air Quality Guidelines (2021) for PM2.5, PM10, and NO2*.
 - **US EPA**: *Exposure Factors Handbook (2011 Edition, Chapter 6: Inhalation Rates)*.
@@ -120,13 +120,13 @@ All domain coefficients and physical standards are cited in [docs/DATA_AND_ASSUM
 
 ### Security
 - **Server-Only API Key**: `GEMINI_API_KEY` is loaded only in serverless edge handlers. Client bundles are scanned with `check:no-client-secrets` to guarantee zero key leakage.
-- **Strict Content Security Policy (CSP)**: No `unsafe-eval`, no inline scripts. Production headers include HSTS, nosniff, `X-Frame-Options: DENY`, and `Cache-Control: no-store` on `/api`.
+- **Strict Content Security Policy (CSP)**: No `unsafe-eval`, no inline scripts. External allow-list covers only `air-quality-api.open-meteo.com`, `api.open-meteo.com`, `geocoding-api.open-meteo.com`, `api.bigdatacloud.net`, `nominatim.openstreetmap.org` (weather/air-quality and 2-decimal reverse-geocoding), and `fonts.googleapis.com` / `fonts.gstatic.com` (Plus Jakarta Sans font). Production headers include HSTS, nosniff, `X-Frame-Options: DENY`, and `Cache-Control: no-store` on `/api`.
 - **Input Sanitization**: Length limits, zero-width space stripping, and Zod validation on every input vector.
 
 ### Privacy
 - **Zero Tracking**: No user tracking, analytics scripts, or third-party tracking pixels.
 - **Local Storage Isolation**: Profiles reside strictly in the user's browser `localStorage`, with schema versioning and an accessible *"Clear my data"* button.
-- **Coordinate Truncation**: Geolocation coordinates are mathematically rounded to 2 decimal places before leaving the client.
+- **Coordinate Truncation**: Geolocation coordinates are mathematically rounded to 2 decimal places ($\approx 1.1\text{ km}$) before reverse-geocoding via `api.bigdatacloud.net` / `nominatim.openstreetmap.org` or fetching Open-Meteo data.
 
 ### Accessibility (WCAG 2.2 AA)
 - **High Contrast**: All text ($\ge 4.5:1$) and interactive boundaries ($\ge 3:1$) pass contrast tests in both Light and Dark themes.
@@ -181,12 +181,13 @@ npm run madge
 ```
 
 ### Production Deployment (Vercel)
+- **Live Production URL**: [https://vaayu-eight.vercel.app/](https://vaayu-eight.vercel.app/)
 1. Import repository at [vercel.com/new](https://vercel.com/new).
 2. Framework Preset: **Vite**; Root Directory: `./`.
 3. Set Environment Variable: `GEMINI_API_KEY = <your-gemini-api-key>`.
 4. Deploy! Run smoke test:
    ```powershell
-   node scripts/smoke-deployed.mjs https://<your-app>.vercel.app --prompts
+   node scripts/smoke-deployed.mjs https://vaayu-eight.vercel.app --prompts
    ```
 
 ---

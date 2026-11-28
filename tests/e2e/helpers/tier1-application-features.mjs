@@ -455,9 +455,9 @@ export function registerTier1ApplicationFeatures(options = {}) {
   // =========================================================================
   describe('Feature 7: Open-Meteo Air Quality Client', () => {
     it('F7-T1-01: Air Quality API Request URL Construction with Pollutants', async (t) => {
-      const mod = await loadModuleSafe('src/services/air-quality.ts');
+      const mod = await loadModuleSafe('src/services/airQuality.ts');
       if (!mod || !mod.buildAirQualityUrl) {
-        t.skip('Pending implementation of src/services/air-quality.ts');
+        t.skip('Pending implementation of src/services/airQuality.ts');
         return;
       }
       const url = mod.buildAirQualityUrl(28.61, 77.21);
@@ -466,9 +466,9 @@ export function registerTier1ApplicationFeatures(options = {}) {
     });
 
     it('F7-T1-02: Coordinate Rounding to 2 Decimals for Privacy & Caching', async (t) => {
-      const mod = await loadModuleSafe('src/services/air-quality.ts');
+      const mod = await loadModuleSafe('src/services/airQuality.ts');
       if (!mod || !mod.roundCoordinates) {
-        t.skip('Pending implementation of src/services/air-quality.ts');
+        t.skip('Pending implementation of src/services/airQuality.ts');
         return;
       }
       const rounded = mod.roundCoordinates(28.613928, 77.209021);
@@ -477,9 +477,9 @@ export function registerTier1ApplicationFeatures(options = {}) {
     });
 
     it('F7-T1-03: 48-Hour Hourly Forecast Data Parsing', async (t) => {
-      const mod = await loadModuleSafe('src/services/air-quality.ts');
+      const mod = await loadModuleSafe('src/services/airQuality.ts');
       if (!mod || !mod.parseAirQualityResponse) {
-        t.skip('Pending implementation of src/services/air-quality.ts');
+        t.skip('Pending implementation of src/services/airQuality.ts');
         return;
       }
       const mockPayload = {
@@ -494,18 +494,18 @@ export function registerTier1ApplicationFeatures(options = {}) {
     });
 
     it('F7-T1-04: Zod Response Schema Validation for Live Pollutants', async (t) => {
-      const mod = await loadModuleSafe('src/services/air-quality.ts');
+      const mod = await loadModuleSafe('src/services/airQuality.ts');
       if (!mod || !mod.airQualitySchema) {
-        t.skip('Pending implementation of src/services/air-quality.ts');
+        t.skip('Pending implementation of src/services/airQuality.ts');
         return;
       }
       assert.ok(mod.airQualitySchema.safeParse);
     });
 
     it('F7-T1-05: AbortSignal Integration for Request Cancellation', async (t) => {
-      const mod = await loadModuleSafe('src/services/air-quality.ts');
+      const mod = await loadModuleSafe('src/services/airQuality.ts');
       if (!mod || !mod.fetchAirQuality) {
-        t.skip('Pending implementation of src/services/air-quality.ts');
+        t.skip('Pending implementation of src/services/airQuality.ts');
         return;
       }
       assert.ok(mod.fetchAirQuality.length >= 2, 'fetchAirQuality must accept AbortSignal');
@@ -684,9 +684,9 @@ export function registerTier1ApplicationFeatures(options = {}) {
   // =========================================================================
   describe('Feature 11: Manual Reading Entry Fallback', () => {
     it('F11-T1-01: Manual Fallback Activation on Live Network Failure', async (t) => {
-      const mod = await loadModuleSafe('src/services/fallback.ts');
+      const mod = await loadModuleSafe('src/services/manualReading.ts');
       if (!mod || !mod.createManualReading) {
-        t.skip('Pending implementation of src/services/fallback.ts');
+        t.skip('Pending implementation of src/services/manualReading.ts');
         return;
       }
       const reading = mod.createManualReading({ aqi: 280 });
@@ -694,9 +694,9 @@ export function registerTier1ApplicationFeatures(options = {}) {
     });
 
     it('F11-T1-02: Mandatory "user-entered reading" Label Attachment', async (t) => {
-      const mod = await loadModuleSafe('src/services/fallback.ts');
+      const mod = await loadModuleSafe('src/services/manualReading.ts');
       if (!mod || !mod.createManualReading) {
-        t.skip('Pending implementation of src/services/fallback.ts');
+        t.skip('Pending implementation of src/services/manualReading.ts');
         return;
       }
       const reading = mod.createManualReading({ aqi: 280 });
@@ -704,9 +704,9 @@ export function registerTier1ApplicationFeatures(options = {}) {
     });
 
     it('F11-T1-03: Direct Purifier AQI Input Acceptance', async (t) => {
-      const mod = await loadModuleSafe('src/services/fallback.ts');
+      const mod = await loadModuleSafe('src/services/manualReading.ts');
       if (!mod || !mod.createManualReading) {
-        t.skip('Pending implementation of src/services/fallback.ts');
+        t.skip('Pending implementation of src/services/manualReading.ts');
         return;
       }
       const reading = mod.createManualReading({ aqi: 150 });
@@ -714,9 +714,9 @@ export function registerTier1ApplicationFeatures(options = {}) {
     });
 
     it('F11-T1-04: PM2.5 Numerical Input and AQI Category Derivation', async (t) => {
-      const mod = await loadModuleSafe('src/services/fallback.ts');
+      const mod = await loadModuleSafe('src/services/manualReading.ts');
       if (!mod || !mod.createManualReadingFromPm25) {
-        t.skip('Pending implementation of src/services/fallback.ts');
+        t.skip('Pending implementation of src/services/manualReading.ts');
         return;
       }
       const reading = mod.createManualReadingFromPm25(180);
@@ -724,9 +724,9 @@ export function registerTier1ApplicationFeatures(options = {}) {
     });
 
     it('F11-T1-05: Manual Entry State Persistence across App Sessions', async (t) => {
-      const mod = await loadModuleSafe('src/services/fallback.ts');
+      const mod = await loadModuleSafe('src/services/manualReading.ts');
       if (!mod || !mod.saveManualReading) {
-        t.skip('Pending implementation of src/services/fallback.ts');
+        t.skip('Pending implementation of src/services/manualReading.ts');
         return;
       }
       assert.ok(typeof mod.saveManualReading === 'function');
@@ -1606,53 +1606,36 @@ export function registerTier1ApplicationFeatures(options = {}) {
   });
 
   // =========================================================================
-  // Feature 29: Hindi Localization (M5, prompt.md §36, §60)
+  // Feature 29: Hindi Query Support & English-Only UI Integrity
   // =========================================================================
-  describe('Feature 29: Hindi Localization', () => {
-    it('F29-T1-01: English / Hindi Language Toggle Interface', (t) => {
-      const exists = fileExists('src/i18n/hindi.ts') || fileExists('src/i18n/index.ts');
-      if (!exists) {
-        t.skip('Pending implementation of i18n/hindi.ts');
-        return;
-      }
-      assert.ok(exists);
+  describe('Feature 29: Multilingual AI Query Support & English UI', () => {
+    it('F29-T1-01: Root Document Keeps Fixed lang="en"', () => {
+      const html = readFileSafe('index.html');
+      assert.ok(html && html.includes('<html lang="en">'));
     });
 
-    it('F29-T1-02: lang="hi" Attribute Scoping for Translated Elements', (t) => {
-      const exists = fileExists('src/i18n/hindi.ts');
-      if (!exists) {
-        t.skip('Pending implementation of i18n/hindi.ts');
-        return;
-      }
-      assert.ok(exists);
+    it('F29-T1-02: Smart Chat Fallback Handles Devanagari Hindi Queries', async () => {
+      const mod = await loadModuleSafe('src/domain/chatFallback.ts');
+      const res = mod.buildSmartChatFallback({ city: 'Delhi', aqi: 340, userText: 'आज की हवा कैसी है?' });
+      assert.ok(res.reply.includes('Delhi') && res.reply.includes('340'));
     });
 
-    it('F29-T1-03: Translation of Primary Navigation and Tab Labels', async (t) => {
-      const mod = await loadModuleSafe('src/i18n/hindi.ts');
-      if (!mod || !mod.HINDI_TRANSLATIONS) {
-        t.skip('Pending implementation of i18n/hindi.ts');
-        return;
-      }
-      assert.ok(mod.HINDI_TRANSLATIONS);
+    it('F29-T1-03: Smart Chat Fallback Handles Romanized Hindi Queries', async () => {
+      const mod = await loadModuleSafe('src/domain/chatFallback.ts');
+      const res = mod.buildSmartChatFallback({ city: 'Lucknow', aqi: 240, userText: 'aaj hawa kaisi hai' });
+      assert.ok(res.reply.includes('Lucknow'));
     });
 
-    it('F29-T1-04: Translation of CPCB AQI Categories to Hindi', async (t) => {
-      const mod = await loadModuleSafe('src/i18n/hindi.ts');
-      if (!mod || !mod.AQI_CATEGORIES_HI) {
-        t.skip('Pending implementation of i18n/hindi.ts');
-        return;
-      }
-      assert.strictEqual(mod.AQI_CATEGORIES_HI.Good, 'अच्छा');
-      assert.strictEqual(mod.AQI_CATEGORIES_HI.Severe, 'गंभीर');
+    it('F29-T1-04: English Mask Queries Never Trigger Hindi Replies', async () => {
+      const mod = await loadModuleSafe('src/domain/chatFallback.ts');
+      const res = mod.buildSmartChatFallback({ city: 'Delhi', aqi: 310, userText: 'What mask should I wear?' });
+      assert.ok(!/[\u0900-\u097F]/.test(res.reply));
     });
 
-    it('F29-T1-05: Language Preference Persistence in Storage', async (t) => {
-      const mod = await loadModuleSafe('src/i18n/index.ts');
-      if (!mod || !mod.saveLanguagePreference) {
-        t.skip('Pending implementation of i18n/index.ts');
-        return;
-      }
-      assert.ok(typeof mod.saveLanguagePreference === 'function');
+    it('F29-T1-05: Hindi Emergency Red-Flag Triage Active', async () => {
+      const mod = await loadModuleSafe('server/safety.ts');
+      const res = mod.triageSafety('सीने में दर्द और सांस लेने में तकलीफ');
+      assert.strictEqual(res.isEmergency, true);
     });
   });
 

@@ -1,20 +1,15 @@
-// Unit and accessibility tests for FeatureTabs keyboard navigation and Hindi labels.
+// Unit and accessibility tests for FeatureTabs keyboard navigation.
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
-import { LanguageProvider } from '../../state/language.js';
 import { FeatureTabs } from './FeatureTabs.js';
 
 describe('FeatureTabs Component', () => {
   it('supports ArrowRight, ArrowLeft, Home, and End keyboard tab navigation', async () => {
     const onSelect = vi.fn();
     const user = userEvent.setup();
-    render(
-      <LanguageProvider>
-        <FeatureTabs activeTab="today" onSelectTab={onSelect} />
-      </LanguageProvider>
-    );
+    render(<FeatureTabs activeTab="today" onSelectTab={onSelect} />);
 
     const todayTab = screen.getByRole('tab', { name: 'Today' });
     todayTab.focus();
@@ -33,12 +28,12 @@ describe('FeatureTabs Component', () => {
 
   it('passes automated accessibility audit', async () => {
     const { container } = render(
-      <LanguageProvider>
+      <>
         <FeatureTabs activeTab="routine" onSelectTab={vi.fn()} />
         <div id="tabpanel-routine" role="tabpanel" aria-labelledby="tab-routine">
           Routine Panel
         </div>
-      </LanguageProvider>
+      </>
     );
     expect((await axe(container)).violations).toHaveLength(0);
   });

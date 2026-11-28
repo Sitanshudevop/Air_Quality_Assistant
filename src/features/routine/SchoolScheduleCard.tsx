@@ -77,7 +77,7 @@ export function SchoolScheduleCard({
           role="switch"
           aria-checked={isEnabled}
           onClick={onToggle}
-          className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+          className={`inline-flex items-center gap-2 px-3.5 py-1.5 min-h-[44px] sm:min-h-0 rounded-full text-xs font-semibold border transition-colors ${
             isEnabled
               ? 'bg-teal-700 text-white border-teal-800 shadow-sm'
               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-300 dark:border-neutral-700'

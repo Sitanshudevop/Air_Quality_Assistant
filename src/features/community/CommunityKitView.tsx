@@ -3,8 +3,6 @@ import type { ReactElement } from 'react';
 import type { AqiCategory } from '../../domain/types.js';
 import type { DemoPersonaId } from '../../constants/demo/types.js';
 import type { CommunityTemplateId } from '../../utils/deepLink.js';
-import { translateAqiCategory } from '../../i18n/hindi.js';
-import { useLanguage } from '../../state/language.js';
 import { COMMUNITY_ACTIONS_BY_BAND } from './communityData.js';
 import { CommunityNoticeCard } from './CommunityNoticeCard.js';
 
@@ -30,24 +28,21 @@ export function CommunityKitView({
   template,
   persona,
 }: CommunityKitViewProps): ReactElement {
-  const { t, language } = useLanguage();
   const actions = COMMUNITY_ACTIONS_BY_BAND[category];
-  const categoryLabel = translateAqiCategory(category, language);
 
   return (
     <section aria-labelledby="community-heading" className="space-y-4">
       <div>
         <h2
           id="community-heading"
-          lang={language === 'hi' ? 'hi' : undefined}
           className="text-lg font-bold"
         >
-          {t('community.title')}
+          Community Smog Action Kit
         </h2>
         <p className="text-xs text-neutral-600 dark:text-neutral-400">
           Recommended RWA, school, and neighbourhood actions for {cityName} —{' '}
-          <span lang={language === 'hi' ? 'hi' : undefined} className="font-semibold">
-            {categoryLabel}
+          <span className="font-semibold">
+            {category}
           </span>{' '}
           (Est. AQI {Math.round(aqi)})
         </p>

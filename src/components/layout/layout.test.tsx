@@ -3,11 +3,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
-import { AppHeader } from './AppHeader.js';
 import { AppFooter } from './AppFooter.js';
 import { BottomNav } from './BottomNav.js';
 import { SaansLogo } from '../ui/SaansLogo.js';
-import { LanguageProvider } from '../../state/language.js';
 import { DemoBanner } from './DemoBanner.js';
 import { DEMO_BANNER_TEXT } from '../../state/mode.js';
 
@@ -21,54 +19,6 @@ describe('Layout Components', () => {
     it('renders null when isDemo is false', () => {
       const { container } = render(<DemoBanner isDemo={false} />);
       expect(container.firstChild).toBeNull();
-    });
-  });
-
-  describe('AppHeader', () => {
-    it('renders title and handles toggle actions', async () => {
-      const toggleMode = vi.fn();
-      const toggleTheme = vi.fn();
-      const openTour = vi.fn();
-      const openProfile = vi.fn();
-      const user = userEvent.setup();
-
-      render(
-        <AppHeader
-          mode="demo"
-          onToggleMode={toggleMode}
-          isDark={false}
-          onToggleTheme={toggleTheme}
-          onOpenTour={openTour}
-          onOpenProfile={openProfile}
-        />
-      );
-
-      await user.click(screen.getByRole('button', { name: /Current mode is demo/i }));
-      expect(toggleMode).toHaveBeenCalledTimes(1);
-
-      await user.click(screen.getByRole('button', { name: /Switch to dark theme/i }));
-      expect(toggleTheme).toHaveBeenCalledTimes(1);
-
-      await user.click(screen.getByRole('button', { name: 'Tour' }));
-      expect(openTour).toHaveBeenCalledTimes(1);
-
-      await user.click(screen.getByRole('button', { name: 'Profile' }));
-      expect(openProfile).toHaveBeenCalledTimes(1);
-    });
-
-    it('satisfies automated accessibility audits', async () => {
-      const { container } = render(
-        <AppHeader
-          mode="live"
-          onToggleMode={vi.fn()}
-          isDark={true}
-          onToggleTheme={vi.fn()}
-          onOpenTour={vi.fn()}
-          onOpenProfile={vi.fn()}
-        />
-      );
-      const results = await axe(container);
-      expect(results.violations).toHaveLength(0);
     });
   });
 
@@ -105,10 +55,10 @@ describe('Layout Components', () => {
       const onSelectTab = vi.fn();
       const user = userEvent.setup();
       const { container } = render(
-        <LanguageProvider>
+        <>
           <BottomNav activeTab="today" onSelectTab={onSelectTab} />
           <SaansLogo />
-        </LanguageProvider>
+        </>
       );
       await user.click(screen.getByRole('button', { name: 'Routine' }));
       expect(onSelectTab).toHaveBeenCalledWith('routine');

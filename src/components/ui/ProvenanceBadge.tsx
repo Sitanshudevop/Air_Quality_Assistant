@@ -55,7 +55,7 @@ export function ProvenanceBadge({
           onClick={onRetry}
           disabled={isRetrying}
           aria-busy={isRetrying}
-          className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white px-3 py-1 text-xs font-medium shadow-xs transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+          className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 min-h-[44px] sm:min-h-0 text-xs font-medium shadow-xs transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
         >
           <RefreshCw className={`w-3 h-3 ${isRetrying ? 'animate-spin' : ''}`} aria-hidden="true" />
           <span>{isRetrying ? 'Retrying...' : 'Retry'}</span>

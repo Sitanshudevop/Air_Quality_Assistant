@@ -33,7 +33,7 @@ export function MythBusterCards(): ReactElement {
                 aria-expanded={isOpen}
                 aria-controls={panelId}
                 onClick={() => setRevealedIndex(isOpen ? null : idx)}
-                className="w-full text-left text-xs font-semibold text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-sky-500 rounded p-0.5"
+                className="w-full min-h-[44px] sm:min-h-0 flex items-center text-left text-xs font-semibold text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-sky-500 rounded p-0.5"
               >
                 Myth: {item.myth}
               </button>
@@ -41,13 +41,13 @@ export function MythBusterCards(): ReactElement {
               {isOpen && (
                 <div id={panelId} className="text-xs text-neutral-700 dark:text-neutral-300 space-y-1 pt-1 border-t border-neutral-200 dark:border-neutral-800">
                   <p>{item.reality}</p>
-                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                  <p className="text-[11px] text-neutral-600 dark:text-neutral-400">
                     Citation: {item.citation}{' '}
                     <a
                       href={citationUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="underline text-sky-700 dark:text-sky-400"
+                      className="inline-flex items-center min-h-[44px] sm:min-h-0 px-1 underline text-sky-700 dark:text-sky-400"
                     >
                       Source
                     </a>

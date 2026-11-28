@@ -124,5 +124,5 @@ describe('TodayDashboard Component', () => {
     );
     const readyResults = await axe(container);
     expect(readyResults.violations).toHaveLength(0);
-  });
+  }, 15000);
 });

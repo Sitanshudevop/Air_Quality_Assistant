@@ -5,7 +5,6 @@ import type { AqiCategory, RoutineItem } from '../../domain/types.js';
 import type { StoredProfile } from '../../services/profile.types.js';
 import type { NarratePlanResult } from '../../../shared/types.js';
 import { useAiTask } from '../../hooks/useAiTask.js';
-import { useLanguage } from '../../state/language.js';
 import { RoutineItemCard } from './RoutineItemCard.js';
 import { RoutineNarrativeCard } from './RoutineNarrativeCard.js';
 import { SchoolScheduleCard } from './SchoolScheduleCard.js';
@@ -33,7 +32,6 @@ export function RoutineView({
   profile,
   itemsOverride,
 }: RoutineViewProps): ReactElement {
-  const { t, language } = useLanguage();
   const [isSchoolSchedule, setIsSchoolSchedule] = useState<boolean>(false);
   const domainProfile = useMemo(() => mapStoredProfileToDomain(profile), [profile]);
   const items = useMemo(
@@ -44,15 +42,25 @@ export function RoutineView({
 
   const ai = useAiTask<NarratePlanResult>({
     task: 'narrate-plan',
-    context: { aqi: Math.round(aqi), city: cityName, facts },
+    context: {
+      aqi: Math.round(aqi),
+      city: cityName,
+      facts,
+      userPreferences: {
+        vulnerability: domainProfile.vulnerability,
+        commuteMode: domainProfile.commuteMode ?? 'unspecified',
+        hasPurifier: domainProfile.hasPurifier,
+        cookingFuel: domainProfile.cookingFuel,
+      },
+    },
   });
 
   return (
     <section aria-labelledby="routine-heading" className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 id="routine-heading" lang={language === 'hi' ? 'hi' : undefined} className="text-lg font-bold">
-            {t('routine.title')}
+          <h2 id="routine-heading" className="text-lg font-bold">
+            Time-Blocked Daily Routine
           </h2>
           <p className="text-xs text-neutral-600 dark:text-neutral-400">
             8 diurnal blocks calibrated for {cityName} ({category}, Est. AQI {aqi})

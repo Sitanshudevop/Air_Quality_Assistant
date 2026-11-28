@@ -54,7 +54,7 @@ export function calculateSubIndex(concentration: number, pollutant: Pollutant): 
     return 500;
   }
 
-  const bp = breakpoints.find((b) => c <= b.cHi)!;
+  const bp = breakpoints.find((b) => c <= b.cHi) ?? maxBp;
   const cOffset = Math.max(0, c - bp.cLo);
   const deltaC = bp.cHi - bp.cLo;
   const deltaI = bp.iHi - bp.iLo;

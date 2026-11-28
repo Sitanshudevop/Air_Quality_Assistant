@@ -40,6 +40,10 @@ describe('buildSmartChatFallback', () => {
 
     const maskLow = buildSmartChatFallback({ city: 'Chennai', aqi: 90, userText: 'Should I use FFP2?' });
     expect(maskLow.reply).toContain('sensitive groups');
+
+    const englishMask = buildSmartChatFallback({ city: 'Delhi', aqi: 340, userText: 'What mask should I wear today?' });
+    expect(englishMask.reply).toContain('N95');
+    expect(englishMask.reply).not.toMatch(/[\u0900-\u097F]/);
   });
 
   it('includes relevant facts in general fallback when no keyword matches', () => {

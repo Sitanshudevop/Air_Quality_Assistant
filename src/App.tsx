@@ -1,7 +1,6 @@
 // Root application component integrating BentoShell, providers, tabs, and lazy views.
 import { lazy, Suspense, useEffect, useState, type ReactElement } from 'react';
 import { ModeProvider, useMode } from './state/ModeContext.js';
-import { LanguageProvider } from './state/language.js';
 import { resolveActiveConditions, resolveEffectiveProfile } from './state/activeConditions.js';
 import type { DemoCityId, DemoPersonaId } from './constants/demo/types.js';
 import { generateRoutine } from './domain/routine.js';
@@ -113,12 +112,12 @@ function AppShell(): ReactElement {
 }
 
 /**
- * Root application component wrapping mode and language providers.
+ * Root application component wrapping operating mode provider.
  *
  * @returns React application element.
  */
 export function App(): ReactElement {
   return (
-    <LanguageProvider><ModeProvider><AppShell /></ModeProvider></LanguageProvider>
+    <ModeProvider><AppShell /></ModeProvider>
   );
 }

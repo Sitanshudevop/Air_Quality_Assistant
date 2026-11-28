@@ -1,7 +1,6 @@
-// Chaos tests for mode, language, tour storage keys and full clearProfile() application reset.
+// Chaos tests for mode, tour storage keys and full clearProfile() application reset.
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { APP_LOCAL_STORAGE_KEYS } from '../constants/index.js';
-import { LANGUAGE_STORAGE_KEY, loadLanguagePreference, saveLanguagePreference } from '../i18n/index.js';
 import { loadModePreference, MODE_STORAGE_KEY } from '../state/mode.js';
 import { isTourCompleted, resetTourCompleted, skipTour } from '../features/onboarding/tour-steps.js';
 import { fetchAirQuality, clearAirQualityCache } from './airQuality.js';
@@ -10,7 +9,7 @@ import { searchLocations, clearGeocodingCache } from './geocoding.js';
 import { createManualReading, getManualReading, saveManualReading } from './manualReading.js';
 import { clearProfile, getProfile, saveProfile } from './profile.js';
 
-describe('Mode, Language, Tour Chaos & Full clearProfile() Purge', () => {
+describe('Mode, Tour Chaos & Full clearProfile() Purge', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     clearProfile();
@@ -23,14 +22,10 @@ describe('Mode, Language, Tour Chaos & Full clearProfile() Purge', () => {
     vi.restoreAllMocks();
   });
 
-  it('recovers safely from tampered operating mode, language, and tour keys', () => {
+  it('recovers safely from tampered operating mode and tour keys', () => {
     for (const badMode of ['admin', '{"__proto__":1}', '', 'LIVE']) {
       window.localStorage.setItem(MODE_STORAGE_KEY, badMode);
       expect(loadModePreference()).toBe('demo');
-    }
-    for (const badLang of ['fr', '{"__proto__":1}', 'HI', '']) {
-      window.localStorage.setItem(LANGUAGE_STORAGE_KEY, badLang);
-      expect(loadLanguagePreference()).toBe('en');
     }
     for (const badTour of ['false', '1', '{}', '{"__proto__":1}']) {
       window.localStorage.setItem('saans_tour_completed', badTour);
@@ -38,7 +33,7 @@ describe('Mode, Language, Tour Chaos & Full clearProfile() Purge', () => {
     }
   });
 
-  it('handles localStorage getItem/setItem throws gracefully across mode, language, and tour helpers', () => {
+  it('handles localStorage getItem/setItem throws gracefully across mode and tour helpers', () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('Blocked');
     });
@@ -46,15 +41,12 @@ describe('Mode, Language, Tour Chaos & Full clearProfile() Purge', () => {
       throw new Error('QuotaExceeded');
     });
     expect(loadModePreference()).toBe('demo');
-    expect(loadLanguagePreference()).toBe('en');
-    expect(() => saveLanguagePreference('hi')).not.toThrow();
     expect(() => skipTour()).not.toThrow();
     expect(isTourCompleted()).toBe(true);
   });
 
-  it('purges all 5 localStorage keys, sessionStorage, tour memory, and L1 caches on clearProfile()', async () => {
+  it('purges all localStorage keys, sessionStorage, tour memory, and L1 caches on clearProfile()', async () => {
     saveProfile({ cityName: 'Lucknow' });
-    saveLanguagePreference('hi');
     skipTour();
     window.localStorage.setItem(MODE_STORAGE_KEY, 'live');
     window.localStorage.setItem('saans_chat_history_v1', '[]');

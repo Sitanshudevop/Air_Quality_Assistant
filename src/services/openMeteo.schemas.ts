@@ -2,7 +2,7 @@
 import { z } from 'zod';
 
 /** Schema for hourly air quality readings with nullable data points. */
-export const airQualityHourlySchema = z.object({
+const airQualityHourlySchema = z.object({
   time: z.array(z.string()),
   pm10: z.array(z.number().nullable()).optional(),
   pm2_5: z.array(z.number().nullable()).optional(),
@@ -13,7 +13,7 @@ export const airQualityHourlySchema = z.object({
 });
 
 /** Schema for current air quality pollutant snapshot. */
-export const airQualityCurrentSchema = z
+const airQualityCurrentSchema = z
   .object({
     time: z.string().optional(),
     pm10: z.number().nullable().optional(),
@@ -36,7 +36,7 @@ export const airQualityResponseSchema = z.object({
 });
 
 /** Schema for hourly weather readings from Open-Meteo Forecast API. */
-export const weatherHourlySchema = z.object({
+const weatherHourlySchema = z.object({
   time: z.array(z.string()),
   temperature_2m: z.array(z.number().nullable()).optional(),
   relative_humidity_2m: z.array(z.number().nullable()).optional(),
@@ -45,7 +45,7 @@ export const weatherHourlySchema = z.object({
 });
 
 /** Schema for current weather readings from Open-Meteo Forecast API. */
-export const weatherCurrentSchema = z
+const weatherCurrentSchema = z
   .object({
     time: z.string().optional(),
     temperature_2m: z.number().nullable().optional(),
@@ -72,7 +72,7 @@ export const weatherResponseSchema = z.union([
 ]);
 
 /** Schema for an individual geocoding search result. */
-export const geocodingResultSchema = z.object({
+const geocodingResultSchema = z.object({
   id: z.number(),
   name: z.string().min(1),
   latitude: z.number().min(-90).max(90),

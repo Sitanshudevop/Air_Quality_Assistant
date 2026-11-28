@@ -3,7 +3,7 @@
 import { RATE_LIMIT_CONFIG } from '../src/constants/index.js';
 
 /** Default maximum distinct clients tracked concurrently per instance. */
-export const MAX_RATE_LIMIT_CLIENTS = 1000;
+const MAX_RATE_LIMIT_CLIENTS = 1000;
 
 /** Rate limit check result. */
 export interface RateLimitResult {

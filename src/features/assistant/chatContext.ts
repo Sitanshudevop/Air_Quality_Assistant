@@ -1,6 +1,7 @@
 // Helper building rich grounded chat context and executing assistant replies.
 import { getAiResponse } from '../../services/ai.js';
 import type { AqiCategory, VulnerabilityGroup } from '../../domain/types.js';
+import { compareAlternatives } from '../../domain/alternatives.js';
 import { getVentilationRecommendation } from '../../domain/indoor.js';
 import type { HourlyAirQualityPoint } from '../../services/openMeteo.types.js';
 import type { PollutantValues } from '../dashboard/PollutantCard.js';
@@ -67,8 +68,25 @@ function getWindowFactMemo(hourlyPoints?: readonly HourlyAirQualityPoint[]): str
   return fact;
 }
 
+function getCommuteComparisonFact(pm25: number, vulnerability?: VulnerabilityGroup): string | null {
+  if (!Number.isFinite(pm25) || pm25 <= 0) return null;
+  const results = compareAlternatives(
+    { id: 'base', title: 'Petrol two-wheeler (unmasked)', mode: 'two_wheeler_petrol', maskType: 'none', distanceKm: 10 },
+    [
+      { id: 'bike-n95', title: 'Petrol two-wheeler (N95)', mode: 'two_wheeler_petrol', maskType: 'n95', distanceKm: 10 },
+      { id: 'metro-n95', title: 'Metro (N95)', mode: 'metro', maskType: 'n95', distanceKm: 10 },
+    ],
+    pm25,
+    vulnerability
+  );
+  const [n95, metro] = results;
+  if (!n95 || !metro) return null;
+  return `Commute PM2.5 impact (10 km vs unmasked petrol two-wheeler): N95 on two-wheeler cuts inhaled dose by ${Math.abs(n95.relativeDoseChangePct)}%; switching to Metro with N95 cuts inhaled dose by ${Math.abs(metro.relativeDoseChangePct)}% and saves ${Math.abs(metro.co2eDeltaGrams)} g CO2e per trip.`;
+}
+
 function buildContextFacts(opts: FetchChatReplyOptions): string[] {
   const safeAqi = Math.round(opts.aqi);
+  const effectivePm25 = opts.pollutants?.pm2_5 ?? safeAqi;
   const vent = getVentilationRecommendation(safeAqi);
   const facts = [
     `Current AQI in ${opts.cityName} is ${safeAqi} (${opts.category}).`,
@@ -77,6 +95,8 @@ function buildContextFacts(opts: FetchChatReplyOptions): string[] {
       ? 'Commute guidance: closed-window Metro or AC car on recirculation cuts traffic particulate exposure compared to open two-wheelers or roadside walking; wear a fitted N95/FFP2 mask outdoors.'
       : 'Commute guidance: standard transit is lower risk; use an N95 mask on high-traffic roads or two-wheelers.',
   ];
+  const commuteDelta = getCommuteComparisonFact(effectivePm25, opts.vulnerability);
+  if (commuteDelta) facts.push(commuteDelta);
   facts.push(...getPollutantFactsMemo(opts.pollutants));
   const winFact = getWindowFactMemo(opts.hourlyPoints);
   if (winFact) facts.push(winFact);

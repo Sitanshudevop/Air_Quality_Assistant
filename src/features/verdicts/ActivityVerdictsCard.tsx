@@ -30,7 +30,7 @@ function getVerdictBadgeClass(verdict: ActivityVerdict): string {
     case 'Go':
       return 'bg-emerald-700 text-white dark:bg-emerald-600';
     case 'Wait':
-      return 'bg-amber-600 text-white dark:bg-amber-500';
+      return 'bg-amber-700 text-white dark:bg-amber-900 dark:text-amber-100';
     case 'Avoid':
       return 'bg-bento-ink text-white dark:bg-rose-600';
   }
@@ -103,7 +103,7 @@ export function ActivityVerdictsCard({
             Evidence-backed Go / Wait / Avoid safety ratings tailored to your household
           </p>
         </div>
-        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-neutral-500">
+        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">
           <span className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden="true" /> Go
           <span className="w-2 h-2 rounded-full bg-amber-500 ml-1" aria-hidden="true" /> Wait
           <span className="w-2 h-2 rounded-full bg-rose-500 ml-1" aria-hidden="true" /> Avoid

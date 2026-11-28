@@ -209,12 +209,12 @@ export function registerTier4DomainScenarios(options = {}) {
   // Features Exercised: F1, F7, F11, F13, F16, F21
   // =========================================================================
   it('Scenario 4.9: Offline / Live Failure Recovery via Manual AQI Entry', async (t) => {
-    const fallbackMod = await loadModuleSafe('src/services/fallback.ts');
+    const fallbackMod = await loadModuleSafe('src/services/manualReading.ts');
     const aqiMod = await loadModuleSafe('src/domain/aqi.ts');
     const expMod = await loadModuleSafe('src/domain/exposure.ts');
 
     if (!fallbackMod || !fallbackMod.createManualReading) {
-      t.skip('Pending implementation of manual reading fallback in src/services/fallback.ts in M2');
+      t.skip('Pending implementation of manual reading fallback in src/services/manualReading.ts in M2');
       return;
     }
 

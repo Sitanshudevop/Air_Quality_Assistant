@@ -26,7 +26,7 @@ function AiStatusBadge(props: { aiStatus: LastAiStatus; isRetrying: boolean; onR
           type="button"
           onClick={props.onRetry}
           disabled={props.isRetrying}
-          className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white px-3 py-1 text-xs font-medium shadow-xs transition-all active:scale-95 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+          className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white px-3 py-1 min-h-[44px] sm:min-h-0 text-xs font-medium shadow-xs transition-all active:scale-95 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
           aria-label="Retry AI service connection"
         >
           <RefreshCw className={`w-3 h-3 ${props.isRetrying ? 'animate-spin' : ''}`} aria-hidden="true" />

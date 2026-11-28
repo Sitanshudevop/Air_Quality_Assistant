@@ -1,4 +1,4 @@
-// BentoShell: viewport-locked desktop shell with stationary hover-expanding sidebar and scrollable main content.
+// Fixed-slot responsive Bento shell with hover/focus-expanding desktop sidebar and scrollable main content.
 import type { ReactElement, ReactNode } from 'react';
 import type { FeatureTabId } from './FeatureTabs.js';
 import { BentoSidebar } from './BentoSidebar.js';

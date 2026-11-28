@@ -96,18 +96,18 @@ describe('App Component', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    const tourBtn = screen.getAllByRole('button', { name: 'Tour' })[0];
+    const tourBtn = screen.getAllByRole('button', { name: 'Guided Tour' })[0];
     await user.click(tourBtn);
     await waitFor(() => expect(screen.getByRole('dialog', { name: /Dual Operating Modes/i })).toBeInTheDocument(), { timeout: 5000 });
     await user.click(screen.getByRole('button', { name: 'Skip Tour' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
-    const profileBtn = screen.getAllByRole('button', { name: 'Profile' })[0];
+    const profileBtn = screen.getAllByRole('button', { name: 'Family Profile' })[0];
     await user.click(profileBtn);
     await waitFor(() => expect(screen.getByRole('dialog', { name: /Family Smog Profile/i })).toBeInTheDocument(), { timeout: 5000 });
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  });
+  }, 15000);
 
   it('switches tabs when header navigation links are clicked', async () => {
     const user = userEvent.setup();

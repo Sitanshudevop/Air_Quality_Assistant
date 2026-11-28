@@ -26,21 +26,21 @@ function BriefingPillars({ briefing }: { briefing: MorningBriefing }): ReactElem
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
       <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 space-y-1">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-bento-muted">Commute Transit</div>
+        <div className="text-[11px] font-bold uppercase tracking-wider text-bento-muted dark:text-neutral-300">Commute Transit</div>
         <p className="text-xs text-bento-ink dark:text-neutral-200 leading-relaxed font-medium">
           {briefing.commuteSafety}
         </p>
       </div>
 
       <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 space-y-1">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-bento-muted">School Morning</div>
+        <div className="text-[11px] font-bold uppercase tracking-wider text-bento-muted dark:text-neutral-300">School Morning</div>
         <p className="text-xs text-bento-ink dark:text-neutral-200 leading-relaxed font-medium">
           {briefing.schoolAdvice}
         </p>
       </div>
 
       <div className="p-4 rounded-2xl bg-white dark:bg-neutral-900 space-y-1">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-bento-muted">Evening Inversion</div>
+        <div className="text-[11px] font-bold uppercase tracking-wider text-bento-muted dark:text-neutral-300">Evening Inversion</div>
         <p className="text-xs text-bento-ink dark:text-neutral-200 leading-relaxed font-medium">
           {briefing.eveningPeak}
         </p>
@@ -97,10 +97,10 @@ export function MorningBriefingCard(props: MorningBriefingCardProps): ReactEleme
 
         <div className="flex items-center gap-2">
           {feedback && <span role="status" className="text-xs font-semibold text-teal-700 dark:text-teal-400">{feedback}</span>}
-          <button type="button" onClick={() => void handleCopy()} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-neutral-800 hover:bg-neutral-100 text-xs font-semibold text-bento-ink dark:text-neutral-200 shadow-sm focus:ring-2 focus:ring-bento-ink/30">
+          <button type="button" onClick={() => void handleCopy()} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 min-h-[44px] sm:min-h-0 rounded-full bg-white dark:bg-neutral-800 hover:bg-neutral-100 text-xs font-semibold text-bento-ink dark:text-neutral-200 shadow-sm focus:ring-2 focus:ring-bento-ink/30">
             <Copy size={12} aria-hidden="true" /> Copy Briefing
           </button>
-          <button type="button" onClick={() => void handleShare()} className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-bento-ink text-white dark:bg-white dark:text-bento-ink text-xs font-semibold hover:opacity-90 focus:ring-2 focus:ring-bento-ink/30 shadow-sm">
+          <button type="button" onClick={() => void handleShare()} className="inline-flex items-center gap-1.5 px-4 py-1.5 min-h-[44px] sm:min-h-0 rounded-full bg-bento-ink text-white dark:bg-white dark:text-bento-ink text-xs font-semibold hover:opacity-90 focus:ring-2 focus:ring-bento-ink/30 shadow-sm">
             <Share2 size={12} aria-hidden="true" /> Share
           </button>
         </div>

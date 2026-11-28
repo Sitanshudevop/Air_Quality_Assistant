@@ -7,7 +7,7 @@ export interface SaansLogoProps {
 }
 
 /** Inline SVG matching the mint-green to ocean-teal flowing S + leaf emblem. */
-export function SaansLogoSvg(): ReactElement {
+function SaansLogoSvg(): ReactElement {
   return (
     <svg viewBox="0 0 64 64" className="w-full h-full" aria-hidden="true">
       <defs>
